@@ -9,8 +9,8 @@ Claude Certified Architect – Professional (CCAR-P) exam preparation guide and 
 | 1 | [Source analysis, blueprint & traceability](docs/00-source-analysis.md) | Done |
 | 2 | [Preparation guide (38 objectives, 7 domains)](docs/guide/README.md) | Done |
 | 3 | [Comparison guides](docs/guide/comparisons.md) · [Question bank — 150 items](content/questions/README.md) | Done |
-| 4 | [Glossary — 124 terms](content/glossary.md) · [Learn episodes — 7 × 38 parts](content/learn/) | Done |
-| 5 | [Study plans (2-day / 5-day)](docs/study-plan.md) · [Rapid-revision guide](docs/rapid-revision.md) · [Traceability matrix](docs/traceability.md) · [Quality report](docs/quality-report.md) | Done |
+| 4 | [Glossary — 124 terms](content/glossary.md) · [Learn episodes — 7 × 38 parts, about 6 hours](content/learn/) | Done |
+| 5 | [Study plans (14-day / 30-day)](docs/study-plan.md) · [Rapid-revision guide](docs/rapid-revision.md) · [Traceability matrix](docs/traceability.md) · [Quality report](docs/quality-report.md) | Done |
 | 6 | [Interactive trainer](https://rajeevpsd.github.io/CCAR-P/): Home · Practice · Mock exam · Learn · Glossary · Progress (`site/`) | Done |
 | 7 | [Advisory: current-docs check of time-sensitive product facts](docs/verification-log.md) (not applied; content keeps module wording) | Done |
 

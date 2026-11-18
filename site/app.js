@@ -386,7 +386,7 @@ function confirmBtn(label, fn, prompt) {
 
 /* ---- Learn ---- */
 function viewLearn() {
-  const els = [h("h1", null, "Learn"), h("p", { class: "lede" }, "One episode per domain, with one part per official objective. Each part has read-along narration (your browser reads it aloud), key concepts, an architecture example, the exam takeaway and a 3-question knowledge check.")];
+  const els = [h("h1", null, "Learn"), h("p", { class: "lede" }, "One episode per domain, with one part per official objective, about six hours in all. Each part has sectioned read-along narration drawn from the training modules (your browser reads it aloud), key concepts, an architecture example, the architecture decision, the exam takeaway, its sources and a 3-question knowledge check.")];
   for (const e of DATA.episodes) {
     const d = dom(e.domain_id), mins = e.parts.reduce((a, p) => a + p.minutes, 0), done = e.parts.filter(p => (S.learn[p.objective_id] || {}).done).length;
     els.push(h("div", { class: "card ep", style: `--dc:${DCOLOR[e.domain_id]}` },
@@ -401,15 +401,20 @@ function viewLearnPart(oid) {
   const p = DATA.maps.part[oid]; if (!p) { location.hash = "#/learn"; return []; }
   const o = objOf(oid), d = dom(o.domain_id), flat = DATA.episodes.flatMap(e => e.parts), idx = flat.findIndex(x => x.objective_id === oid);
   const L = S.learn[oid] = S.learn[oid] || { done: false, checks: {} };
-  const paras = p.narration.split(/\n\s*\n/).map(t => t.replace(/\s+/g, " ").trim()).filter(Boolean);
-  const narr = h("div", { class: "narr" }, paras.map((t, i) => h("p", { "data-i": i }, t)));
+  const raw = p.narration.split(/\n\s*\n/).map(t => t.replace(/\s+/g, " ").trim()).filter(Boolean);
+  const paras = raw.map(t => t.replace(/^###\s*/, ""));
+  const narr = h("div", { class: "narr" }, raw.map((t, i) => /^###/.test(t) ? h("h3", { "data-i": i }, paras[i]) : h("p", { "data-i": i }, t)));
+  const sections = raw.map((t, i) => [t, i]).filter(([t]) => /^###/.test(t));
+  const toc = sections.length ? h("div", { class: "toc" }, h("span", { class: "small" }, "In this part: "), sections.map(([t, i]) => h("a", { href: "#", onclick: e => { e.preventDefault(); narr.querySelector(`[data-i="${i}"]`).scrollIntoView({ behavior: "smooth", block: "start" }); } }, paras[i]))) : null;
   const els = [h("a", { href: "#/learn", class: "small" }, "← All episodes"),
     h("div", { class: "eyebrow", style: "margin-top:12px" }, `Domain ${d.domain_id.slice(1)} · ${d.name}`), h("h1", null, `${oid} ${p.title}`),
     h("p", { class: "lede" }, h("b", null, "Objective: "), o.official_wording, ` · about ${p.minutes} min`),
-    h("div", { class: "card", style: `--dc:${DCOLOR[d.domain_id]}` }, player(paras, narr), h("div", { style: "margin-top:12px" }, narr)),
+    h("div", { class: "card", style: `--dc:${DCOLOR[d.domain_id]}` }, player(paras, narr), toc, h("div", { style: "margin-top:12px" }, narr),
+      h("p", { class: "small", style: "margin-top:12px" }, h("b", null, "Sources: "), p.sources)),
     h("div", { class: "grid g2", style: "margin-top:16px" },
       h("div", { class: "card" }, h("div", { class: "eyebrow" }, "Key concepts"), h("div", { class: "chips", style: "margin-top:10px" }, p.key_concepts.map(c => h("span", { class: "chip" }, c)))),
       h("div", { class: "card" }, h("div", { class: "eyebrow" }, "Architecture example"), h("p", null, p.architecture_example))),
+    h("div", { class: "card", style: "border-left:4px solid var(--d3);margin-top:16px" }, h("div", { class: "eyebrow" }, "Architecture decision"), h("p", null, p.architecture_decision)),
     h("div", { class: "card", style: "border-left:4px solid var(--accent)" }, h("div", { class: "eyebrow" }, "Exam takeaway"), h("p", { style: "font-weight:600" }, p.exam_takeaway),
       h("a", { href: guideUrl(oid), target: "_blank", rel: "noopener", class: "small" }, "Open the full guide section (decision framework, traps, must-remember) ↗"))];
   const kc = h("div", { class: "card" });
@@ -440,7 +445,7 @@ function player(paras, narr) {
   const voiceSel = h("select", { "aria-label": "Voice" });
   const fillVoices = () => { const vs = synth.getVoices().filter(v => /^en/i.test(v.lang)); voiceSel.replaceChildren(...vs.map(v => h("option", { value: v.name }, `${v.name} (${v.lang})`))); };
   fillVoices(); if (synth.onvoiceschanged !== undefined) synth.onvoiceschanged = fillVoices;
-  const mark = k => narr.querySelectorAll("p").forEach(pp => pp.classList.toggle("speaking", +pp.dataset.i === k));
+  const mark = k => narr.querySelectorAll("[data-i]").forEach(pp => pp.classList.toggle("speaking", +pp.dataset.i === k));
   const playBtn = h("button", { class: "btn small primary" }, "▶ Play");
   const speak = () => {
     if (i >= paras.length) { stop(); return; }
@@ -455,9 +460,10 @@ function player(paras, narr) {
     else if (!paused) { synth.pause(); paused = true; playBtn.textContent = "▶ Resume"; }
     else { synth.resume(); paused = false; playBtn.textContent = "❚❚ Pause"; }
   };
+  narr.addEventListener("click", e => { const el = e.target.closest("[data-i]"); if (!el) return; synth.cancel(); i = +el.dataset.i; playing = true; paused = false; playBtn.textContent = "❚❚ Pause"; speak(); });
   window.addEventListener("hashchange", () => synth.cancel(), { once: true });
   return h("div", { class: "player" }, playBtn, h("button", { class: "btn small ghost", onclick: stop }, "■ Stop"), h("span", { class: "small" }, "Speed"), rate, h("span", { class: "small" }, "Voice"), voiceSel,
-    h("span", { class: "small" }, "Narration uses your browser's speech engine; quality depends on your device."));
+    h("span", { class: "small" }, "Click any paragraph to read from there. Narration uses your browser's speech engine; quality depends on your device."));
 }
 
 /* ---- Glossary ---- */

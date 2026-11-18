@@ -109,6 +109,8 @@ const clickText = (sel, t) => { const b = $$(sel).find(x => x.textContent.includ
   ok($$(".ep").length === 7 && $$(".part").length === 38, "learn: 7 episodes, 38 parts");
   await go("#/learn/1.3");
   ok(txt().includes("Select appropriate architectural patterns") && $$(".narr p").length >= 4, "learn part shows objective + narration paragraphs");
+  ok($$(".narr h3").length >= 3 && $$(".toc a").length === $$(".narr h3").length, "learn part shows section headings and an in-part contents list");
+  ok(txt().includes("Architecture decision") && txt().includes("Sources:") && txt().includes("[MODULE 1]"), "learn part shows architecture decision and sources");
   ok(txt().includes("Read-aloud isn't available") || $(".player"), "player or fallback shown");
   for (let i = 0; i < 3; i++) { const groups = $$(".card .qtext").length; const opts = $$(".card .opt:not([disabled])"); opts[0].click(); await tick(); }
   ok(w.__t.S.learn["1.3"].done === true, "learn part completes after 3 checks");

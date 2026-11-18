@@ -2,7 +2,7 @@
 """Build content/glossary.json and content/learn.json from Markdown sources and validate.
 
 Glossary checks: required fields, valid group, objectives exist, no duplicate terms.
-Learn checks: one episode per domain, one part per official objective, narration present,
+Learn checks: one episode per domain, one part per official objective, narration present (500+ words, optional '### ' section headings),
 exactly 3 knowledge checks per part with 4 options and a valid answer.
 """
 import collections
@@ -62,7 +62,7 @@ def build_learn():
         for block in re.split(r"\n## Part ", text)[1:]:
             head, _, body = block.partition("\n")
             oid, _, ptitle = head.partition(" – ")
-            fields = dict(re.findall(r"^(minutes|concepts|example|takeaway): (.+)$", body, re.M))
+            fields = dict(re.findall(r"^(minutes|concepts|example|decision|takeaway|sources): (.+)$", body, re.M))
             narr = re.search(r"^narration:\n(.*?)(?=^check:)", body, re.M | re.S)
             checks = []
             for c in re.findall(r"^check: (.+)$", body, re.M):
@@ -86,10 +86,10 @@ def build_learn():
                 errors.append(f"learn: part {oid} not an objective of {did}")
             if len(checks) != 3:
                 errors.append(f"learn {oid}: {len(checks)} checks, need 3")
-            for f in ("minutes", "concepts", "example", "takeaway"):
+            for f in ("minutes", "concepts", "example", "decision", "takeaway", "sources"):
                 if not fields.get(f):
                     errors.append(f"learn {oid}: missing {f}")
-            if not narr or len(narr.group(1).split()) < 120:
+            if not narr or len(narr.group(1).split()) < 500:
                 errors.append(f"learn {oid}: narration missing or too short")
             parts.append({
                 "objective_id": oid, "title": ptitle.strip(),
@@ -97,8 +97,10 @@ def build_learn():
                 "minutes": int(fields.get("minutes", 0) or 0),
                 "key_concepts": [c.strip() for c in fields.get("concepts", "").split(";")],
                 "architecture_example": fields.get("example", ""),
+                "architecture_decision": fields.get("decision", ""),
                 "exam_takeaway": fields.get("takeaway", ""),
-                "narration": re.sub(r"\n{2,}", "\n\n", narr.group(1).strip()) if narr else "",
+                "sources": fields.get("sources", ""),
+                "narration": re.sub(r"\n{2,}", "\n\n", re.sub(r"^(### .+)\n(?!\n)", r"\1\n\n", narr.group(1).strip(), flags=re.M)) if narr else "",
                 "knowledge_check": checks,
             })
         episodes.append({"domain_id": did, "title": title,
