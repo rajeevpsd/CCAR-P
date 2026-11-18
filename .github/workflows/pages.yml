@@ -23,12 +23,14 @@ jobs:
         with:
           python-version: "3.12"
       - name: Build and validate content model
-        run: python3 scripts/build_content.py
+        run: |
+          python3 scripts/build_content.py
+          python3 scripts/build_questions.py --strict
       - name: Assemble site
         run: |
           mkdir -p _site/content
           cp -r site/. _site/
-          cp content/objectives.json _site/content/
+          cp content/objectives.json content/questions.json _site/content/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
