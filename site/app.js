@@ -386,7 +386,7 @@ function confirmBtn(label, fn, prompt) {
 
 /* ---- Learn ---- */
 function viewLearn() {
-  const els = [h("h1", null, "Learn"), h("p", { class: "lede" }, "One episode per domain, with one part per official objective. Each part has read-along narration (your browser reads it aloud), key concepts, an architecture example, the exam takeaway and a 3-question knowledge check.")];
+  const els = [h("h1", null, "Learn"), h("p", { class: "lede" }, "One episode per domain, with one part per official objective, about six hours in all. Each part has sectioned read-along narration drawn from the training modules (your browser reads it aloud), key concepts, an architecture example, the architecture decision, the exam takeaway, its sources and a 3-question knowledge check.")];
   for (const e of DATA.episodes) {
     const d = dom(e.domain_id), mins = e.parts.reduce((a, p) => a + p.minutes, 0), done = e.parts.filter(p => (S.learn[p.objective_id] || {}).done).length;
     els.push(h("div", { class: "card ep", style: `--dc:${DCOLOR[e.domain_id]}` },
@@ -414,7 +414,7 @@ function viewLearnPart(oid) {
     h("div", { class: "grid g2", style: "margin-top:16px" },
       h("div", { class: "card" }, h("div", { class: "eyebrow" }, "Key concepts"), h("div", { class: "chips", style: "margin-top:10px" }, p.key_concepts.map(c => h("span", { class: "chip" }, c)))),
       h("div", { class: "card" }, h("div", { class: "eyebrow" }, "Architecture example"), h("p", null, p.architecture_example))),
-    h("div", { class: "card", style: "border-left:4px solid var(--d3)" }, h("div", { class: "eyebrow" }, "Architecture decision"), h("p", null, p.architecture_decision)),
+    h("div", { class: "card", style: "border-left:4px solid var(--d3);margin-top:16px" }, h("div", { class: "eyebrow" }, "Architecture decision"), h("p", null, p.architecture_decision)),
     h("div", { class: "card", style: "border-left:4px solid var(--accent)" }, h("div", { class: "eyebrow" }, "Exam takeaway"), h("p", { style: "font-weight:600" }, p.exam_takeaway),
       h("a", { href: guideUrl(oid), target: "_blank", rel: "noopener", class: "small" }, "Open the full guide section (decision framework, traps, must-remember) ↗"))];
   const kc = h("div", { class: "card" });
