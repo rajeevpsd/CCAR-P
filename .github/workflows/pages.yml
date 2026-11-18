@@ -40,6 +40,7 @@ jobs:
           mkdir -p _site/content
           cp -r site/. _site/
           cp content/objectives.json content/questions.json content/glossary.json content/learn.json _site/content/
+          sed -i "s/__BUILD__/${GITHUB_SHA::7}/g" _site/index.html _site/app.js
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

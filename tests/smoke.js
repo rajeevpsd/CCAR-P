@@ -10,7 +10,7 @@ const ok = (c, m) => { if (!c) { failures++; console.log("FAIL:", m); } else con
 
 const dom = new JSDOM(html, { url: "https://example.test/CCAR-P/", runScripts: "outside-only", pretendToBeVisual: true });
 const w = dom.window;
-w.fetch = async u => { const f = path.join(REPO, "content", String(u).replace(/^content\//, "")); return { ok: fs.existsSync(f), status: 200, json: async () => JSON.parse(fs.readFileSync(f, "utf8")) }; };
+w.fetch = async u => { const f = path.join(REPO, "content", String(u).replace(/^content\//, "").replace(/\?.*$/, "")); return { ok: fs.existsSync(f), status: 200, json: async () => JSON.parse(fs.readFileSync(f, "utf8")) }; };
 w.scrollTo = () => {}; w.HTMLElement.prototype.scrollIntoView = () => {};
 w.eval(app.replace('"use strict";', "") + "\nwindow.__t = { get S(){ return S; } };");
 
