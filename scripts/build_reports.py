@@ -123,8 +123,9 @@ ids = {o["objective_id"] for o in obj["objectives"]}
 doms = {o["domain_id"] for o in obj["objectives"]}
 wording_ok = all(o["official_wording"] == OFFICIAL[o["objective_id"]] for o in obj["objectives"])
 weights_ok = all(d["weight"] == WEIGHTS[d["domain_id"]] for d in obj["domains"])
-by_dom = collections.Counter(q["domain_id"] for q in qs)
-dev = max(abs(100 * by_dom[d] / len(qs) - w) for d, w in WEIGHTS.items())
+core = [q for q in qs if q.get("set", "core") == "core"]  # focus set is extra remediation, outside the blueprint
+by_dom = collections.Counter(q["domain_id"] for q in core)
+dev = max(abs(100 * by_dom[d] / len(core) - w) for d, w in WEIGHTS.items())
 mc = mock_counts()
 mock_ok = sum(mc.values()) == 63 and all(by_dom[d] >= mc[d] for d in mc)
 expl_ok = all(set(q["answer_options"]) == set(q["option_explanations"]) for q in qs)
@@ -160,7 +161,7 @@ report = ["# Quality Report", "",
           f"Fully covered:             {full}  (of which {len(SUPPLEMENTED)} supplemented from official docs)",
           f"Partially covered:         {len(PARTIAL)}  ({', '.join(PARTIAL)})",
           f"Source gaps:               {len(PARTIAL)}  (agent-to-agent protocols; plus time-sensitive facts flagged for verification)",
-          f"Practice questions:        {len(qs)}  ({sum(q['select'] > 1 for q in qs)} multiple-response)",
+          f"Practice questions:        {len(qs)}  ({len(core)} blueprint-weighted core + {len(qs) - len(core)} focus remediation; {sum(q['select'] > 1 for q in qs)} multiple-response)",
           f"Glossary terms:            {len(gl)}",
           f"Learn parts / checks:      {sum(len(e['parts']) for e in learn)} / {sum(len(p['knowledge_check']) for e in learn for p in e['parts'])}",
           "Unresolved issues:         4  (see below)",

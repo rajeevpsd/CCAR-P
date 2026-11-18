@@ -21,7 +21,7 @@ The Learn track runs about **6 hours** in total (narration plus each part's know
 | 6 | D6 Stakeholder & Lifecycle | 14% | ~47 min (5 parts) | 21 | 12% | Mostly framework recall plus judgement |
 | 7 | D7 Developer Productivity & Ops | 7% | ~30 min (3 parts) | 10 | 7% | Lowest weight; reuses D2 and D4 ideas |
 
-The question bank holds 150 items, so later mocks will repeat some questions. Use **Exam mode** for mocks, and **New questions**, **Weak areas** or **Incorrect previously** for the practice between them.
+The core bank holds 150 blueprint-weighted items (plus 66 focus items for weak objectives, used by the Focus tab), so later mocks will repeat some questions. Use **Exam mode** for mocks, and **New questions**, **Weak areas** or **Incorrect previously** for the practice between them.
 
 **Mock checkpoints (both plans):** diagnostic (21 Qs) → D1–D3 checkpoint → half mock (32 items: D1 8 · D2 6 · D3 10 · D4 8, 60 min) → D5–D7 checkpoint → full mock 1 (63 items, 120 min) → full mock 2. If a full mock is under 75% overall, or any domain is under 70%, run a Repair-First day before the next mock.
 

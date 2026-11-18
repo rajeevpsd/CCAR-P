@@ -12,7 +12,7 @@ const dom = new JSDOM(html, { url: "https://example.test/CCAR-P/", runScripts: "
 const w = dom.window;
 w.fetch = async u => { const f = path.join(REPO, "content", String(u).replace(/^content\//, "").replace(/\?.*$/, "")); return { ok: fs.existsSync(f), status: 200, json: async () => JSON.parse(fs.readFileSync(f, "utf8")) }; };
 w.scrollTo = () => {}; w.HTMLElement.prototype.scrollIntoView = () => {};
-w.eval(app.replace('"use strict";', "") + "\nwindow.__t = { get S(){ return S; } };");
+w.eval(app.replace('"use strict";', "") + "\nwindow.__t = { get S(){ return S; }, get DATA(){ return DATA; } };");
 
 const tick = (ms = 30) => new Promise(r => setTimeout(r, ms));
 const go = async h => { w.location.hash = h; await tick(); };
@@ -55,8 +55,8 @@ const clickText = (sel, t) => { const b = $$(sel).find(x => x.textContent.includ
   // Mode filters
   const inc = w.eval(`pickPractice({domains:[],objectives:[],n:50,difficulty:"All",mode:"incorrect"})`);
   ok(inc.length === 5 - correct, `incorrect-previously pool = ${inc.length} (expected ${5 - correct})`);
-  const nw = w.eval(`pickPractice({domains:[],objectives:[],n:200,difficulty:"All",mode:"new"})`);
-  ok(nw.length === 145, "new-questions pool excludes seen (145)");
+  const nw = w.eval(`pickPractice({domains:[],objectives:[],n:500,difficulty:"All",mode:"new"})`), totalQ = w.__t.DATA.questions.length;
+  ok(nw.length === totalQ - 5, `new-questions pool excludes seen (${totalQ - 5})`);
   const smart = w.eval(`pickPractice({domains:[],objectives:[],n:21,difficulty:"All",mode:"smart"})`);
   const dist = {}; smart.forEach(id => { const d = id.slice(0, 2); dist[d] = (dist[d] || 0) + 1; });
   ok(smart.length === 21 && dist.D3 >= 3 && dist.D7 >= 1, "smart mix 21 is weighted across domains " + JSON.stringify(dist));
@@ -115,6 +115,21 @@ const clickText = (sel, t) => { const b = $$(sel).find(x => x.textContent.includ
   for (let i = 0; i < 3; i++) { const groups = $$(".card .qtext").length; const opts = $$(".card .opt:not([disabled])"); opts[0].click(); await tick(); }
   ok(w.__t.S.learn["1.3"].done === true, "learn part completes after 3 checks");
   ok($$(".feedback").length === 3, "3 check feedbacks shown");
+  // Focus tab: no report yet, then a report, a ranked list, a plan and a focus mock
+  if (w.__t.S.mock) w.__t.S.mock = null;
+  w.__t.S.report = null; await go("#/home"); await go("#/focus");
+  ok(txt().includes("Import score-report file") && txt().includes("Enter scores manually"), "focus: prompts for a score report when none is stored");
+  w.__t.S.report = {"exam": "CCAR-P", "date": "2026-01-01", "score": 600, "passing": 720, "objectives": {"1.3": 10, "1.4": 25, "1.5": 40, "1.6": 55, "2.1": 80, "2.3": 90, "2.4": 10, "3.1": 25, "3.2": 40, "3.4": 55, "3.5": 80, "3.6": 90, "3.7": 10, "3.8": 25, "4.1": 40, "4.2": 55, "4.3": 80, "4.5": 90, "4.6": 100, "5.1": 100, "5.2": 100, "5.3": 100, "5.4": 100, "6.1": 100, "6.2": 100, "6.3": 100, "6.4": 100, "7.1": 100, "7.2": 100, "7.3": 100, "2.5": 0, "1.2": 67}}; // synthetic test data
+  await go("#/home"); await go("#/focus");
+  ok(txt().includes("Objectives below 100% (20)") && txt().includes("Not on your report (6)"), "focus: 20 weak and 6 unreported objectives listed");
+  ok(txt().includes("Focus plan · 7 study days"), "focus: plan groups weak objectives into days");
+  ok($$(".card h3")[0] && txt().indexOf("2.5 Implement prompt reuse") < txt().indexOf("1.2 Design end-to-end"), "focus: 0% objectives rank above 67% ones");
+  clickText("button", "Start focus mock"); await tick();
+  const fm = w.__t.S.mock, weakIds = new Set(Object.entries(w.__t.S.report.objectives).filter(([, v]) => v < 100).map(([k]) => k));
+  ok(fm && fm.scope === "focus" && fm.ids.length === 30 && fm.ids.every(id => weakIds.has(w.__t.DATA.maps.q[id].objective_id)), "focus mock: 30 items, all from weak objectives");
+  ok(new Set(fm.ids).size === fm.ids.length && fm.limit === 58 * 60, "focus mock: no duplicates; 58-minute limit");
+  ok(txt().includes("Focus mock · Exam mode"), "focus mock runs in exam mode");
+  w.__t.S.mock = null;
 
   // Test me on this → auto-start practice on objective
   await go("#/practice?obj=4.4&start=1"); await tick();

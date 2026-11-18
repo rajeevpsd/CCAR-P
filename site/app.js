@@ -38,7 +38,7 @@ const dom = id => DATA.domains.find(d => d.domain_id === id);
 const objOf = id => DATA.maps.obj[id];
 
 /* ---------------- persistence ---------------- */
-function blankState() { return { v: 1, answers: {}, learn: {}, mocks: [], session: null, mock: null }; }
+function blankState() { return { v: 1, answers: {}, learn: {}, mocks: [], session: null, mock: null, report: null }; }
 function load() {
   try { const raw = localStorage.getItem(STORE_KEY); S = raw ? Object.assign(blankState(), JSON.parse(raw)) : blankState(); }
   catch (e) { S = blankState(); }
@@ -192,7 +192,8 @@ function viewHome() {
       h("a", { class: "btn primary", href: "#/practice" }, "Start practising"),
       h("a", { class: "btn", href: nextPart ? `#/learn/${nextPart.objective_id}` : "#/learn" }, "Continue learning"),
       h("a", { class: "btn", href: "#/mock" }, "Take mock exam"),
-      h("a", { class: "btn", href: "#/practice?mode=weak" }, "Review weak areas"))));
+      h("a", { class: "btn", href: "#/practice?mode=weak" }, "Review weak areas"),
+      h("a", { class: "btn", href: "#/focus" }, S.report ? "Score-report focus" : "Add your score report"))));
   if (st.n || S.session) els.push(h("div", { class: "card", style: "border-left:4px solid var(--d3)" },
     h("div", { class: "eyebrow" }, "Welcome back"),
     h("p", null, `You have seen ${st.seen} of ${DATA.questions.length} questions, with ${st.acc}% of answers correct. Learn parts completed: ${st.learnDone} of ${DATA.objectives.length}.`),
@@ -211,6 +212,7 @@ function viewHome() {
     inside(`${BLUEPRINT.items} items · ${BLUEPRINT.minutes} min`, "Mock exam", "A timed run weighted to the official blueprint, scored at the end with a breakdown by domain and objective.", "#/mock"),
     inside(`${DATA.episodes.length} episodes · ${DATA.objectives.length} parts`, "Learn", "One narrated episode per domain and one part per objective, with read-along and a 3-question check.", "#/learn"),
     inside(`${DATA.glossary.length} terms`, "Glossary", "Every key term in plain English, by topic or A–Z, searchable and filterable.", "#/glossary"),
+    inside(S.report ? `${focusList().weak.length} objectives to fix` : "From your score report", "Focus", "Objectives you didn't score 100% on, ranked, with what to study, targeted practice and a focus mock.", "#/focus"),
     inside("By domain and objective", "Progress", "Accuracy against the 75% target, a Repair-First list, and a progress file you can move to another computer.", "#/progress")));
   return els;
 }
@@ -310,7 +312,7 @@ function viewMock() {
     h("div", { class: "bar", style: `--dc:${DCOLOR[d.domain_id]}` }, h("i", { style: `width:${d.weight * 4}%` })), h("div", { class: "pct" }, `${d.weight}% · ${full[d.domain_id]}`)));
   els.push(wt);
   if (S.mocks.length) els.push(h("div", { class: "card" }, h("h3", null, "Previous mocks"), h("table", null, h("tr", null, h("th", null, "Date"), h("th", null, "Format"), h("th", null, "Score"), h("th", null, "Time"), h("th", null, "")),
-    S.mocks.map((m, i) => h("tr", null, h("td", null, new Date(m.date).toLocaleString()), h("td", null, `${m.items.length} items${m.coach ? " · coached" : ""}`), h("td", null, `${m.score}%`), h("td", null, fmtTime(m.timeUsed)), h("td", null, h("a", { href: `#/mock/result/${i}` }, "Review")))).reverse())));
+    S.mocks.map((m, i) => h("tr", null, h("td", null, new Date(m.date).toLocaleString()), h("td", null, `${m.items.length} items${m.scope === "focus" ? " · focus" : ""}${m.coach ? " · coached" : ""}`), h("td", null, `${m.score}%`), h("td", null, fmtTime(m.timeUsed)), h("td", null, h("a", { href: `#/mock/result/${i}` }, "Review")))).reverse())));
   return els;
 }
 function viewMockRun() {
@@ -329,7 +331,7 @@ function viewMockRun() {
     h("a", { class: "btn ghost", href: "#/mock" }, "Pause"),
     confirmBtn("Submit exam", submitMock, `Submit? ${m.ids.filter(id => !(m.picked[id] || []).length).length} unanswered.`));
   const grid = h("div", { class: "navgrid", "aria-label": "Question navigator" }, m.ids.map((id, i) => h("button", { class: [(m.picked[id] || []).length ? "ans" : "", i === m.i ? "cur" : "", m.flags[id] ? "flag" : ""].join(" "), title: `Question ${i + 1}`, onclick: () => { m.i = i; save(); route(); } }, i + 1)));
-  return [h("div", { class: "row", style: "justify-content:space-between;margin-bottom:10px" }, h("div", { class: "eyebrow" }, `Mock exam · ${m.coach ? "Coach mode" : "Exam mode"}`), h("div", null, m.timed ? "Time left " : "Elapsed ", timerEl)),
+  return [h("div", { class: "row", style: "justify-content:space-between;margin-bottom:10px" }, h("div", { class: "eyebrow" }, `${m.scope === "focus" ? "Focus mock" : "Mock exam"} · ${m.coach ? "Coach mode" : "Exam mode"}`), h("div", null, m.timed ? "Time left " : "Elapsed ", timerEl)),
     card, ctl, h("div", { class: "card", style: "margin-top:16px" }, h("div", { class: "small" }, `Answered ${Object.keys(m.picked).filter(k => m.picked[k].length).length}/${m.ids.length} · ★ flagged ${Object.values(m.flags).filter(Boolean).length}`), grid)];
 }
 function startTimer() {
@@ -359,7 +361,7 @@ function viewMockResult(i) {
   const c = m.items.filter(x => x.correct).length, overall = statusOf(m.score, m.items.length);
   const objStats = Object.fromEntries(DATA.objectives.map(o => { const x = byO[o.objective_id]; return [o.objective_id, x ? { acc: pct(x.c, x.n), n: x.n, status: statusOf(pct(x.c, x.n), x.n) } : { acc: 0, n: 0, status: "READY" }]; }));
   const rep = repairFirst(objStats, 6);
-  const els = [h("h1", null, "Mock exam result"), h("p", { class: "small" }, new Date(m.date).toLocaleString(), m.coach ? " · coached run" : " · exam conditions"),
+  const els = [h("h1", null, m.scope === "focus" ? "Focus mock result" : "Mock exam result"), h("p", { class: "small" }, new Date(m.date).toLocaleString(), m.coach ? " · coached run" : " · exam conditions"),
     h("div", { class: "stats" }, stat("Score", m.score + "%"), stat("Correct", `${c} / ${m.items.length}`), stat("Time used", fmtTime(m.timeUsed)), h("div", null, h("span", null, "Study status"), statusTag(overall))),
     h("p", { class: "notice" }, "Study targets: 75%+ Ready · 70–74% Review · under 70% Repair. These are preparation thresholds, not a conversion to the official scaled score (720/1000).")];
   const dc = h("div", { class: "card" }, h("h2", { style: "margin-top:0" }, "Performance by domain"));
@@ -376,7 +378,7 @@ function viewMockResult(i) {
   for (const it of wrong) { const q = DATA.maps.q[it.qid];
     wl.append(h("details", { class: "term" }, h("summary", null, h("span", null, `${q.question_id} · Obj ${q.objective_id}: ${q.question}`), h("span", { class: "small" }, it.picked.length ? `you: ${it.picked.join(",")}` : "unanswered")),
       renderQuestion(q, { picked: new Set(it.picked), locked: true, reveal: true }))); }
-  els.push(wl, h("div", { class: "row" }, h("a", { class: "btn primary", href: "#/mock" }, "Back to mock exams"), h("a", { class: "btn", href: "#/progress" }, "Progress")));
+  els.push(wl, h("div", { class: "row" }, m.scope === "focus" ? h("a", { class: "btn primary", href: "#/focus" }, "Back to Focus") : null, h("a", { class: "btn" + (m.scope === "focus" ? "" : " primary"), href: "#/mock" }, "Back to mock exams"), h("a", { class: "btn", href: "#/progress" }, "Progress")));
   return els;
 }
 function confirmBtn(label, fn, prompt) {
@@ -465,6 +467,130 @@ function player(paras, narr) {
   window.addEventListener("hashchange", () => synth.cancel(), { once: true });
   return h("div", { class: "player" }, playBtn, h("button", { class: "btn small ghost", onclick: stop }, "■ Stop"), h("span", { class: "small" }, "Speed"), rate, h("span", { class: "small" }, "Voice"), voiceSel,
     h("span", { class: "small" }, "Click any paragraph to read from there. Narration uses your browser's speech engine; quality depends on your device."));
+}
+
+/* ---------------- Focus: score-report remediation ----------------
+   The official score report stays in this browser only (S.report); nothing personal is in the repo. */
+const FSET = { n: 30, unreported: false, timed: true, coach: false };
+const bandOf = p => p <= 33 ? "CRITICAL" : p <= 66 ? "HIGH" : "MEDIUM";
+function focusList() {
+  const r = S.report; if (!r) return { weak: [], unreported: [], perfect: [] };
+  const weak = [], unreported = [], perfect = [];
+  for (const o of DATA.objectives) {
+    const p = r.objectives[o.objective_id];
+    if (p === undefined || p === null || p === "") unreported.push(o);
+    else if (+p >= 100) perfect.push(o);
+    else weak.push({ o, pct: +p, band: bandOf(+p), score: ((100 - +p) / 100) * (dom(o.domain_id).weight / 10) * (PREREQ.has(o.objective_id) ? 1.3 : 1) });
+  }
+  weak.sort((a, b) => b.score - a.score || a.pct - b.pct);
+  return { weak, unreported, perfect };
+}
+function drawFocus(n, items) {
+  // allocate items in proportion to each objective's priority, at least one each
+  const tot = items.reduce((a, x) => a + x.score, 0), used = new Set(S.mocks.flatMap(m => m.items.map(i => i.qid)));
+  const alloc = items.map(x => Math.max(1, Math.round((n * x.score) / tot)));
+  while (alloc.reduce((a, b) => a + b, 0) > n) { const i = alloc.indexOf(Math.max(...alloc)); alloc[i]--; }
+  let left = n - alloc.reduce((a, b) => a + b, 0);
+  for (let i = 0; left > 0; i = (i + 1) % items.length) { alloc[i]++; left--; }
+  const out = [];
+  items.forEach((x, i) => {
+    const p = DATA.questions.filter(q => q.objective_id === x.o.objective_id && !out.includes(q.question_id));
+    const rank = q => (used.has(q.question_id) ? 2 : 0) + ((S.answers[q.question_id] || []).length ? 1 : 0) - (q.set === "focus" ? 0.5 : 0);
+    const order = shuffle(p).sort((a, b) => rank(a) - rank(b));
+    out.push(...order.slice(0, alloc[i]).map(q => q.question_id));
+  });
+  return shuffle(out);
+}
+function mdLines(text) {
+  return (text || "").split("\n").map(l => l.replace(/^\s*[-*]\s*/, "").trim()).filter(Boolean)
+    .map(l => h("li", null, l.replace(/\*\*|`/g, "").replace(/^COMMON TRAP:\s*/i, "").replace(/\[(?:MODULE|EXAM GUIDE|INFERENCE|OFFICIAL)[^\]]*\]/g, "").trim()));
+}
+function reportEditor(onDone) {
+  const r = S.report || { exam: "CCAR-P", date: "", score: "", passing: 720, objectives: {} };
+  const inputs = {};
+  const tbl = h("table", null, h("tr", null, h("th", null, "Objective"), h("th", null, "% correct (blank = not on report)")),
+    DATA.objectives.map(o => { const inp = h("input", { type: "number", min: 0, max: 100, value: r.objectives[o.objective_id] ?? "", style: "width:90px" }); inputs[o.objective_id] = inp;
+      return h("tr", null, h("td", null, `${o.objective_id} ${o.official_wording}`), h("td", null, inp)); }));
+  const score = h("input", { type: "number", value: r.score, style: "width:90px" }), date = h("input", { type: "date", value: r.date });
+  return h("div", { class: "card" }, h("h3", { style: "margin-top:0" }, "Enter your score report"),
+    h("div", { class: "row" }, h("label", null, "Exam date ", date), h("label", null, "Scaled score ", score)), tbl,
+    h("div", { class: "row", style: "margin-top:12px" }, h("button", { class: "btn primary", onclick: () => {
+      const objs = {}; for (const [k, inp] of Object.entries(inputs)) if (inp.value !== "") objs[k] = Math.max(0, Math.min(100, +inp.value));
+      S.report = { exam: "CCAR-P", date: date.value, score: score.value === "" ? null : +score.value, passing: 720, objectives: objs, saved: Date.now() }; save(); onDone();
+    } }, "Save report"), h("button", { class: "btn ghost", onclick: onDone }, "Cancel")));
+}
+function importReportBtn(msg) {
+  const file = h("input", { type: "file", accept: ".json,application/json", style: "display:none", onchange: e => {
+    const f = e.target.files[0]; if (!f) return; const rd = new FileReader();
+    rd.onload = () => { try { const d = JSON.parse(rd.result); if (d.type !== "ccarp-score-report" || typeof d.objectives !== "object") throw new Error("not a score-report file");
+      S.report = { exam: "CCAR-P", date: d.date || "", score: d.score ?? null, passing: d.passing || 720, objectives: d.objectives, saved: Date.now() }; save(); route(); }
+      catch (err) { msg.textContent = "Couldn't import: " + err.message; } };
+    rd.readAsText(f); } });
+  return [file, h("button", { class: "btn primary", onclick: () => file.click() }, "Import score-report file")];
+}
+let FOCUS_EDIT = false;
+function viewFocus() {
+  const els = [h("h1", null, "Focus: your score report"),
+    h("p", { class: "lede" }, "Turn your official score report into a remediation plan: every objective you didn't answer 100% correctly, ranked by how much it costs you, with what to study, targeted practice and a focus mock built from those objectives.")];
+  const msg = h("p", { class: "small" });
+  if (!S.report || FOCUS_EDIT) {
+    if (!S.report) els.push(h("div", { class: "card" }, h("p", null, "Your score report is kept in this browser only. It is never uploaded or added to the repository. Import the score-report file, or type the percentages from your report."),
+      h("div", { class: "row" }, ...importReportBtn(msg), h("button", { class: "btn", onclick: () => { FOCUS_EDIT = true; route(); } }, "Enter scores manually")), msg));
+    if (FOCUS_EDIT) els.push(reportEditor(() => { FOCUS_EDIT = false; route(); }));
+    return els;
+  }
+  const r = S.report, { weak, unreported, perfect } = focusList(), st = computeStats();
+  const zero = weak.filter(x => x.pct === 0).length;
+  els.push(h("div", { class: "stats" }, stat(`Scaled score (${r.passing} to pass)`, r.score != null ? r.score : "–"), stat("Below 100%", weak.length), stat("At 0%", zero), stat("At 100%", perfect.length), stat("Not on report", unreported.length)),
+    h("p", { class: "notice" }, "Report percentages come from a handful of items per objective, so treat them as signals, not precise measures. Priority = gap below 100% × domain weight × prerequisite importance. Bands: CRITICAL ≤ 33% · HIGH 34–66% · MEDIUM 67–99%. Trainer accuracy uses the same 75% study target as the rest of the app; it isn't a prediction of your scaled score."),
+    h("div", { class: "row" }, h("button", { class: "btn ghost", onclick: () => { FOCUS_EDIT = true; route(); } }, "Edit report"), confirmBtn("Remove report", () => { S.report = null; save(); route(); }, "Remove the score report from this browser?")));
+
+  // Focus mock
+  const pool = FSET.unreported ? [...weak, ...unreported.map(o => ({ o, pct: null, band: "UNREPORTED", score: 0.15 * (dom(o.domain_id).weight / 10) }))] : weak;
+  const avail = new Set(DATA.questions.filter(q => pool.some(x => x.o.objective_id === q.objective_id)).map(q => q.question_id)).size;
+  const sizeSel = h("select", { onchange: e => FSET.n = +e.target.value }, [20, 30, 45].map(v => h("option", { value: v, selected: FSET.n === v ? true : null }, `${v} items · ${Math.ceil((v * BLUEPRINT.minutes) / BLUEPRINT.items)} min`)));
+  els.push(h("div", { class: "card", style: "border-left:4px solid var(--accent)" }, h("h2", { style: "margin-top:0" }, "Focus mock"),
+    h("p", null, `Draws only from your weak objectives (${avail} questions available, including the extra focus set), with more items for the objectives that cost you most. Unseen questions come first. Same exam-style pacing as the full mock.`),
+    h("div", { class: "grid g3" }, h("div", null, h("label", { class: "f" }, "Length"), sizeSel),
+      h("label", { class: "row" }, h("input", { type: "checkbox", checked: FSET.timed ? true : null, onchange: e => FSET.timed = e.target.checked }), "Timed"),
+      h("label", { class: "row" }, h("input", { type: "checkbox", checked: FSET.coach ? true : null, onchange: e => FSET.coach = e.target.checked }), "Coach me as I go")),
+    h("label", { class: "row small" }, h("input", { type: "checkbox", checked: FSET.unreported ? true : null, onchange: e => { FSET.unreported = e.target.checked; route(); } }), `Also include the ${unreported.length} objectives missing from the report`),
+    h("button", { class: "btn primary", disabled: pool.length ? null : true, onclick: () => {
+      const n = Math.min(FSET.n, avail), ids = drawFocus(n, pool), minutes = Math.ceil((ids.length * BLUEPRINT.minutes) / BLUEPRINT.items);
+      S.mock = { ids, picked: {}, flags: {}, revealed: {}, i: 0, timed: FSET.timed, coach: FSET.coach, scope: "focus", remaining: minutes * 60, limit: minutes * 60, elapsed: 0, started: Date.now() };
+      save(); location.hash = "#/mock/run";
+    } }, S.mock ? "Start focus mock (replaces the mock in progress)" : "Start focus mock")));
+  const fm = S.mocks.map((m, i) => [m, i]).filter(([m]) => m.scope === "focus");
+  if (fm.length) els.push(h("div", { class: "card" }, h("h3", { style: "margin-top:0" }, "Focus mock history"), h("table", null, h("tr", null, h("th", null, "Date"), h("th", null, "Items"), h("th", null, "Score"), h("th", null, "")),
+    fm.map(([m, i]) => h("tr", null, h("td", null, new Date(m.date).toLocaleString()), h("td", null, m.items.length), h("td", null, `${m.score}%`), h("td", null, h("a", { href: `#/mock/result/${i}` }, "Review")))).reverse())));
+
+  // Plan
+  const days = []; for (let i = 0; i < weak.length; i += 3) days.push(weak.slice(i, i + 3));
+  els.push(h("div", { class: "card" }, h("h2", { style: "margin-top:0" }, `Focus plan · ${days.length} study days + a focus mock`),
+    h("p", { class: "small" }, "Each day: LEARN the part → REVIEW must-remember and traps below → PRACTISE that objective → ANALYZE misses → RETEST next day. Finish with a 45-item focus mock in exam mode, then a full mock."),
+    h("ol", null, days.map((d, i) => h("li", null, h("b", null, `Day ${i + 1}: `), d.map(x => `${x.o.objective_id} (${x.pct}%)`).join(" · ")))),
+    h("p", { class: "small" }, `Then: Day ${days.length + 1} focus mock · Day ${days.length + 2} full mock in exam mode and Repair First.`)));
+
+  // Objective cards
+  const card = (x, i) => {
+    const o = x.o, s = st.byO[o.objective_id], sec = o.sections || {};
+    return h("div", { class: "card", style: `border-left:4px solid ${DCOLOR[o.domain_id]}` },
+      h("div", { class: "row", style: "justify-content:space-between" },
+        h("div", null, h("div", { class: "eyebrow" }, `#${i + 1} · Domain ${o.domain_id.slice(1)} · ${dom(o.domain_id).weight}%`), h("h3", { style: "margin:4px 0" }, `${o.objective_id} ${o.official_wording}`)),
+        h("div", { style: "text-align:right" }, h("span", { class: "status " + (x.band === "CRITICAL" ? "REPAIR" : x.band === "HIGH" ? "REPAIR" : x.band === "MEDIUM" ? "REVIEW" : "NOT") }, x.band), h("div", { class: "small" }, x.pct == null ? "not on report" : `report: ${x.pct}%`))),
+      h("p", { class: "small" }, `Trainer since then: ${s.n ? `${s.acc}% on ${s.n} answers · ` : "not practised yet · "}`, statusTag(s.status), ` · ${DATA.questions.filter(q => q.objective_id === o.objective_id).length} questions available`),
+      h("div", { class: "row" }, h("a", { class: "btn small primary", href: `#/learn/${o.objective_id}` }, "Learn part"), h("a", { class: "btn small", href: `#/practice?obj=${o.objective_id}&start=1` }, "Practise this objective"),
+        h("a", { class: "btn small ghost", href: guideUrl(o.objective_id), target: "_blank", rel: "noopener" }, "Guide ↗")),
+      h("details", null, h("summary", { class: "small" }, "What to focus on: must-remember, exam signals and traps"),
+        h("div", { class: "grid g3" }, h("div", null, h("b", null, "Must remember"), h("ul", null, mdLines(sec["Must remember"]))),
+          h("div", null, h("b", null, "Exam decision signals"), h("ul", null, mdLines(sec["Exam decision signals"]))),
+          h("div", null, h("b", null, "Common traps"), h("ul", null, mdLines(sec["Common traps"]))))));
+  };
+  els.push(h("h2", null, `Objectives below 100% (${weak.length})`), ...weak.map(card));
+  if (unreported.length) els.push(h("h2", null, `Not on your report (${unreported.length})`),
+    h("p", { class: "small" }, "The report doesn't list these objectives, so their result is unknown. Check them with a few practice questions before deciding they're safe."), ...unreported.map((o, i) => card({ o, pct: null, band: "UNREPORTED" }, weak.length + i)));
+  if (perfect.length) els.push(h("details", { class: "card" }, h("summary", null, `Objectives at 100% on the report (${perfect.length}): keep them warm`), h("ul", null, perfect.map(o => h("li", null, `${o.objective_id} ${o.official_wording}`)))));
+  return els;
 }
 
 /* ---- Glossary ---- */
@@ -560,6 +686,7 @@ function route() {
     if (top === "practice") view = parts[1] === "run" ? viewPracticeRun() : viewPractice(params);
     else if (top === "mock") view = parts[1] === "run" ? viewMockRun() : parts[1] === "result" ? viewMockResult(+parts[2]) : viewMock();
     else if (top === "learn") view = parts[1] ? viewLearnPart(parts[1]) : viewLearn();
+    else if (top === "focus") view = viewFocus();
     else if (top === "glossary") view = viewGlossary();
     else if (top === "progress") view = viewProgress(params);
     else view = viewHome();

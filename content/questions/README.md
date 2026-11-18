@@ -14,6 +14,8 @@
 | D7 Developer Productivity & Ops | 7% | 10 | 6.7% |
 | **Total** | | **150** | 14 multiple-response |
 
+**Focus set (remediation):** `focus-d1.md` … `focus-d7.md` add 66 original items (D1 2 · D2 9 · D3 14 · D4 11 · D5 9 · D6 14 · D7 7) on the objectives most often missed. They're tagged `set: focus`, sit outside the blueprint count, and are used by Practice and the Focus tab's focus mock. Same format, same per-option explanations, same answer-letter and length-bias guards.
+
 All 38 objectives have 2–5 items each. Difficulty mix: 35 Easy · 74 Medium · 41 Hard.
 
 ## Item format
