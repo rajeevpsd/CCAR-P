@@ -111,7 +111,11 @@ th{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mut
 .done{color:var(--ok);font-weight:700}
 .player{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:8px 12px}
 .narr p{padding:6px 10px;border-radius:8px;margin:6px 0;transition:background .2s}
-.narr p.speaking{background:#fff0dc}
+.narr p.speaking,.narr h3.speaking{background:#fff0dc}
+.narr p{cursor:pointer}
+.narr h3{margin:22px 0 4px;padding:4px 10px;border-radius:8px;font-size:1.05rem}
+.toc{margin-top:12px;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline}
+.toc a{font-size:.85rem}
 .term{border-top:1px solid var(--line);padding:12px 0}
 .term summary{cursor:pointer;font-weight:650;list-style:none;display:flex;justify-content:space-between;gap:10px}
 .term summary::-webkit-details-marker{display:none}
