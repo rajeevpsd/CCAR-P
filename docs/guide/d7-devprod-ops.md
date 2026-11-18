@@ -43,11 +43,11 @@ modules: [M5, M1]
   - **default**: asks before each action;
   - **acceptEdits**: approves file edits and common filesystem commands;
   - **plan**: read-only until a plan is approved;
-  - **auto**: a separate classifier model reviews each action before it runs (fewer prompts, but no safety guarantee);
+  - **auto**: a classifier decides; research preview;
   - **dontAsk**: auto-denies anything not allow-listed; for locked-down CI;
   - **bypassPermissions**: skips all checks; containers or CI only.
 
-  `[OFFICIAL ANTHROPIC DOCS – verified 2026-11-19]` (V9): six modes confirmed. The current page does **not** call auto mode a research preview; in recent versions it is the built-in starting mode for interactive sessions. The module's "research preview" label is outdated. `bypassPermissions` is for isolated containers or VMs only.
+  (Verify current behaviour.)
 
 #### Why it matters
 In one case a release-notes Skill shipped as a flat bundle with no versioning. A bad edit spread to 40 engineers and needed a manual fix while bad output kept shipping. `[MODULE 5]`

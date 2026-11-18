@@ -249,11 +249,6 @@ Checkpoints, calculators (SCORM links) and click-to-reveal answers didn't extrac
 | X7 | Guide pillar "cost" vs. M2 "solution cost" | EG, M2 | Use the guide's wording |
 | X8 | Building Effective Agents carries a notice that its tooling landscape has changed | Official docs | Use only for the stable pattern taxonomy |
 
-**Verification (2026-11-19):** X2–X6 were checked against current official docs. See [`verification-log.md`](verification-log.md) V1–V9.
-- **Outdated in the modules:** the "Sonnet default" (current docs recommend Opus 5.5; lineup is Fable 5.2 / Opus 5.5 / Sonnet 5.5 / Haiku 5.5), and "auto mode is a research preview".
-- **Confirmed:** caching and Batch terms (plus a 1-hour TTL), `inference_geo` values, FedRAMP routes, the six permission modes, and tool-search rules.
-- **Still open:** `stop_details` categories other than `cyber`; Foundry EU residency.
-
 No conflict was found between the modules and the Exam Guide on **scope**.
 
 ---

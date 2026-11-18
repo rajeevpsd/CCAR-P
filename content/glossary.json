@@ -558,7 +558,7 @@
    ],
    "definition": "The Claude model family, trading capability against cost and latency.",
    "architect_significance": "Not choosing a tier means defaulting to the most expensive one.",
-   "exam_relevance": "Start from a baseline tier (Sonnet per M1; Opus 5.5 per current docs) and move only on eval evidence, per step and per category.",
+   "exam_relevance": "Sonnet by default; move only on eval evidence, per step and per category.",
    "common_confusion": "Judging a downgrade on its average score.",
    "related": [
     "Eval gate",
@@ -590,14 +590,14 @@
     "3.3",
     "4.5"
    ],
-   "definition": "A separate reasoning pass in thinking tokens (billed as output) before the answer. On current models, adaptive thinking with output_config.effort replaces budget_tokens; Claude 4.7 and later reject manual budget_tokens with a 400.",
+   "definition": "A separate reasoning pass in thinking tokens (billed as output) before the answer. Adaptive thinking with an effort level is the recommended control on current models.",
    "architect_significance": "A cost and latency trade-off.",
    "exam_relevance": "Enable it only for a measured accuracy gap, after prompt work.",
    "common_confusion": "\"It can't hurt\"; enabling it on classifiers.",
    "related": [
     "Effort parameter"
    ],
-   "source": "M1; Official docs, extended thinking (verified 2026-11-19)"
+   "source": "M1 (verify version specifics)"
   },
   {
    "term": "Model version pinning",
@@ -733,10 +733,10 @@
     "2.5",
     "4.5"
    ],
-   "definition": "The boundary between the cacheable prefix and dynamic content, and how long the cache entry lives: 5-minute default (write 1.25×), or 1-hour (write 2×); reads 0.1× of base input.",
+   "definition": "The boundary between the cacheable prefix and dynamic content, and how long the cache entry lives (5-minute default per M2).",
    "architect_significance": "Prefix order and call frequency decide whether caching pays off.",
    "exam_relevance": "\"A cache that never hits\" means dynamic content came first.",
-   "common_confusion": "Assuming a longer TTL fixes a changing prefix (the 1-hour TTL doubles the write cost and still misses a changing prefix).",
+   "common_confusion": "Assuming a longer TTL fixes a changing prefix.",
    "related": [
     "Prompt caching"
    ],
@@ -1289,7 +1289,7 @@
    "objectives": [
     "4.5"
    ],
-   "definition": "Asynchronous bulk processing at a discount (50% of standard prices; up to 100,000 requests or 256 MB per batch; results within 24 hours).",
+   "definition": "Asynchronous bulk processing at a discount (M2 illustrates 50% and up to 100k requests per batch; verify current terms).",
    "architect_significance": "Cuts cost when the SLA allows waiting.",
    "exam_relevance": "Confirm compliance coverage before routing regulated data through it.",
    "common_confusion": "Using it for interactive paths.",
@@ -1428,9 +1428,9 @@
    "objectives": [
     "5.1"
    ],
-   "definition": "The API's stop_reason \"refusal\" when streaming classifiers intervene, with stop_details always present on a refusal; category and explanation can be null.",
+   "definition": "The API's stop_reason \"refusal\" when streaming classifiers intervene, with stop_details (category and explanation) on supported models.",
    "architect_significance": "Lets the app route refusals by class.",
-   "exam_relevance": "Branch on stop_reason, not on a populated category; reset the refused turn before continuing.",
+   "exam_relevance": "Tolerate a missing stop_details; reset the refused turn before continuing.",
    "common_confusion": "Hard-coding category lists (verify current docs).",
    "related": [
     "Guardrails"
@@ -1523,7 +1523,7 @@
    ],
    "definition": "Processing and storing data, including logs and caches, within an approved region, configured at the integration layer.",
    "architect_significance": "Rules out routes that can't pin the region.",
-   "exam_relevance": "An EU pin needs a region-pinned CSP route; direct-API inference_geo offers only \"us\" or \"global\" (verified 2026-11-19).",
+   "exam_relevance": "An EU pin needs a region-pinned CSP route (per the modules; verify).",
    "common_confusion": "Forgetting log and cache copies.",
    "related": [
     "CSP delivery route"
@@ -1925,7 +1925,7 @@
    "objectives": [
     "7.1"
    ],
-   "definition": "default, acceptEdits, plan, auto (a classifier reviews each action), dontAsk (locked-down CI), bypassPermissions (containers or CI only).",
+   "definition": "default, acceptEdits, plan, auto (research preview), dontAsk (locked-down CI), bypassPermissions (containers or CI only).",
    "architect_significance": "Governs what the agent may do without prompting.",
    "exam_relevance": "Use bypassPermissions only in isolated environments.",
    "common_confusion": "Behaviour changes over time; verify current docs.",

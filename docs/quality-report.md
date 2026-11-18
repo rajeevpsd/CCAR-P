@@ -29,7 +29,7 @@ Unresolved issues:         4  (see below)
 | ☑ | Mock-exam distribution reflects official weighting | D1 11 / D2 8 / D3 12 / D4 10 / D5 9 / D6 9 / D7 4 = 63 |
 | ☑ | Every practice question explains every option | 150 questions |
 | ☑ | Every question maps to a domain and objective |  |
-| ☑ | Unsupported or derived claims are clearly marked | 50 [INFERENCE] labels · 10 source-gap flags |
+| ☑ | Unsupported or derived claims are clearly marked | 50 [INFERENCE] labels · 9 source-gap flags |
 | ☑ | Study thresholds not presented as the official passing-score conversion | Stated in guide, study plan and trainer copy |
 | ☑ | No generated question is described as an actual Anthropic exam question | Disclaimer in the bank and its README |
 | ☑ | Terminology consistent across Learn, Practice, Mock, Glossary, Progress | All components share objective IDs and wording from content/objectives.json |
@@ -37,6 +37,6 @@ Unresolved issues:         4  (see below)
 ## Unresolved issues
 
 1. **Objective 3.7, agent-to-agent:** there's no official Anthropic source; questions test only the inferred decision principle.
-2. **Time-sensitive product facts** (see `00-source-analysis.md` §6) were verified against current docs on 2026-11-19 (`verification-log.md`: 4 confirmed, 1 confirmed with additions, 2 partial, 2 outdated and corrected). Residual gaps: `stop_details` categories beyond `cyber`, and Foundry EU residency. Re-check before exam day.
+2. **Time-sensitive product facts** (see `00-source-analysis.md` §6) must be re-verified against current docs before exam day; questions avoid depending on exact figures.
 3. **Question pool size:** 150 items is about 2.4 non-overlapping 63-item mocks; repeat mocks will reuse items (expansion deferred by decision).
 4. **Audio:** Learn narration is text written for read-aloud; whether to produce audio files is deferred until the trainer is reviewed.

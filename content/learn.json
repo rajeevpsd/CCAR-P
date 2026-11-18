@@ -326,8 +326,7 @@
      "minutes": 6,
      "key_concepts": [
       "Opus, Sonnet, Haiku",
-      "baseline tier (module: Sonnet",
-      "current docs: Opus 5.5)",
+      "Sonnet default",
       "eval-gated swaps",
       "pre-set rollback criteria",
       "per-step tiering",
@@ -335,19 +334,19 @@
       "version pinning"
      ],
      "architecture_example": "A Sonnet to Haiku migration averaged 0.86, but two document types fell below the pre-set 0.85 floor. Those two stayed on Sonnet and the rest moved to Haiku.",
-     "exam_takeaway": "Start from a baseline tier. Every move up or down is a release, gated by an eval with a threshold you set in advance.",
-     "narration": "The Claude family has three tiers. Opus is the most capable, Sonnet balances capability, speed and cost, and Haiku is the fastest and cheapest.\n\nThe training module names Sonnet as the default starting point. Current Anthropic docs recommend Opus 5.5 for most workloads instead, so treat the default as a moving target. What doesn't change is the rule: move up only when an eval shows the current tier misses your quality bar. Move down to Haiku only when an eval confirms the quality trade-off is acceptable.\n\nTreat every model change as a release. You need a representative test set, a grading function, and a pass threshold, and you set that threshold before you run anything. Look at scores per category, not just the average. A downgrade can look fine on average while failing badly on two document types. That's when a partial migration makes sense.\n\nNot every step needs the same model. Classification might run on Haiku, summarisation on Sonnet, and only the final answer on Opus.\n\nExtended thinking is a cost and latency trade-off. Thinking tokens are billed as output, so turn it on only when an eval shows an accuracy gap that prompt work couldn't close. On current models, thinking is adaptive, and the control you tune is the effort level rather than a token budget.\n\nAnd pin your model versions, so a silent roll-forward never surprises an auditor.",
+     "exam_takeaway": "Start with Sonnet. Every move up or down is a release, gated by an eval with a threshold you set in advance.",
+     "narration": "The Claude family has three tiers. Opus is the most capable, Sonnet balances capability, speed and cost, and Haiku is the fastest and cheapest.\n\nThe default starting point is Sonnet. Move up to Opus only when an eval shows Sonnet misses your quality bar. Move down to Haiku only when an eval confirms the quality trade-off is acceptable.\n\nTreat every model change as a release. You need a representative test set, a grading function, and a pass threshold, and you set that threshold before you run anything. Look at scores per category, not just the average. A downgrade can look fine on average while failing badly on two document types. That's when a partial migration makes sense.\n\nNot every step needs the same model. Classification might run on Haiku, summarisation on Sonnet, and only the final answer on Opus.\n\nExtended thinking is a cost and latency trade-off. Thinking tokens are billed as output, so turn it on only when an eval shows an accuracy gap that prompt work couldn't close.\n\nAnd pin your model versions, so a silent roll-forward never surprises an auditor.",
      "knowledge_check": [
       {
-       "question": "What justifies moving a step to a different model tier?",
+       "question": "Which tier is the recommended default for a new build?",
        "options": {
-        "A": "An eval against a pre-set bar",
-        "B": "The newest model release available",
-        "C": "Budget pressure on its own",
+        "A": "Sonnet",
+        "B": "Opus",
+        "C": "Haiku",
         "D": "Whatever the last project used"
        },
        "answer": "A",
-       "why": "Every tier move is a release, gated by an eval with a threshold set in advance."
+       "why": "Start with Sonnet and move only on eval evidence."
       },
       {
        "question": "When should the rollback threshold be set?",

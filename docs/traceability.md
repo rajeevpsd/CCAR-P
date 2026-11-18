@@ -49,4 +49,4 @@
 | Objective | Gap | Recommended official documentation |
 |---|---|---|
 | 3.7 | Agent-to-agent protocols: the modules cover only orchestrator→subagent; no official Anthropic guidance was found. Treated as an inferred decision principle, using the external Google A2A announcement as context. | Anthropic docs on the Agent SDK, subagents and MCP; watch for any Anthropic statement on agent interoperability |
-| (all) | Time-sensitive product facts (model names, thinking controls, cache and Batch pricing, `inference_geo`, Foundry residency, FedRAMP routes, permission modes, `stop_details` categories) | platform.claude.com docs (models, pricing, prompt caching, batch, data residency), Claude Code docs, Trust Center. Verified 2026-11-19: see `verification-log.md` (open: refusal categories beyond `cyber`, Foundry EU residency) |
+| (all) | Time-sensitive product facts (model names, thinking controls, cache and Batch pricing, `inference_geo`, Foundry residency, FedRAMP routes, permission modes, `stop_details` categories) | platform.claude.com docs (models, pricing, prompt caching, batch, data residency), Claude Code docs, Trust Center. See `00-source-analysis.md` §6 |
