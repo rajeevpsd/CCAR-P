@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Parse content/questions/d*.md into content/questions.json and validate.
 
+Core bank: d1..d7.md (blueprint-weighted). Focus bank: focus-d1..d7.md
+(extra remediation items, set="focus", excluded from the blueprint count).
+
 Checks: required fields, option explanations for every option, valid answers,
 select count matches answer count, objective belongs to domain and exists,
 every objective covered, weighted distribution, answer-letter balance.
@@ -42,8 +45,10 @@ def parse(path):
 def main():
     objs = {o["objective_id"]: o for o in OBJ["objectives"]}
     errors, questions = [], []
-    for path in sorted(QDIR.glob("d[1-7].md")):
-        did = "D" + path.stem[1]
+    paths = sorted(QDIR.glob("d[1-7].md")) + sorted(QDIR.glob("focus-d[1-7].md"))
+    for path in paths:
+        did = "D" + path.stem[-1]
+        qset = "focus" if path.stem.startswith("focus") else "core"
         for q in parse(path):
             qid = q["question_id"]
             for f in REQ:
@@ -71,7 +76,7 @@ def main():
             if q.get("difficulty") not in ("Easy", "Medium", "Hard"):
                 errors.append(f"{qid}: bad difficulty")
             questions.append({
-                "question_id": qid, "domain_id": did, "objective_id": oid,
+                "question_id": qid, "domain_id": did, "objective_id": oid, "set": qset,
                 "difficulty": q.get("difficulty"), "select": n,
                 "scenario": q.get("scenario"), "question": q.get("question"),
                 "answer_options": q["options"], "correct_answer": ans,
@@ -86,13 +91,16 @@ def main():
     for oid in objs:
         if oid not in covered:
             errors.append(f"objective {oid} has no questions")
-    by_dom = collections.Counter(q["domain_id"] for q in questions)
+    by_dom = collections.Counter(q["domain_id"] for q in questions if q["set"] == "core")
     singles = collections.Counter(q["correct_answer"][0] for q in questions if q["select"] == 1)
     diff = collections.Counter(q["difficulty"] for q in questions)
     OUT.write_text(json.dumps({"disclaimer": "Original practice items. Not actual Anthropic exam questions.",
                                "questions": questions}, indent=1, ensure_ascii=False), encoding="utf-8")
-    total = len(questions)
-    print(f"questions={total} multi={sum(q['select'] > 1 for q in questions)}")
+    total = sum(by_dom.values())
+    print(f"questions={len(questions)} core={total} focus={len(questions) - total} multi={sum(q['select'] > 1 for q in questions)}")
+    for d in sorted(TARGET):
+        if by_dom[d] != TARGET[d]:
+            errors.append(f"core bank {d}: {by_dom[d]} items, blueprint target {TARGET[d]}")
     for d in sorted(TARGET):
         share = 100 * by_dom[d] / total if total else 0
         print(f"  {d}: {by_dom[d]:>3} (target {TARGET[d]}) {share:4.1f}%")
@@ -105,6 +113,10 @@ def main():
     sq = [q for q in questions if q["select"] == 1]
     ranks = collections.Counter(rank(q) for q in sq)
     print("correct-option length rank (1=longest):", dict(sorted(ranks.items())))
+    fr = collections.Counter(rank(q) for q in sq if q["set"] == "focus")
+    print("  focus set only:", dict(sorted(fr.items())))
+    fl = collections.Counter(q["correct_answer"][0] for q in sq if q["set"] == "focus")
+    print("  focus answer letters:", dict(sorted(fl.items())))
     for r, c in ranks.items():
         if sq and c / len(sq) > 0.35:
             errors.append(f"length bias: correct option has length rank {r} in {c}/{len(sq)} items")

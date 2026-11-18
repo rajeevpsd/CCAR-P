@@ -10,7 +10,7 @@ Exam objectives covered:   38
 Fully covered:             37  (of which 4 supplemented from official docs)
 Partially covered:         1  (3.7)
 Source gaps:               1  (agent-to-agent protocols; plus time-sensitive facts flagged for verification)
-Practice questions:        150  (14 multiple-response)
+Practice questions:        216  (150 blueprint-weighted core + 66 focus remediation; 14 multiple-response)
 Glossary terms:            124
 Learn parts / checks:      38 / 114
 Unresolved issues:         4  (see below)
@@ -27,7 +27,7 @@ Unresolved issues:         4  (see below)
 | ☑ | No CCAR-F objective treated as CCAR-P content | All 38 objectives match the CCAR-P guide wording exactly |
 | ☑ | Practice distribution reflects official weighting | max deviation 0.3 pts |
 | ☑ | Mock-exam distribution reflects official weighting | D1 11 / D2 8 / D3 12 / D4 10 / D5 9 / D6 9 / D7 4 = 63 |
-| ☑ | Every practice question explains every option | 150 questions |
+| ☑ | Every practice question explains every option | 216 questions |
 | ☑ | Every question maps to a domain and objective |  |
 | ☑ | Unsupported or derived claims are clearly marked | 50 [INFERENCE] labels · 9 source-gap flags |
 | ☑ | Study thresholds not presented as the official passing-score conversion | Stated in guide, study plan and trainer copy |
