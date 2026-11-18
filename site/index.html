@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CCAR-P Exam Trainer (preview)</title>
+<style>
+  body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;margin:0;background:#f6f4f1;color:#1d1d1f}
+  main{max-width:880px;margin:0 auto;padding:48px 24px}
+  h1{font-size:2rem;margin:0 0 4px}
+  .sub{letter-spacing:.12em;text-transform:uppercase;font-size:.8rem;color:#666}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#ddd;border:1px solid #ddd;border-radius:12px;overflow:hidden;margin:28px 0}
+  .stats div{background:#fff;padding:16px}
+  .stats b{display:block;font-size:1.5rem}
+  .stats span{font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:#666}
+  table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden}
+  td,th{padding:10px 14px;border-bottom:1px solid #eee;text-align:left;font-size:.95rem}
+  .note{font-size:.85rem;color:#555;margin-top:20px}
+</style>
+</head>
+<body>
+<main>
+  <div class="sub">Claude Certified Architect · Professional</div>
+  <h1>CCAR-P Exam Trainer</h1>
+  <p>Preview build. The interactive trainer (Practice, Mock Exam, Learn, Glossary, Progress) is under construction.</p>
+  <div class="stats">
+    <div><span>Items</span><b>63</b></div>
+    <div><span>Time</span><b>120 min</b></div>
+    <div><span>Pass mark</span><b>720 / 1000</b></div>
+    <div><span>Domains</span><b>7</b></div>
+  </div>
+  <table id="domains"><tr><th>Domain</th><th>Weight</th><th>Objectives</th></tr></table>
+  <p class="note">Independent study material, not affiliated with Anthropic. Contains no real exam questions. Readiness thresholds are study targets, not the official scaled-score conversion.</p>
+</main>
+<script>
+fetch("content/objectives.json").then(r => r.json()).then(d => {
+  const t = document.getElementById("domains");
+  d.domains.forEach(dm => {
+    const n = d.objectives.filter(o => o.domain_id === dm.domain_id).length;
+    const tr = document.createElement("tr");
+    [dm.domain_id + " – " + dm.name, dm.weight + "%", n].forEach(v => {
+      const td = document.createElement("td"); td.textContent = v; tr.appendChild(td);
+    });
+    t.appendChild(tr);
+  });
+}).catch(() => {});
+</script>
+</body>
+</html>
