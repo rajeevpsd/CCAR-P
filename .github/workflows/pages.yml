@@ -27,6 +27,7 @@ jobs:
           python3 scripts/build_content.py
           python3 scripts/build_questions.py --strict
           python3 scripts/build_glossary_learn.py --strict
+          python3 scripts/build_reports.py --strict
       - name: Assemble site
         run: |
           mkdir -p _site/content
