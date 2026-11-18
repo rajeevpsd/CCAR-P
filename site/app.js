@@ -3,6 +3,7 @@
 "use strict";
 
 const REPO = "https://github.com/rajeevpsd/CCAR-P/blob/main/";
+const BUILD = "__BUILD__"; // replaced with the commit SHA at deploy, so browsers fetch fresh content
 const BLUEPRINT = { items: 63, minutes: 120, passing: "Scaled 720 / 1000" };
 const DCOLOR = { D1: "var(--d1)", D2: "var(--d2)", D3: "var(--d3)", D4: "var(--d4)", D5: "var(--d5)", D6: "var(--d6)", D7: "var(--d7)" };
 const PREREQ = new Set(["1.1", "1.3", "1.5", "2.1", "2.4", "3.6", "4.2", "5.1"]);
@@ -571,7 +572,7 @@ window.addEventListener("hashchange", () => { window.__keepScroll = false; route
 
 async function boot() {
   try {
-    const get = f => fetch("content/" + f).then(r => { if (!r.ok) throw new Error(f + " " + r.status); return r.json(); });
+    const get = f => fetch("content/" + f + "?v=" + BUILD).then(r => { if (!r.ok) throw new Error(f + " " + r.status); return r.json(); });
     const [o, q, g, l] = await Promise.all([get("objectives.json"), get("questions.json"), get("glossary.json"), get("learn.json")]);
     DATA = { objectives: o.objectives, domains: o.domains, questions: q.questions, glossary: g.terms, episodes: l.episodes, maps: { obj: {}, q: {}, part: {} } };
     o.objectives.forEach(x => DATA.maps.obj[x.objective_id] = x);
