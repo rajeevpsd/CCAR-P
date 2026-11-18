@@ -28,6 +28,13 @@ jobs:
           python3 scripts/build_questions.py --strict
           python3 scripts/build_glossary_learn.py --strict
           python3 scripts/build_reports.py --strict
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Trainer smoke tests
+        run: |
+          npm install --prefix tests --no-audit --no-fund
+          node tests/smoke.js
       - name: Assemble site
         run: |
           mkdir -p _site/content
