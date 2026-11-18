@@ -1,0 +1,1060 @@
+{
+ "exam": {
+  "code": "CCAR-P",
+  "items": 63,
+  "minutes": 120,
+  "passing": "Scaled 720 on 100-1,000 (criterion-referenced)",
+  "guide_version": "1.0 (July 2026)"
+ },
+ "domains": [
+  {
+   "domain_id": "D1",
+   "name": "Solution Design & Architecture",
+   "weight": 17,
+   "priority": "Critical",
+   "modules": [
+    "M1",
+    "M2",
+    "M4"
+   ],
+   "source_file": "docs/guide/d1-solution-design.md"
+  },
+  {
+   "domain_id": "D2",
+   "name": "Claude Models, Prompting & Context Engineering",
+   "weight": 13,
+   "priority": "High",
+   "modules": [
+    "M1",
+    "M2",
+    "M5"
+   ],
+   "source_file": "docs/guide/d2-models-prompting-context.md"
+  },
+  {
+   "domain_id": "D3",
+   "name": "Integration",
+   "weight": 19,
+   "priority": "Critical",
+   "modules": [
+    "M1",
+    "M2",
+    "M3"
+   ],
+   "source_file": "docs/guide/d3-integration.md"
+  },
+  {
+   "domain_id": "D4",
+   "name": "Evaluation, Testing & Optimization",
+   "weight": 16,
+   "priority": "Critical",
+   "modules": [
+    "M2",
+    "M1",
+    "M5"
+   ],
+   "source_file": "docs/guide/d4-evaluation.md"
+  },
+  {
+   "domain_id": "D5",
+   "name": "Governance, Safety & Risk Management",
+   "weight": 14,
+   "priority": "High",
+   "modules": [
+    "M3",
+    "M1",
+    "M2"
+   ],
+   "source_file": "docs/guide/d5-governance-safety.md"
+  },
+  {
+   "domain_id": "D6",
+   "name": "Stakeholder Communication & Lifecycle Management",
+   "weight": 14,
+   "priority": "High",
+   "modules": [
+    "M4",
+    "M2",
+    "M5"
+   ],
+   "source_file": "docs/guide/d6-stakeholder-lifecycle.md"
+  },
+  {
+   "domain_id": "D7",
+   "name": "Developer Productivity & Operational Enablement",
+   "weight": 7,
+   "priority": "Medium",
+   "modules": [
+    "M5",
+    "M1"
+   ],
+   "source_file": "docs/guide/d7-devprod-ops.md"
+  }
+ ],
+ "objectives": [
+  {
+   "objective_id": "1.1",
+   "domain_id": "D1",
+   "official_wording": "Translate business problems into Claude-based AI solutions",
+   "weight": 17,
+   "module_reference": "M1 How Claude Behaves, Decomposition; M2 Sizing (scoping, feasibility, verdicts, scoping-call case).",
+   "source_labels": [
+    "MODULE 1",
+    "MODULE 1 – How Claude Behaves",
+    "MODULE 2",
+    "MODULE 2 – Sizing",
+    "MODULE 2 – scoping call case"
+   ],
+   "sections": {
+    "What you need to know": "- **Start from the four properties of generative AI.** Each one is a capability, a limitation and a mitigation `[MODULE 1 – How Claude Behaves]`:\n  - **Next-token prediction:** strong on common patterns, weak on precise specifics. Mitigate with citations, generator-verifier loops, tool lookups.\n  - **Knowledge:** unreliable on rare or fast-changing topics. Mitigate with RAG, tools, MCP, web search.\n  - **Working memory:** the context window is a hard edge. Mitigate with progressive loading and chunking.\n  - **Steerability:** strong on concrete instructions, weak on abstract ones or precise maths. Mitigate with structured outputs and code execution.\n- **Scoping sequence** `[MODULE 2 – Sizing]`: business requirement → capability list → architecture sketch (who owns each capability) → boundary conditions → SOW scope.\n- **Feasibility verdict** `[MODULE 2]`: *feasible as scoped* · *feasible with constraints* · *not feasible*. A verdict comes with the constraints that make it true.\n- **Constraints first:** gather volume, input size and latency before confirming feasibility. `[MODULE 2 – scoping call case]`",
+    "Why it matters": "Most expensive early mistake: over-assigning work to Claude. Confirming capability before collecting constraints leads to commitments the design can't keep. `[MODULE 1]` `[MODULE 2]`",
+    "Architecture concepts": "Capability inventory; ownership map (Claude / systems / humans); compensating controls per property; boundary conditions written into the SOW; cost model at production volume. `[MODULE 2]`",
+    "How it works": "1. Run structured discovery and translate preferences into constraints (6.1).\n2. Split the goal into named capabilities.\n3. Assign each capability to Claude, an existing system or a human (1.5).\n4. Run each capability through the four properties and add compensating controls.\n5. Size cost and latency at production volume (2.4, 4.5).\n6. Issue the verdict with explicit boundary conditions.\n7. Put the boundary conditions into the SOW.",
+    "Architecture example": "REAL-WORLD EXAMPLE – \"Process insurance claims\" becomes four capabilities:\n- extract fields → Claude, with a code-based verifier;\n- check policy coverage → policy database (tool call);\n- route to an adjuster queue → rules engine;\n- draft the adjuster notification → Claude, with the adjuster reviewing.\n\nVerdict: feasible with constraints (documents ≤ N pages, human gate on low-confidence extractions). `[MODULE 2]`",
+    "Decision framework": "| Question | Guidance |\n|---|---|\n| When to give Claude the work | Language understanding, summarising, drafting, planning, tool-mediated actions |\n| When NOT to | Authoritative values, live state, deterministic rules, high-stakes approvals |\n| Alternatives | Existing systems of record; rules engines; human decision points |\n| Trade-off | More given to Claude means faster to build but higher cost, more variance and more audit risk |",
+    "Exam decision signals": "- \"Excited sponsor, working demo, no volume numbers yet\" → **gather constraints before the verdict**.\n- \"Needs exact amounts / IDs\" → next-token limit → **verification or a tool lookup**.\n- \"Only works for short documents\" → **feasible with constraints**; document the boundary.",
+    "Common traps": "- COMMON TRAP: answering \"can Claude do this?\" and stopping there.\n- COMMON TRAP: assigning deterministic routing to the model.\n- COMMON TRAP: leaving \"feasible with constraints\" undocumented. It becomes infeasible the moment a constraint is violated in production.",
+    "Must remember": "- Capability ≠ feasibility.\n- Use the four properties as a lens on every capability.\n- A verdict is the conclusion plus the constraints that make it true.\n- Collect volume, input size and latency before committing.",
+    "Quick recall": "**\"Ask → Split → Assign → Stress-test (4 properties) → Size → Verdict.\"**\n\n**Sources:** M1 How Claude Behaves, Decomposition; M2 Sizing (scoping, feasibility, verdicts, scoping-call case)."
+   }
+  },
+  {
+   "objective_id": "1.2",
+   "domain_id": "D1",
+   "official_wording": "Design end-to-end architectures (input → processing → output → feedback loops)",
+   "weight": 17,
+   "module_reference": "M1 Reference Architectures; M2 Integration & Observability; M3 Guardrails; M4 Feedback loop; Official – Building effective agents.",
+   "source_labels": [
+    "INFERENCE – assembled from the sources cited",
+    "MODULE 1",
+    "MODULE 1 – Doc pipeline",
+    "MODULE 1, 2, 4",
+    "MODULE 2",
+    "MODULE 3",
+    "MODULE 4",
+    "OFFICIAL ANTHROPIC DOCS – Building effective agents"
+   ],
+   "sections": {
+    "What you need to know": "An end-to-end design has four stages. Each stage has an owner, a set of controls and a signal it emits. `[INFERENCE – assembled from the sources cited]`\n| Stage | Design content | Source |\n|---|---|---|\n| **Input** | Identity injected by the server; data minimised to what the task needs; input screening (incl. retrieved and tool content) | `[MODULE 2]` `[MODULE 3]` |\n| **Processing** | Pattern (augmented LLM / workflow / agent); reference architecture; model tier; context strategy; tools behind authorization | `[MODULE 1]` |\n| **Output** | Output contract or schema; output screening; validation; confidence score; routing to a human by stakes | `[MODULE 1]` `[MODULE 3]` |\n| **Feedback loop** | Outcome logging (accepted/rejected downstream); evals; drift detection; Signals → Triage → Decide → Act → Review; iterate vs. re-architect | `[MODULE 2]` `[MODULE 4]` |\n`[OFFICIAL ANTHROPIC DOCS – Building effective agents]`: the augmented LLM (retrieval, tools, memory) is the basic building block. Start with the simplest solution and add complexity only when it's needed.",
+    "Why it matters": "A system without an outcome signal can't tell it's degrading. A system without an exception path pushes low-confidence work downstream at the same rate as clean work. `[MODULE 2]` `[MODULE 4]`",
+    "Architecture concepts": "Exception paths, human review queues, shared trace IDs, version pinning, governance tables (signal → trigger → owner → action). `[MODULE 1, 2, 4]`",
+    "How it works": "1. Define the input contract and its identity and data controls.\n2. Choose the processing pattern and reference architecture.\n3. Define the output contract and the validation and screening steps.\n4. Define confidence thresholds and the exception route.\n5. Instrument outcome signals.\n6. Wire signals into evals and a governance table before launch.",
+    "Architecture example": "REAL-WORLD EXAMPLE – Invoice processing:\n- **Input:** OCR plus server-side tenant ID.\n- **Processing:** extraction against a schema, with an evaluator-optimizer pass.\n- **Output:** schema-validated JSON; low-confidence fields go to a human queue.\n- **Feedback:** reviewer corrections are logged and added to the golden dataset; a drop in eval score triggers an architect review. `[MODULE 1 – Doc pipeline]` `[MODULE 2]` `[MODULE 4]`",
+    "Decision framework": "| Use a full four-stage design when… | A simpler design may do when… |\n|---|---|\n| Production, regulated or high-volume | Internal prototype with no downstream effects (still log outcomes) |\n| Trade-off: more components to maintain, in exchange for detectability and recoverability | |",
+    "Exam decision signals": "- \"No exception path\" → add confidence scoring and a human queue.\n- \"Quality slid for weeks unnoticed\" → the feedback loop is missing.\n- \"Can't explain a decision afterwards\" → decision logging.",
+    "Common traps": "- COMMON TRAP: the diagram stops at \"response to user\".\n- COMMON TRAP: monitoring without triggers (6.3).\n- COMMON TRAP: one path for clean and messy inputs.",
+    "Must remember": "- Every stage has controls and a signal.\n- The feedback loop is part of the architecture.\n- Exceptions need their own route.\n- Simplest pattern first.",
+    "Quick recall": "**\"In (who/what) → Do (pattern) → Out (contract/check) → Learn (signal/loop).\"**\n\n**Sources:** M1 Reference Architectures; M2 Integration & Observability; M3 Guardrails; M4 Feedback loop; Official – Building effective agents."
+   }
+  },
+  {
+   "objective_id": "1.3",
+   "domain_id": "D1",
+   "official_wording": "Select appropriate architectural patterns (workflow, agentic, augmented LLM)",
+   "weight": 17,
+   "module_reference": "M1 Pattern Selection, 90-day retrospective, Key takeaways; Official – Building effective agents.",
+   "source_labels": [
+    "MODULE 1",
+    "MODULE 1 – 90-day retrospective",
+    "MODULE 1 – Key takeaways",
+    "OFFICIAL ANTHROPIC DOCS",
+    "OFFICIAL ANTHROPIC DOCS – Building effective agents"
+   ],
+   "sections": {
+    "What you need to know": "| Pattern | Control flow | Use when | Source |\n|---|---|---|---|\n| **Augmented LLM** | One bounded call (may use tools, retrieval, thinking); no branching on model decisions | Well-defined task, verifiable output | `[MODULE 1]` |\n| **Workflow** | Steps orchestrated **in your code** (\"predefined code paths\") | Steps knowable in advance; error cost real; observability matters | `[MODULE 1]` `[OFFICIAL ANTHROPIC DOCS]` |\n| **Agent** | **The model** directs its own tool use | Path can't be enumerated in advance, *and* unexpected outputs are acceptable and recoverable | `[MODULE 1]` |\n\n**Workflow sub-patterns** `[OFFICIAL ANTHROPIC DOCS – Building effective agents]`:\n- **prompt chaining**, with programmatic gates between steps;\n- **routing**, when categories are distinct and classification is accurate;\n- **parallelization**, either *sectioning* or *voting*;\n- **orchestrator-workers**, where subtasks are decided at runtime;\n- **evaluator-optimizer**.\n\nCombine them as needed; choose the simplest one that meets error tolerance and observability needs. `[MODULE 1]`\n\n**Five factors, checked in order:** predictability → error cost → observability → latency → cost. The first factor that rules a pattern out decides; the tightest constraint picks the pattern. `[MODULE 1 – Key takeaways]`\n\n**Agents in production** need limited tool entry points, per-turn budgets, explicit permissions and stopping criteria. `[MODULE 1]`\n\n**Order of improvements:** better prompt → tools or retrieval → stronger pattern (e.g. evaluator-optimizer) → fine-tuning only for very high volume, critical latency, or format consistency that prompting couldn't fix. Fine-tuning availability is limited. `[MODULE 1]`",
+    "Why it matters": "Teams pick agents because a task *feels* open-ended. One team's traces showed only four paths. A router with four chains would have been auditable and cost six months less. `[MODULE 1 – 90-day retrospective]`",
+    "Architecture concepts": "Predictability vs. autonomy axes; agent liability surface; audit points (discrete steps); packaging as prompt only, direct tool use, or a Skill. `[MODULE 1]`",
+    "How it works": "1. Can you write down the steps? Yes → workflow (or an augmented call if it's a single step).\n2. Is a wrong output costly or hard to undo? Yes → a workflow with gates, or HITL.\n3. Must an auditor point at a specific step? → workflow.\n4. Do latency or cost budgets rule out multi-call loops? → augmented LLM.\n5. Is the path truly unknowable *and* errors recoverable? → a bounded agent.\n6. Revisit with production traces.",
+    "Architecture example": "REAL-WORLD EXAMPLE – A disbursement approval built as an agent couldn't answer \"which step approved this?\". Mining the traces found four shapes. A router with four chains gave discrete, auditable steps. `[MODULE 1]`",
+    "Decision framework": "| Use workflow when… | Use agent when… |\n|---|---|\n| Paths are enumerable; compliance needs auditable steps | Open-ended investigation; next step depends on what was just found |\n| **Avoid workflow** when you'd be scripting endless branches | **Avoid agent** when steps are knowable or an error can't be undone |\n| Key clue: \"auditor / approval step / known categories\" | Key clue: \"unfamiliar codebase / research across sources / can't predict steps\" |",
+    "Exam decision signals": "- \"Four kinds of request\" → **routing workflow**.\n- \"Draft then check quality\" → **evaluator-optimizer**.\n- \"Independent sections in parallel\" → **parallelization (sectioning)**.\n- \"Want flexibility for the future\" → **trap**; build for the shape you know today.",
+    "Common traps": "- COMMON TRAP: an agent as the \"safe default\".\n- COMMON TRAP: fine-tuning before improving the prompt.\n- COMMON TRAP: assuming agents always cost more. Accumulated context and call count drive cost, not the label. `[MODULE 1]`",
+    "Must remember": "- Workflow = your code controls flow; agent = the model does.\n- Use an agent only for genuinely unpredictable paths.\n- Agents need budgets, limits and stopping criteria.\n- Prompt → tools → stronger pattern → (rarely) fine-tune.\n- Five factors; the tightest constraint picks the pattern.",
+    "Quick recall": "**\"Can you write the steps? Then write them.\"**\n\n**Sources:** M1 Pattern Selection, 90-day retrospective, Key takeaways; Official – Building effective agents."
+   }
+  },
+  {
+   "objective_id": "1.4",
+   "domain_id": "D1",
+   "official_wording": "Design multi-agent systems and orchestration strategies",
+   "weight": 17,
+   "module_reference": "M1 Multi-agent systems, fan-out case; M2 Failure modes, least privilege; Official – multi-agent research system.",
+   "source_labels": [
+    "INFERENCE",
+    "MODULE 1",
+    "MODULE 1 – bank case",
+    "MODULE 2",
+    "OFFICIAL ANTHROPIC DOCS – multi-agent research system"
+   ],
+   "sections": {
+    "What you need to know": "- **Orchestrator:** owns the goal; decomposes, delegates and synthesises. It doesn't do sub-task work itself.\n- **Subagents:** own scoped sub-tasks, each in its own context. `[MODULE 1]`\n- **Three things to design, not assume:**\n  - how the work is decomposed;\n  - how each result is structured so it can be combined;\n  - how conflicts and gaps are resolved. `[MODULE 1]`\n- **Fan-out** is the common shape: split a large item into independent units, dispatch in parallel, synthesise. `[MODULE 1]`\n- **Error recovery is asymmetric:**\n  - subagent failure → usually recoverable (retry, re-route or flag);\n  - orchestrator failure → often unrecoverable, so checkpoint its state;\n  - make subagent work idempotent. `[MODULE 1]`\n- **Coverage check at synthesis:** results returned must equal units dispatched. `[MODULE 1]`\n- **HITL gates** go before irreversible or high-stakes subagent actions; sample the lower-stakes ones. `[MODULE 1]`\n- `[OFFICIAL ANTHROPIC DOCS – multi-agent research system]` Multi-agent systems suit heavy parallelisation, information exceeding one context window, and many complex tools. They use about 15× the tokens of chat and fit poorly where all agents need shared context or have many dependencies.",
+    "Why it matters": "The most dangerous failure is a confident, complete-looking synthesis over incomplete work. In one case, \"48 reviewed, 3 flagged\" was reported when 50 sections were dispatched. `[MODULE 1]`",
+    "Architecture concepts": "Shared trace ID; result schema; conflict-resolution rule or human escalation; least-privilege tools per subagent `[MODULE 2]`; checkpointing; per-subagent budgets.",
+    "How it works": "1. Confirm the work exceeds one context or benefits from parallel work.\n2. Define units and an idempotent subagent contract (input and output schema).\n3. Scope tools per subagent.\n4. Dispatch; validate each result; retry or flag failures.\n5. Reconcile coverage (returned = dispatched).\n6. Resolve conflicts by rule or escalate.\n7. Checkpoint orchestrator state and propagate the trace ID.",
+    "Architecture example": "REAL-WORLD EXAMPLE – Audit a 400-file codebase: one subagent per module with read-only tools, a findings schema, an orchestrator coverage check, a conflict rule (the stricter severity wins), and a human gate before any auto-fix PR. `[MODULE 1]` `[INFERENCE]`",
+    "Decision framework": "| Use multi-agent when… | Use single agent / workflow when… |\n|---|---|\n| Work exceeds one context; independent units; breadth-first | Work fits in one context; heavy interdependence; tight budget |\n| Trade-off: parallelism and clean contexts vs. many times the tokens and more failure boundaries | Use the fewest agents that meet the requirement |",
+    "Exam decision signals": "- \"Summary looked complete, units missing\" → **coverage reconciliation**.\n- \"Run fails, all work lost\" → **checkpoint the orchestrator**.\n- \"Can't trace across agents\" → **shared trace ID**.\n- \"Subagent can delete prod\" → scope tools; put a gate before irreversible actions.",
+    "Common traps": "- COMMON TRAP: multi-agent as the default.\n- COMMON TRAP: putting compliance-critical checks in subagents rather than deterministic code. `[MODULE 1 – bank case]`\n- COMMON TRAP: no conflict-resolution rule.",
+    "Must remember": "- The orchestrator delegates and synthesises.\n- Subagent failure is recoverable; orchestrator failure often isn't.\n- Reconcile coverage; never assume it.\n- Fewest agents possible; a shared trace ID across them.",
+    "Quick recall": "**\"Split · Scope · Send · Check · Count · Combine.\"**\n\n**Sources:** M1 Multi-agent systems, fan-out case; M2 Failure modes, least privilege; Official – multi-agent research system."
+   }
+  },
+  {
+   "objective_id": "1.5",
+   "domain_id": "D1",
+   "official_wording": "Apply decomposition techniques for complex problem solving",
+   "weight": 17,
+   "module_reference": "M1 Decomposition, fan-out, Assembly; M2 Scoping; Official – Building effective agents.",
+   "source_labels": [
+    "MODULE 1",
+    "MODULE 1 – Assembly model answer",
+    "MODULE 1 – Decomposition",
+    "MODULE 2 – Scoping",
+    "MODULE 2 – feasibility",
+    "OFFICIAL ANTHROPIC DOCS – Building effective agents"
+   ],
+   "sections": {
+    "What you need to know": "In the modules, decomposition works at three levels:\n1. **Ownership decomposition:** Claude, existing systems or humans, justified by **reversibility, stakes and accountability**. This produces a *delegation map*: AI-appropriate, human-retained, or collaborative (Claude drafts, a person decides). `[MODULE 1 – Decomposition]`\n2. **Capability decomposition:** split the business goal into named capabilities. `[MODULE 2 – Scoping]`\n3. **Task / work decomposition:**\n   - workflow steps or prompt chains with gates `[OFFICIAL ANTHROPIC DOCS – Building effective agents]`;\n   - fan-out into independent units `[MODULE 1]`;\n   - pipeline stages when inputs exceed the context window `[MODULE 2 – feasibility]`.\n\nDelegation is the first of the four AI Fluency competencies. `[MODULE 1]`",
+    "Why it matters": "Over-assigning to Claude is the most common and most expensive early mistake. It makes the process more expensive, slower and harder to run. `[MODULE 1]`",
+    "Architecture concepts": "Delegation map, chain gates, unit independence (needed for parallelism), stage handoffs with narrow interfaces. `[MODULE 1]`",
+    "How it works": "1. List the capabilities.\n2. For each, ask: can a wrong call be undone? What does it cost? Who answers for it?\n3. Assign to Claude, a system, a human or collaborative.\n4. Break Claude's share into steps or units; add gates between steps.\n5. Confirm the units are independent before running them in parallel.\n6. Define the output schema for each step.",
+    "Architecture example": "REAL-WORLD EXAMPLE – Contract review for a law firm:\n- iManage fetch → existing system;\n- clause extraction and playbook comparison → Claude, parallelised per section;\n- playbook → a versioned source of truth retrieved per clause;\n- final sign-off → the senior associate (human-retained);\n- low-confidence clauses → flagged for attention. `[MODULE 1 – Assembly model answer]`",
+    "Decision framework": "| Assign to Claude | To systems | To humans |\n|---|---|---|\n| Language, drafting, summarising, planning | Records, rules, live state | Approvals, exceptions, irreversible high-stakes calls |\n| Collaborative where Claude drafts and the cost of a wrong call is high but recoverable with review | | |",
+    "Exam decision signals": "- \"Who should approve?\" → reversibility, stakes, accountability.\n- \"Rules table already exists\" → **keep it in the system**.\n- \"Document too long for the window\" → **pipeline or chunked decomposition**.",
+    "Common traps": "- COMMON TRAP: \"Claude does everything\".\n- COMMON TRAP: parallelising dependent steps.\n- COMMON TRAP: having no gate between chain steps.",
+    "Must remember": "- Three owners: Claude, systems, humans.\n- Reversibility, stakes, accountability.\n- Decompose, then gate.\n- Only independent units go in parallel.",
+    "Quick recall": "**\"R-S-A decides who owns it.\"**\n\n**Sources:** M1 Decomposition, fan-out, Assembly; M2 Scoping; Official – Building effective agents."
+   }
+  },
+  {
+   "objective_id": "1.6",
+   "domain_id": "D1",
+   "official_wording": "Align solutions to business value pillars (efficiency, transformation, productivity, cost, performance SLAs)",
+   "weight": 17,
+   "module_reference": "M2 Business value and ROI mapping; M4 Outcome document; EG Domain 1 objective wording.",
+   "source_labels": [
+    "EXAM GUIDE",
+    "INFERENCE – illustrative numbers",
+    "MODULE 2",
+    "MODULE 2 – Business value and ROI mapping",
+    "MODULE 4"
+   ],
+   "sections": {
+    "What you need to know": "**Five pillars** `[EXAM GUIDE]` `[MODULE 2 – Business value and ROI mapping]`:\n- **Efficiency:** the same work faster or cheaper.\n- **Transformation:** work that wasn't feasible before.\n- **Productivity:** more output from the same people.\n- **Cost:** the run cost of the solution (M2 calls this \"solution cost\").\n- **Performance SLAs:** service levels the deployment must hold.\n\n**ROI mapping in four steps** `[MODULE 2]`:\n1. Baseline measured in a business unit, using the owner's own data.\n2. Projected state in the same unit, including human-review effort if the design has a review gate.\n3. Subtract the run cost taken from the *sizing distribution* (not the average).\n4. Payback period plus sensitivity analysis.\n\n**Outcome document fields** `[MODULE 4]`: use case + scope boundary, metric before, metric after, the control that makes it auditable, measurement owner. (A sixth field, \"reuse potential\", is Partner-Track and optional.)",
+    "Why it matters": "A feasible design isn't automatically worth building. Technical metrics (volume, latency, error rate) show the system runs, not what it's worth. A CFO asks for the before-and-after on the business metric. `[MODULE 2]` `[MODULE 4]`",
+    "Architecture concepts": "The KPI translation layer `[MODULE 2]`; baseline capture at the start; SLA thresholds traced to their sources `[MODULE 4]`.",
+    "How it works": "1. Tag each value claim with its pillar.\n2. Capture the baseline before deployment.\n3. Project in the same unit, net of review effort.\n4. Subtract run cost from the sizing model.\n5. State payback and its sensitivity.\n6. Instrument the before-and-after metric and name its owner.",
+    "Architecture example": "REAL-WORLD EXAMPLE – Claims triage:\n- baseline 40 analyst-minutes per claim, from operations data;\n- projected 15 minutes (review still required);\n- net value = saved hours × rate − monthly run cost from sizing;\n- payback 5 months; 8 months if volume is 30% lower. `[INFERENCE – illustrative numbers]`",
+    "Decision framework": "| Situation | Pillar emphasis |\n|---|---|\n| Same task, fewer hours | Efficiency / productivity |\n| New capability (e.g. review 100% instead of a sample) | Transformation |\n| Budget-constrained sponsor | Cost (tiering, caching, batch) |\n| Customer-facing latency promise | Performance SLA (p95) |",
+    "Exam decision signals": "- \"CFO asks what it saved\" → **before/after business metric + auditable control**.\n- \"Assumes full automation, but a human reviews\" → **overstated value**.\n- \"Average token cost used\" → **understated run cost**.",
+    "Common traps": "- COMMON TRAP: an estimated (intuitive) baseline.\n- COMMON TRAP: a metrics-only outcome document.\n- COMMON TRAP: quoting payback without sensitivity.",
+    "Must remember": "- Five pillars; tag every claim.\n- Measure the baseline; don't guess it.\n- Net out the review effort.\n- Run cost comes from the sizing distribution.\n- Before + after + control + owner.",
+    "Quick recall": "**\"E-T-P-C-S: Efficiency, Transformation, Productivity, Cost, SLA.\"**\n\n**Sources:** M2 Business value and ROI mapping; M4 Outcome document; EG Domain 1 objective wording."
+   }
+  },
+  {
+   "objective_id": "2.1",
+   "domain_id": "D2",
+   "official_wording": "Select appropriate Claude models based on trade-offs",
+   "weight": 13,
+   "module_reference": "M1 Model selection, eval gate, Sonnet→Haiku case, Opus case, extended thinking; M2 Sizing, scoping-call case, version pinning.",
+   "source_labels": [
+    "MODULE 1",
+    "MODULE 2"
+   ],
+   "sections": {
+    "What you need to know": "**The tiers** (Opus, Sonnet, Haiku) trade capability against cost and latency. `[MODULE 1]`\n- **Sonnet is the default** starting point.\n- **Opus:** demanding reasoning, advanced coding, research synthesis, *when an eval shows Sonnet misses the bar*.\n- **Haiku:** only when an eval confirms the quality trade-off is acceptable (e.g. classification, routing).\n\n**Every model change is a release.** Gate it with `[MODULE 1]`:\n- a curated, representative test set;\n- a grading function;\n- a **delta threshold set before running**.\n\n**Use different tiers per step** where the evals support it. `[MODULE 1]`\n**Context window capacity is part of the tier decision** (e.g. 1M vs. 200k tokens decides whether a 300-page contract needs chunking). `[MODULE 2]`\n**Extended thinking:** adaptive thinking with an effort setting is the recommended control on current models. Thinking tokens are billed as output. Enable it only for a measured accuracy gap after prompt work. `[MODULE 1]` (Version specifics: verify.)\n**Version pinning** plus monitoring the deprecations page. `[MODULE 2]`\nA prompt tuned on one model is a starting point for another, not a finished artifact. `[MODULE 1]`",
+    "Why it matters": "\"Not choosing a model is equivalent to choosing the most expensive one.\" One team defaulting to Opus everywhere ran at 7× the cost model; per-step tiering cut 71%. `[MODULE 1]`",
+    "Architecture concepts": "Model router per step; eval-gated migration; partial migration by input class; rollback criteria. `[MODULE 1]`",
+    "How it works": "1. Start every step on Sonnet.\n2. Build a per-step eval, stratified by input type.\n3. Try one tier lower on easy steps and one higher on hard ones.\n4. Accept only where per-category scores clear the pre-set floor.\n5. Route by input class if only some classes pass.\n6. Pin versions; re-validate on any update.",
+    "Architecture example": "REAL-WORLD EXAMPLE – A document pipeline moves to Haiku. Two document types fall below the 0.85 floor and stay on Sonnet through the existing classifier; the rest move to Haiku. Cost drops without the regression. `[MODULE 1]`",
+    "Decision framework": "| Use Opus when… | Use Haiku when… |\n|---|---|\n| Eval shows a Sonnet gap on hard reasoning or synthesis | Eval shows acceptable quality on simple, high-volume steps |\n| **Avoid** as a blanket default | **Avoid** on steps that fail per-category floors |",
+    "Exam decision signals": "- \"Use the best model to be safe\" → **trap**.\n- \"Downgrade to save cost\" → **eval with a pre-set floor, per category**.\n- \"Model version rolled forward\" → **pin + re-validate**.",
+    "Common traps": "- COMMON TRAP: judging a downgrade on the average score only.\n- COMMON TRAP: setting the threshold after seeing the results.\n- COMMON TRAP: \"smallest model regardless of task fit\" (EG Sample 2 distractor).",
+    "Must remember": "- Sonnet default; move only on evidence.\n- A model swap is a release.\n- Thresholds are set in advance.\n- Per-step and per-category decisions.\n- Pin versions.",
+    "Quick recall": "**\"Start Sonnet · Prove the move · Pin the version.\"**\n\n**Sources:** M1 Model selection, eval gate, Sonnet→Haiku case, Opus case, extended thinking; M2 Sizing, scoping-call case, version pinning."
+   }
+  },
+  {
+   "objective_id": "2.2",
+   "domain_id": "D2",
+   "official_wording": "Design system prompts, templates, and guardrails",
+   "weight": 13,
+   "module_reference": "M1 Prompting as Architecture, reusable prompt asset exercise; M3 Alignment layers.",
+   "source_labels": [
+    "MODULE 1",
+    "MODULE 1 – Prompting as Architecture",
+    "MODULE 1 – model answer",
+    "MODULE 1 – reusable prompt asset",
+    "MODULE 3"
+   ],
+   "sections": {
+    "What you need to know": "An enterprise system prompt is a **designed asset** with structure: role and scope, constraints (must / must not), and an **output contract**. Ambiguity in a reused asset is a defect multiplied across every request. `[MODULE 1 – Prompting as Architecture]`\n**Templates:** parameterised slots plus fixed scaffolding that carries the consistency and safety guarantees. Filling a slot can't remove a constraint, so *the safe path is the default path*. `[MODULE 1]`\n**Description** (an AI Fluency competency): state scope, format and constraints explicitly. Underspecification is a gap the model fills differently each time. `[MODULE 1]`\n**Enforce guardrails structurally:** put the rule in the output contract or format, not only in the role text. `[MODULE 1 – reusable prompt asset]`\nAn underspecified guardrail is worse than a missing one, because it looks like a control without being one. `[MODULE 1]`\nThe system prompt shapes behaviour but **isn't enforcement**; pair it with runtime controls. `[MODULE 3]`",
+    "Why it matters": "A vague prompt is paid for in every request that needs correcting or retrying. Templates concentrate the complexity where it can be reviewed and governed. `[MODULE 1]`",
+    "Architecture concepts": "Prompt asset versioning; slot validation; output schema; runtime screening and authorization behind the prompt (5.1).",
+    "How it works": "1. Write role and scope (in and out of bounds).\n2. List must and must-not constraints.\n3. Define the exact output contract.\n4. Make the safety rules part of the format (e.g. no field exists in which to promise a refund).\n5. Parameterise only the variable content.\n6. Diagnose gaps: for each requirement, is it *stated* or only *hoped for*?\n7. Version and govern the template.",
+    "Architecture example": "REAL-WORLD EXAMPLE – Support reply template:\n- stable prefix: role, tone, output contract, a rule never to promise refunds or timelines;\n- slots: the ticket and the manual section;\n- the output contract requires a cited manual section and has no commitment field. `[MODULE 1 – model answer]`",
+    "Decision framework": "| Put it in the prompt when… | Put it in runtime controls when… |\n|---|---|\n| Steering tone, scope, format | It must hold against adversarial input, or the action has side effects |\n| Both, for anything high-stakes | |",
+    "Exam decision signals": "- \"Outputs vary in format across requests\" → **output contract missing**.\n- \"Agent sometimes promises refunds\" → **structural guardrail + output screening**.\n- \"Each team pastes its own version\" → **template / Skill governance** (2.5).",
+    "Common traps": "- COMMON TRAP: guardrails stated only in prose.\n- COMMON TRAP: letting slots override scaffolding.\n- COMMON TRAP: assuming the system prompt is a security boundary.",
+    "Must remember": "- Role · Scope · Constraints · Output contract.\n- Safe path = default path.\n- Make the implicit explicit.\n- Prompt ≠ enforcement.",
+    "Quick recall": "**\"Scope it · Format it · Bound it · Version it.\"**\n\n**Sources:** M1 Prompting as Architecture, reusable prompt asset exercise; M3 Alignment layers."
+   }
+  },
+  {
+   "objective_id": "2.3",
+   "domain_id": "D2",
+   "official_wording": "Apply prompt engineering techniques (zero-shot, few-shot, chain-of-thought)",
+   "weight": 13,
+   "module_reference": "M1 Prompt engineering techniques across models, Try prompting before fine-tuning, four properties (steerability).",
+   "source_labels": [
+    "INFERENCE – applies M1 progression",
+    "MODULE 1"
+   ],
+   "sections": {
+    "What you need to know": "| Technique | What | When | Source |\n|---|---|---|---|\n| **Zero-shot** | Instruction only | Well-specified tasks the model handles reliably; **try first** | `[MODULE 1]` |\n| **Few-shot** | A handful of input/output examples | Format or judgement easier to *show* than describe | `[MODULE 1]` |\n| **Chain-of-thought** | Reason step by step before answering | Multi-step reasoning, logic, when the path matters | `[MODULE 1]` |\nProgress deliberately: start zero-shot, add examples only if needed, add reasoning only if the task's structure demands it. Each step adds tokens and latency. `[MODULE 1]`\n\n**Across models:** more capable models need less scaffolding. Re-tune when you change models; the prompt and model are shipped as a pair. `[MODULE 1]`\n\n**Bias:** leading phrasing and unbalanced few-shot sets steer outputs. Phrase neutrally and balance examples. `[MODULE 1]`\n\n**Prompting before fine-tuning:** prompt → tools or retrieval → stronger pattern → fine-tune (rarely; access is limited). `[MODULE 1]`",
+    "Why it matters": "Heavier techniques are a recurring tax on every call. Stale few-shot examples quietly steer the model wrong. `[MODULE 1]`",
+    "Architecture concepts": "Example sets as maintained content (versioned, reviewed for balance); per-technique evals.",
+    "How it works": "1. Write a clear zero-shot instruction and eval it.\n2. If format or judgement fails, add balanced examples covering the real cases.\n3. If multi-step reasoning fails, add step-by-step reasoning (or adaptive thinking, 2.1).\n4. Re-measure cost and latency.\n5. Refresh examples as the task evolves.",
+    "Architecture example": "REAL-WORLD EXAMPLE – Ticket classification into 12 categories: zero-shot confused two similar categories. Adding 2 balanced examples per confusable category fixed it. Chain-of-thought added latency with no gain, so it was not used. `[INFERENCE – applies M1 progression]`",
+    "Decision framework": "| Use few-shot when… | Use CoT when… |\n|---|---|\n| Output style or label boundary is hard to describe | Correctness depends on intermediate reasoning |\n| **Avoid** unbalanced or stale examples | **Avoid** on simple classification (cost with no gain) |",
+    "Exam decision signals": "- \"Format inconsistent though instructions are clear\" → **few-shot**.\n- \"Arithmetic or multi-step logic errors\" → **CoT** (or code execution for precision `[MODULE 1]`).\n- \"Outputs skew toward one class\" → **check example balance and phrasing**.",
+    "Common traps": "- COMMON TRAP: CoT everywhere.\n- COMMON TRAP: few-shot sets that show only happy cases.\n- COMMON TRAP: fine-tuning first.\n- COMMON TRAP: using CoT where deterministic computation should own the answer.",
+    "Must remember": "- Zero → few → CoT, only as needed.\n- Show rather than tell for format.\n- Balance examples.\n- Re-tune per model.",
+    "Quick recall": "**\"Tell · then Show · then Think.\"**\n\n**Sources:** M1 Prompt engineering techniques across models, Try prompting before fine-tuning, four properties (steerability)."
+   }
+  },
+  {
+   "objective_id": "2.4",
+   "domain_id": "D2",
+   "official_wording": "Optimize context windows and manage token usage",
+   "weight": 13,
+   "module_reference": "M1 How Claude Behaves (working memory), Model & Context Strategy (terms, sizing); M2 Sizing.",
+   "source_labels": [
+    "INFERENCE – applies M1",
+    "MODULE 1",
+    "MODULE 2"
+   ],
+   "sections": {
+    "What you need to know": "**Working memory is a hard edge.** Content outside the window doesn't exist for the model. Two distinct errors `[MODULE 1]`:\n- **Oversized request** (rejected before generation): `400 invalid_request_error` (\"prompt is too long\", token limit) or `413 request_too_large` (byte limit).\n- **Generation hits the ceiling:** stop reason `model_context_window_exceeded`, with truncated output.\n\n**Measure, don't estimate:** read the response's `usage` field and use the **token-counting API** before sending. Characters-per-token ratios are rough. `[MODULE 1]`\n\n**Budget below the ceiling:** largest realistic conversation + retrieved context + system prompt + working scratch + margin. *The window is a ceiling, not a target.* `[MODULE 1]`\n\n**Separate the terms** `[MODULE 1]`:\n- **context window** = active attention, reset between calls;\n- **retrieval** = fetched knowledge;\n- **persistent application state** = owned by your system, needs a tool call;\n- **summaries / memory** = continuity managed by the application.\n\n**Token distributions are skewed;** model the tail. `[MODULE 2]`\nAttention quality can degrade on very long contexts before the hard limit. `[MODULE 1]`\nStrategy (progressive vs. monolithic, 3.8) and **sizing** are separate decisions. `[MODULE 1]`",
+    "Why it matters": "Both the limit and the bill are per token. A conversation that starts at 4k tokens can be carrying 80k by turn 30. `[MODULE 1]`",
+    "Architecture concepts": "Token budget per component; front-load critical information; summarise across turns; check the usage field on every response; chunk inputs that exceed the window. `[MODULE 1]` `[MODULE 2]`",
+    "How it works": "1. Count tokens for each component (system, history, retrieval, tools, output).\n2. Model the p95 conversation, not the average.\n3. Set a budget with margin.\n4. Choose a strategy to stay under it (progressive, retrieval, compaction).\n5. Handle 400/413 before sending and `model_context_window_exceeded` after.\n6. Monitor usage in production.",
+    "Architecture example": "REAL-WORLD EXAMPLE – A long legal chat began returning truncated answers late in sessions (`model_context_window_exceeded`). Fix: compact earlier turns into a decision summary (keeping clause IDs verbatim), retrieve clauses just in time, and keep the stable policy as a cached prefix. `[INFERENCE – applies M1]`",
+    "Decision framework": "| Symptom | Cause | Response |\n|---|---|---|\n| 400 prompt too long | Request over the token limit | Trim, chunk, retrieve instead |\n| 413 | Body over the byte limit | Reduce payload (e.g. attachments) |\n| Truncated output, context-window stop reason | Generation hit the ceiling | Reduce input / compact; raise output headroom |\n| Cost growing per turn | Accumulation | Progressive + compaction |",
+    "Exam decision signals": "- \"Fits, but output stops early\" → **context-window stop reason**, not a 400.\n- \"Estimated tokens by characters\" → **use token counting / usage**.\n- \"Designed to the full window\" → **no margin**.",
+    "Common traps": "- COMMON TRAP: confusing an oversized request with a mid-generation ceiling.\n- COMMON TRAP: designing to the ceiling.\n- COMMON TRAP: assuming the model remembers prior calls.",
+    "Must remember": "- 400/413 = rejected before generation; `model_context_window_exceeded` = stopped during it.\n- Usage field + token counting.\n- Budget with margin.\n- Memory is application-managed.",
+    "Quick recall": "**\"Count it · Budget it · Leave room.\"**\n\n**Sources:** M1 How Claude Behaves (working memory), Model & Context Strategy (terms, sizing); M2 Sizing."
+   }
+  },
+  {
+   "objective_id": "2.5",
+   "domain_id": "D2",
+   "official_wording": "Implement prompt reuse strategies (caching, modular prompts, Skills)",
+   "weight": 13,
+   "module_reference": "M1 Caching mechanics, modular prompts and Skills; Skills as an integration mechanism; M2 Sizing (caching); M5 Skills distribution; Official – Agent Skills.",
+   "source_labels": [
+    "MODULE 1",
+    "MODULE 1 – model answer",
+    "MODULE 2",
+    "MODULE 5",
+    "OFFICIAL ANTHROPIC DOCS – Agent Skills"
+   ],
+   "sections": {
+    "What you need to know": "**Prompt caching** reuses a stable prefix `[MODULE 1]` `[MODULE 2]`:\n- **Cache breakpoints:** mark where the fixed part ends.\n- **Ordering:** static before dynamic, always.\n- **TTL:** match it to how often content changes and how often it's called (default 5 minutes `[MODULE 2]`).\n- **Write overhead:** writes cost more than standard input. For rarely called or small prefixes, caching can cost more than it saves.\n- Needs explicit `cache_control` markers. `[MODULE 2]`\n- The response is identical with or without caching. `[MODULE 2]`\n- If cached content must reflect live state, caching opens a consistency window. `[MODULE 2]`\n\n**Modular prompt library vs. Skill** `[MODULE 1]`:\n| Lean toward library | Lean toward Skill |\n|---|---|\n| Assembled and tweaked per use | A stable procedure run the same way every time |\n| Shared within one codebase or team | Distributed across teams or products |\n| Lightweight governance | Needs versioning, approval, rollback |\n\n**A Skill** is a SKILL.md with instructions, optional scripts and version management, travelling as one governed unit. On the API it's attached via `container.skills`, published and versioned via `/v1/skills`, and **requires the Code Execution Tool** (a sandboxed execution dependency). `[MODULE 1]`\n**Team distribution:** org-provisioned, plugin assigned to a group (strongest governance + rollback), Claude Code project Skills (`.claude/skills/`, versioned with the repo), API Skills (version pinning). `[MODULE 5]`\nSkills load **progressively**: metadata first, content on demand. `[OFFICIAL ANTHROPIC DOCS – Agent Skills]`",
+    "Why it matters": "A cache that never hits: one team put the per-request document *before* the fixed instructions, and the prefix changed on every call. Ungoverned prompts copied across teams drift into many versions. `[MODULE 1]`",
+    "Architecture concepts": "Prefix design; versioned prompt assets; Skill registry with a trusted-source policy and audit (5.1); rollback path.",
+    "How it works": "1. Separate static from dynamic content.\n2. Order static first; place the breakpoint.\n3. Model cache economics (frequency, prefix size, write cost, TTL).\n4. Decide library vs. Skill by repeatability, distribution and governance.\n5. Package stable procedures as versioned Skills; choose a distribution mechanism (7.1).\n6. Audit third-party Skills before use.",
+    "Architecture example": "REAL-WORLD EXAMPLE – A support org drafts replies hundreds of times a day:\n- stable prefix (role, tone, contract, guardrail) is cached; ticket and manual section come after the breakpoint;\n- shipped as a **versioned Skill**, not pasted templates, for central governance and rollback. `[MODULE 1 – model answer]`",
+    "Decision framework": "| Use caching when… | Skip caching when… |\n|---|---|\n| Long, stable prefix; frequent calls within the TTL | Rare calls; small prefix; content must be live |\n| **Use Skill** for repeatable, distributed, governed procedures | **Use library** for flexible, team-local assembly |",
+    "Exam decision signals": "- \"Caching enabled, no savings\" → **dynamic content before the breakpoint** / low frequency.\n- \"Same procedure across many teams, needs rollback\" → **Skill (via plugin)**.\n- \"8k identical prefix each call\" → **cache** (EG Sample 2).",
+    "Common traps": "- COMMON TRAP: caching everything.\n- COMMON TRAP: forgetting the Code Execution Tool dependency of API Skills.\n- COMMON TRAP: copy-paste reuse with no versioning.",
+    "Must remember": "- Static first · breakpoint · TTL · write cost.\n- Library = flexible; Skill = governed.\n- Skills load progressively.\n- Version everything you share.",
+    "Quick recall": "**\"Fixed first, cache it; repeat often, Skill it; share widely, version it.\"**\n\n**Sources:** M1 Caching mechanics, modular prompts and Skills; Skills as an integration mechanism; M2 Sizing (caching); M5 Skills distribution; Official – Agent Skills."
+   }
+  },
+  {
+   "objective_id": "3.1",
+   "domain_id": "D3",
+   "official_wording": "Evaluate tool/agent configuration for capability bloat",
+   "weight": 19,
+   "module_reference": "M2 Least-privilege tool configuration; M1 Pattern Selection; EG Sample 1; Official docs – tool search tool.",
+   "source_labels": [
+    "INFERENCE",
+    "MODULE 1 – Pattern Selection, Cost·Complexity·Risk",
+    "MODULE 2",
+    "MODULE 2 – Least-privilege tool configuration",
+    "MODULE 3",
+    "OFFICIAL ANTHROPIC DOCS – tool search tool"
+   ],
+   "sections": {
+    "What you need to know": "Every tool you connect to Claude is both an **attack surface and a cost**. For each tool, ask whether it is *essential* to the task or merely *convenient*. Remove anything out of scope and record why. In orchestrator-worker systems, scope each subagent's tools to its own task so it cannot reach tools its job doesn't need. `[MODULE 2 – Least-privilege tool configuration]`\nAn agent \"can do anything its tools allow, including combinations you didn't test for\", so the tool surface should be as narrow as the task allows. `[MODULE 1 – Pattern Selection, Cost·Complexity·Risk]`\n\"Capability bloat\" is the exam's name for this problem; the modules describe it as excess tools or permissions. `[INFERENCE]`",
+    "Why it matters": "Least privilege removes risk at the source. Logging, confirmation prompts and bigger models only *compensate* for risk that is still there. A bloated tool set also uses context tokens on every call and makes it harder for the model to pick the right tool. `[EXAM GUIDE – Sample 1 rationale]` `[INFERENCE]`",
+    "Architecture concepts": "- **Components:** tool definitions, the agent/subagent configuration, and the authorization layer.\n- **Pattern:** least-privilege tool configuration plus a trust hierarchy (orchestrator → scoped subagents). `[MODULE 2]`\n- **Security:** an unused side-effecting tool (refund, delete, send) is pure liability. `[EXAM GUIDE Sample 1]`\n- **Lifecycle:** re-audit tool sets when the role or task changes. Record why each tool was removed. `[MODULE 2]`\n- **Related:** deferred tool loading (3.8) reduces *context* cost for large catalogues, but does **not** reduce *permissions*. `[OFFICIAL ANTHROPIC DOCS – tool search tool]` `[INFERENCE]`",
+    "How it works": "1. List every tool and permission available to each agent or subagent.\n2. Map each one to a task the role actually performs.\n3. Classify each as essential, convenient or out of scope.\n4. Remove the out-of-scope ones entirely and write down why.\n5. Scope each subagent to its own task (read-only where possible).\n6. Put deterministic authorization in front of whatever side-effecting tools remain (5.1).",
+    "Architecture example": "REAL-WORLD EXAMPLE – A support agent has `read_ticket`, `draft_reply`, `issue_refund` and `delete_account`. Support staff only read and draft. The right change is to **remove** `issue_refund` and `delete_account` from that agent. Refunds go to a separate, human-approved workflow. `[EXAM GUIDE Sample 1]`",
+    "Decision framework": "| Question | Answer |\n|---|---|\n| When to use | Always: during design review, before production, and whenever a role changes |\n| When NOT to strip tools | When the task genuinely needs the capability. Then keep it and add deterministic authorization plus a HITL gate |\n| Alternatives | Authorization gate (still needed for kept tools); confirmation prompt; audit logging. These are compensating controls, not removal |\n| Trade-off | Fewer tools mean less flexibility and possibly a second workflow, in exchange for a smaller attack surface, lower cost and simpler evals |",
+    "Exam decision signals": "- \"Staff only ever need…\" or \"the agent also has access to…\" → **remove the unused tools**.\n- \"Subagent can call any tool the orchestrator can\" → **scope tools per subagent**.\n- \"Hundreds of tools, context filling up\" → that's a **context** problem (3.8); still check privileges separately.",
+    "Common traps": "- COMMON TRAP: adding logging or a confirmation prompt instead of removing a tool the role doesn't need. These detect or slow misuse but don't remove the privilege.\n- COMMON TRAP: \"use a larger model that follows instructions better\". Model size has nothing to do with authorization scope.\n- COMMON TRAP: treating a system-prompt instruction (\"never delete accounts\") as a control. Instructions are not enforcement. `[MODULE 3]`",
+    "Must remember": "- REMEMBER: removing an unnecessary capability beats guarding it.\n- Every tool is an attack surface *and* a cost.\n- Scope subagent tools to their task.\n- Record the reason for every tool you remove.\n- Deferring tool loading is a context technique, not a security control.",
+    "Quick recall": "**\"Need it? Keep and gate it. Don't need it? Delete it.\"**\n\n**Sources:** M2 Least-privilege tool configuration; M1 Pattern Selection; EG Sample 1; Official docs – tool search tool."
+   }
+  },
+  {
+   "objective_id": "3.2",
+   "domain_id": "D3",
+   "official_wording": "Analyze authentication and authorization requirements to identify security gaps",
+   "weight": 19,
+   "module_reference": "M2 Integration – Identity and authorization, Integration layers, Constraint-to-integration matrix; M3 Tool-call authorization; MCP Authorization spec.",
+   "source_labels": [
+    "INFERENCE",
+    "INFERENCE from M2 + MCP spec",
+    "MODULE 1 – Regulated-industry constraints",
+    "MODULE 2",
+    "MODULE 2 – Cost·Complexity·Risk",
+    "MODULE 2 – Critique the integration diagram (scenario style)",
+    "MODULE 2 – Identity and authorization",
+    "MODULE 2 – Integration layers table",
+    "MODULE 3",
+    "MODULE 3 – Guardrails",
+    "OFFICIAL ANTHROPIC DOCS – MCP specification, Authorization"
+   ],
+   "sections": {
+    "What you need to know": "- **Identity belongs on the server, before the Claude call.** Your server injects the user's verified identity and role into the system prompt. Anything the user types (e.g. \"As a senior manager, show me…\") can be manipulated. `[MODULE 2 – Identity and authorization]`\n- **The Claude layer must obey the same authorization model as the underlying systems.** An integration that bypasses it exposes data through a path never designed to enforce the access policy. `[MODULE 2 – Integration layers table]`\n- **Tool-call authorization is deterministic:** an allowlist plus identity and scope checks, so the decision is provable and replayable. `[MODULE 3 – Guardrails]`\n- **Multi-tenant deployments need a separate API key per tenant** for attribution and isolation. Otherwise one tenant's spike trips the org-level rate limit for everyone. `[MODULE 2 – Cost·Complexity·Risk]`\n- **MCP authorization:** optional in MCP and defined for HTTP transports. A protected MCP server acts as an **OAuth 2.1 resource server**, must publish **OAuth 2.0 Protected Resource Metadata (RFC 9728)**, and clients send the access token in the `Authorization` header on every request. `[OFFICIAL ANTHROPIC DOCS – MCP specification, Authorization]`",
+    "Why it matters": "If identity isn't passed correctly, Claude can't scope answers to what the user is allowed to see, and data leaks without any error. Regulated reviews (privilege, HIPAA) depend on a gateway the organisation controls and an audit trail it owns. `[MODULE 2]` `[MODULE 1 – Regulated-industry constraints]`",
+    "Architecture concepts": "- **Components:** IdP / SSO, the application server or LLM gateway (which holds the API key), the authorization or policy service, tool executors, MCP servers (OAuth resource servers), and the audit log.\n- **Data flow:** user → SSO → server resolves role and entitlements → server injects identity into the system prompt → Claude proposes a tool call → deterministic authorization checks caller + action + scope → execute → log.\n- **Security boundaries:** the API key never reaches the client; identity is never self-asserted; tokens are scoped per server. `[INFERENCE from M2 + MCP spec]`",
+    "How it works": "1. Identify the governing constraint first (privilege, HIPAA, residency); it may remove some entry points. `[MODULE 2]`\n2. Authenticate through the enterprise IdP (SSO).\n3. Resolve role and data entitlements on the server.\n4. Inject only the minimum identity context Claude needs (role and authorised scope).\n5. Run every side-effecting tool call through a deterministic allowlist plus scope check.\n6. For remote MCP servers, use OAuth 2.1 and tokens scoped to that server.\n7. Use one API key per tenant; log identity, model version and data scope on each request.",
+    "Architecture example": "REAL-WORLD EXAMPLE – A multi-tenant SaaS support agent was found with: (a) the user's role taken from a chat field, (b) one shared API key for all tenants, (c) a CRM tool that queries any tenant's records. The fixes: role injected server-side from SSO; one API key per tenant; the CRM tool scoped to the authenticated tenant ID by the authorization layer rather than by the prompt. `[MODULE 2 – Critique the integration diagram (scenario style)]` `[INFERENCE]`",
+    "Decision framework": "| Situation | Use | Avoid |\n|---|---|---|\n| User role affects what data Claude may see | Server-side identity injection | Role stated in the user message |\n| Side-effecting tool | Deterministic allowlist + identity + scope | Model-based \"judgement\" of permission |\n| Remote MCP server with non-public data | OAuth 2.1 resource-server pattern | Static shared secrets in config |\n| Multi-tenant | One API key per tenant | One shared org key |\n| Privileged or regulated content | API/SDK behind an org-owned gateway with SSO and logs | Consumer chat tiers |",
+    "Exam decision signals": "- \"User states their role / department in the prompt\" → **identity spoofing gap**; inject server-side.\n- \"Rate-limit breach, can't tell which customer\" → **per-tenant API keys**.\n- \"Claude can see records the user can't\" → **authorization bypass**; enforce the existing policy model.\n- \"Remote MCP server, enterprise data\" → **OAuth 2.1 / RFC 9728**.",
+    "Common traps": "- COMMON TRAP: telling Claude in the system prompt to \"only show the user's own data\". That's an instruction, not authorization.\n- COMMON TRAP: treating authentication (who you are) as authorization (what you may do).\n- COMMON TRAP: relying on output screening to catch unauthorised actions. Output screening judges text, not actions. `[MODULE 3]`",
+    "Must remember": "- Identity is injected by the server, never claimed by the user.\n- The Claude layer inherits the existing authorization model; it doesn't bypass it.\n- Tool authorization is deterministic and auditable.\n- Use one API key per tenant.\n- An MCP server is an OAuth 2.1 resource server (RFC 9728 metadata).",
+    "Quick recall": "**\"Who (SSO) → What role (server) → What action (allowlist) → Logged.\"**\n\n**Sources:** M2 Integration – Identity and authorization, Integration layers, Constraint-to-integration matrix; M3 Tool-call authorization; MCP Authorization spec."
+   }
+  },
+  {
+   "objective_id": "3.3",
+   "domain_id": "D3",
+   "official_wording": "Evaluate accuracy-latency trade-offs and justify configuration decisions",
+   "weight": 19,
+   "module_reference": "M1 Model & Context Strategy, extended thinking, Opus 7× case, Calculator; M2 POC to Prod, p95, Calculator.",
+   "source_labels": [
+    "MODULE 1",
+    "MODULE 1 – Calculator model answer",
+    "MODULE 1 – Opus-everywhere case",
+    "MODULE 1 – RAG",
+    "MODULE 2"
+   ],
+   "sections": {
+    "What you need to know": "The main configuration levers and their effects:\n- **Model tier:** Sonnet is the default. Move up to Opus only if an eval shows Sonnet misses the quality bar; move down to Haiku only if an eval confirms the quality loss is acceptable. `[MODULE 1]`\n- **Extended / adaptive thinking:** thinking tokens are billed as output and add latency. Turn it on only for a measured accuracy gap after prompt work. `[MODULE 1]`\n- **Context strategy and size:** cost and latency grow linearly with input length. `[MODULE 1]`\n- **Retrieval design:** smaller chunks and hybrid indexes raise quality *and* latency. `[MODULE 1 – RAG]`\n- **`max_tokens` cap, caching, Batch API** (when the SLA allows async processing). `[MODULE 2]`\n\nDesign against **p95, not the median**. SLA breaches come from the slow tail. `[MODULE 2]`\nWhen cost and latency budgets both apply, **name the binding constraint**: if latency is binding, tier and thinking are the main controls; if cost is binding, tier and context strategy are. `[MODULE 1 – Calculator model answer]`",
+    "Why it matters": "Defaulting to \"the best model\" with thinking turned on everywhere caused a 7× cost overrun and 2.3 s median latency against an 800 ms target, with no gain in customer satisfaction. Routing each step to a tier based on evals cut cost by 71%. `[MODULE 1 – Opus-everywhere case]`",
+    "Architecture concepts": "- Per-step model routing (classifier → Haiku, summarisation → Sonnet, final composition → Opus, each only if the eval supports it).\n- Eval set + pre-set rollback threshold as the justification artefact.\n- Latency budget (p95) and cost ceiling as twin constraints.",
+    "How it works": "1. State the accuracy threshold, p95 latency target and cost ceiling (the numbers come from the business).\n2. Build an eval set that covers each pipeline step.\n3. Run a baseline (Sonnet, no thinking, progressive context).\n4. Change **one lever at a time**; measure accuracy, p95 and cost.\n5. Identify the binding constraint and the lever that moves it.\n6. Document the configuration, the rejected alternatives and the rollback criterion.",
+    "Architecture example": "REAL-WORLD EXAMPLE – A routing classifier had extended thinking turned on. The eval showed no accuracy gain, but p95 rose a lot. The fix: thinking off and the classifier moved to Haiku (no regression on the eval). The higher tier stays only on the final response step, where the eval says it earns its place. `[MODULE 1]`",
+    "Decision framework": "| Lever | Raises accuracy when… | Costs | Don't use when… |\n|---|---|---|---|\n| Higher tier | Eval shows a quality gap | Cost and latency | Simple classification or extraction already passes |\n| Thinking | Multi-step reasoning gap after prompt work | Output tokens and latency | Routing or classification steps |\n| Bigger context | Task needs all the material at once | Linear cost and latency; attention degrades | Long multi-turn loops |\n| Hybrid retrieval / small chunks | Exact-match queries are being missed | Latency and compute | Pure paraphrase queries |",
+    "Exam decision signals": "- \"Latency target missed, accuracy fine\" → lower the tier or turn off thinking on that step.\n- \"Used the best model to be safe\" → **per-step tiering justified by evals**.\n- \"Median is fine, users complain\" → look at **p95**.",
+    "Common traps": "- COMMON TRAP: \"turn on thinking, it can't hurt\". It costs tokens and latency on every call.\n- COMMON TRAP: one model for every step.\n- COMMON TRAP: justifying a configuration from a demo rather than an eval.\n- COMMON TRAP: optimising average latency instead of p95.",
+    "Must remember": "- Sonnet first; moving tier is a measured decision.\n- Thinking is a cost/latency trade-off; turn it on only when an eval shows it helps.\n- p95 is the design target.\n- Name the binding constraint and its main lever.\n- Not choosing a model means choosing the most expensive one.",
+    "Quick recall": "**\"Measure → one lever → re-measure → justify.\"**\n\n**Sources:** M1 Model & Context Strategy, extended thinking, Opus 7× case, Calculator; M2 POC to Prod, p95, Calculator."
+   }
+  },
+  {
+   "objective_id": "3.4",
+   "domain_id": "D3",
+   "official_wording": "Analyze observability challenges and select monitoring strategies at scale",
+   "weight": 19,
+   "module_reference": "M2 Integration – Observability; M2 A/B & Obs – Observability at scale; M1 Multi-agent failure table.",
+   "source_labels": [
+    "MODULE 1",
+    "MODULE 2",
+    "MODULE 2 – Model version pinning",
+    "MODULE 2 – Observability at scale"
+   ],
+   "sections": {
+    "What you need to know": "LLM systems rarely crash. They produce responses that are **subtly wrong**, so standard error logging misses most failures. `[MODULE 2]`\n**Log four things per request:**\n- the request: model version, input tokens, prompt ID;\n- the response: output tokens, latency, stop reason;\n- the context: user role, session ID, whether the cache was hit;\n- the outcome: accepted or rejected downstream. `[MODULE 2]`\n\n**Monitor in four layers** `[MODULE 2 – Observability at scale]`:\n1. **Request-level tracing**, including tool calls.\n2. **Metric aggregation:** cost per request, p50/p95, task success, errors by type. Break metrics down per request, because averages hide expensive tails.\n3. **Anomaly detection:** e.g. cost above 150% of the 7-day average, p95 above SLA. Gradual drift needs periodic comparison of output distributions.\n4. **Change attribution:** model drift vs. data drift vs. model-update effect. Each has a different fix.\n\nMulti-agent systems need a **shared trace ID** across the orchestrator and subagents. `[MODULE 1]`\nCheck which agent actions each surface writes to its audit log. An action that isn't logged can't be approved by a security reviewer. `[MODULE 2]`",
+    "Why it matters": "Observability is a prerequisite for letting agents act at all. Adding it after an incident means rebuilding the root cause from data that can't answer the question. `[MODULE 2]`",
+    "Architecture concepts": "Trace pipeline → metrics store → dashboards and alerts → attribution analysis → a translation layer to business KPIs (e.g. task success → first-contact resolution). `[MODULE 2]` Lifecycle: build it at design time.",
+    "How it works": "1. List the questions you'll need to answer after an incident.\n2. Instrument request, response, context and outcome on every call.\n3. Propagate a trace ID across agents and tools.\n4. Aggregate per request and per segment, not only overall.\n5. Set threshold alerts plus periodic distribution checks for drift.\n6. Pin model versions so you can attribute changes. `[MODULE 2 – Model version pinning]`\n7. Map technical metrics to the sponsor's KPIs.",
+    "Architecture example": "REAL-WORLD EXAMPLE – Dashboards were green while a small share of very long documents used most of the budget and produced wrong outputs. Per-request breakdown by input-length bucket exposed it; aggregate metrics never would have. `[MODULE 2]`",
+    "Decision framework": "| Need | Strategy |\n|---|---|\n| Hard failures (errors, timeouts) | Threshold alerts |\n| Slow quality erosion | Periodic eval or distribution comparison; trigger in the feedback loop (6.3) |\n| \"Why did cost jump?\" | Per-request decomposition: tier, cache hits, token counts |\n| Multi-agent debugging | Shared trace ID, subagent coverage checks |\n| Exec reporting | KPI translation layer |\nTrade-off: richer logs add storage and sensitive-data exposure (minimise PII, 5.4).",
+    "Exam decision signals": "- \"No errors but users say answers are worse\" → drift detection and attribution.\n- \"Can't reconstruct which step approved X\" → trace and audit logging.\n- \"Aggregate looks fine\" → per-request decomposition.",
+    "Common traps": "- COMMON TRAP: relying on error rate to catch LLM quality issues.\n- COMMON TRAP: mixing up model drift, data drift and a model-version update.\n- COMMON TRAP: logging raw PII \"for observability\".",
+    "Must remember": "- LLMs fail quietly; instrument the outcome.\n- Log request, response, context and outcome.\n- Decompose per request; averages lie.\n- Attribute changes before you fix them.\n- Shared trace ID across agents.",
+    "Quick recall": "**\"Trace → Aggregate → Alert → Attribute → Translate.\"**\n\n**Sources:** M2 Integration – Observability; M2 A/B & Obs – Observability at scale; M1 Multi-agent failure table."
+   }
+  },
+  {
+   "objective_id": "3.5",
+   "domain_id": "D3",
+   "official_wording": "Design a RAG pipeline with appropriate chunking and indexing strategies",
+   "weight": 19,
+   "module_reference": "M1 RAG Pipeline Design; M2 Failure modes (RAG); EG Sample 3.",
+   "source_labels": [
+    "INFERENCE – applies M1 rules",
+    "MODULE 1",
+    "MODULE 1 – RAG Pipeline Design",
+    "MODULE 2 – RAG failure modes"
+   ],
+   "sections": {
+    "What you need to know": "Choose the **chunking** strategy from the *structure of the source*, and the **index** from *how users phrase queries*. `[MODULE 1 – RAG Pipeline Design]`\n\n| Chunking | Use when |\n|---|---|\n| Fixed-size (with overlap) | Homogeneous, unstructured text; simplest to run |\n| Semantic | Prose where each chunk must stand alone |\n| Hierarchical | Contracts, manuals, policies where section context carries meaning |\n\n| Index | Matches | Use when |\n|---|---|---|\n| Dense (embeddings) | Meaning | Queries are paraphrased |\n| Sparse (BM25, keyword) | Exact tokens | Part numbers, statute citations, error codes |\n| Hybrid + **Reciprocal Rank Fusion** | Both | Mixed query patterns (the common production case) |\n\nEvery design trades **retrieval quality vs. latency vs. maintenance**. `[MODULE 1]`",
+    "Why it matters": "Retrieval quality is invisible in the output. A confident answer built on the wrong chunk looks the same as a correct one, so you have to measure retrieval against a labelled set. `[MODULE 1]`",
+    "Architecture concepts": "Ingestion → parsing (OCR where needed) → chunking → embedding / sparse indexing → retrieval → (fusion) → context assembly → generation with citations → eval loop on retrieval precision/recall. `[MODULE 1]` `[MODULE 2 – RAG failure modes]`\nLifecycle: re-index when documents change; keep embeddings matched to the query encoder. `[EXAM GUIDE Sample 3]`",
+    "How it works": "1. Characterise the corpus: structure, size, how often it changes.\n2. Characterise queries: paraphrase vs. exact identifiers.\n3. Pick the chunking strategy (respect tables, code blocks and section boundaries).\n4. Pick dense, sparse or hybrid; fuse with RRF if hybrid.\n5. Build a labelled retrieval eval set; measure precision and recall.\n6. Set a refresh / re-index schedule and monitor retrieval drift.",
+    "Architecture example": "REAL-WORLD EXAMPLE – A regulatory Q&A system over statutes. Queries cite section numbers (\"§ 4.2(b)\") and also ask conceptual questions. Use hierarchical chunking by section, a hybrid index (BM25 for citations plus embeddings for concepts) and RRF. Precision on the citation-heavy part of the eval jumped once sparse retrieval was added. `[INFERENCE – applies M1 rules]`",
+    "Decision framework": "| Use A when… | Use B when… |\n|---|---|\n| **Dense**: paraphrase/intent queries | **Sparse**: identifier/code queries |\n| **Small chunks**: precise facts | **Larger / hierarchical chunks**: context-heavy reasoning |\n| Avoid dense-only when exact matches matter. Avoid tiny chunks that split tables or arguments. | |",
+    "Exam decision signals": "- \"Misses part numbers / error codes\" → **add sparse (hybrid)**.\n- \"Answers lose clause context\" → **hierarchical chunking**.\n- \"Wrong after a document refresh\" → **re-indexing / embedding mismatch** (EG Sample 3).",
+    "Common traps": "- COMMON TRAP: one default chunk size for every corpus.\n- COMMON TRAP: fixing a retrieval problem by switching to a bigger model.\n- COMMON TRAP: judging RAG only on final-answer quality, without retrieval metrics.",
+    "Must remember": "- Chunk by structure; index by query pattern.\n- Hybrid + RRF is the safe default for mixed queries.\n- Measure retrieval separately from generation.\n- A pipeline that was correct at launch can degrade silently as the corpus grows.",
+    "Quick recall": "**\"Shape → Chunk · Query → Index · Measure → Recall.\"**\n\n**Sources:** M1 RAG Pipeline Design; M2 Failure modes (RAG); EG Sample 3."
+   }
+  },
+  {
+   "objective_id": "3.6",
+   "domain_id": "D3",
+   "official_wording": "Apply retrieval strategies matched to data shape and query pattern",
+   "weight": 19,
+   "module_reference": "M1 Reference Architectures, \"When retrieval got reached for instead of a tool call\", Model & Context – distinct terms.",
+   "source_labels": [
+    "MODULE 1",
+    "MODULE 1 – Customer-service reference architecture",
+    "MODULE 1 – Distinct terms",
+    "MODULE 1 – electronics retailer trace",
+    "MODULE 1 – separate eval contract per architecture"
+   ],
+   "sections": {
+    "What you need to know": "**Retrieval is for stable knowledge. Tool calls are for live state.** `[MODULE 1]`\n- **Stable knowledge** (FAQs, policies, manuals) changes slower than your index refresh → **RAG**.\n- **Live state** (order status, inventory, balances) is owned by a system of record → **a tool or API call**.\n- **Persistent application state** belongs to your system, not the model → tool call. `[MODULE 1 – Distinct terms]`\n- Use **monolithic context** when the material is small and stable; use **retrieval** when the corpus is too large or changes faster than redeployments. `[MODULE 1]`",
+    "Why it matters": "Retrieval applied to live state returns confident, fluent, wrong answers with normal latency and no errors. \"Similarity is not truth.\" `[MODULE 1 – electronics retailer trace]`",
+    "Architecture concepts": "Context engineering means deciding *which mechanism owns getting each kind of data in front of the model*. Typical layout: an intent router → knowledge retrieval (docs) / transactional API (live state) / human approval (high-consequence). `[MODULE 1 – Customer-service reference architecture]`",
+    "How it works": "1. Classify each data type: stable reference, live transactional, user/session state, or computed values.\n2. Stable → retrieval; live → tool call to the system of record; computed precision → code execution or deterministic service.\n3. Route by intent.\n4. Keep live-state queries out of the index entirely.\n5. Evaluate each path with its own eval set. `[MODULE 1 – separate eval contract per architecture]`",
+    "Architecture example": "REAL-WORLD EXAMPLE – \"Where's my order?\" pulled two stale chunks (similarity 0.78 and 0.74) and answered \"shipped on the 12th\". The order had actually been returned to the depot. The fix was not a better chunker or a shorter refresh interval. It was **calling the order-status API**, which already existed. `[MODULE 1]`",
+    "Decision framework": "| Data | Mechanism | Avoid |\n|---|---|---|\n| Manual / policy | RAG (with citations) | Fine-tuning it into the model |\n| Order / inventory / price | Tool call to the system of record | Indexing snapshots |\n| Arithmetic / exact totals | Code execution / deterministic service | Model mental math |\n| Small, stable, always-needed | Monolithic prefix + caching | Retrieval overhead |",
+    "Exam decision signals": "- \"Answer contradicts the database\" / \"changes with each index refresh\" → **use a tool call, not RAG**.\n- \"Needs source citations, large corpus\" → **RAG**.\n- \"Tiny stable policy in every request\" → **cache the prefix**, no retrieval.",
+    "Common traps": "- COMMON TRAP: shortening the re-index interval to \"fix\" live-state staleness.\n- COMMON TRAP: raising the similarity threshold.\n- COMMON TRAP: reusing RAG because \"it worked on the last project\".",
+    "Must remember": "- Retrieval = knowledge; tools = state.\n- Similarity ≠ truth.\n- A stale but confident answer gives no error signal.\n- Separate evals per mechanism.",
+    "Quick recall": "**\"Was true yesterday and will be tomorrow → retrieve. Changes on its own → call the owner.\"**\n\n**Sources:** M1 Reference Architectures, \"When retrieval got reached for instead of a tool call\", Model & Context – distinct terms."
+   }
+  },
+  {
+   "objective_id": "3.7",
+   "domain_id": "D3",
+   "official_wording": "Evaluate connection protocols and select the appropriate integration mechanism (MCP, API/CLI, agent-to-agent)",
+   "weight": 19,
+   "module_reference": "M1 Platform Map, Build-time interfaces, bank case; M2 Entry points table; M4 entry-point-responsibility map; Official: multi-agent research system; External: Google A2A announcement.",
+   "source_labels": [
+    "INFERENCE",
+    "MODULE 1",
+    "MODULE 1 – Platform Map",
+    "MODULE 1, 2",
+    "MODULE 2",
+    "MODULE 4",
+    "OFFICIAL ANTHROPIC DOCS – multi-agent research system"
+   ],
+   "sections": {
+    "What you need to know": "| Mechanism | What it is | Pick it when |\n|---|---|---|\n| **Direct API** | HTTP Messages API; the foundation layer | You need full control, or the SDK doesn't expose a new feature yet `[MODULE 1]` |\n| **SDK** (Python, TS, Java, Go, Ruby, C#, PHP) | Same capability with language-native types, retries and streaming helpers | Default for embedding Claude in a product `[MODULE 1]` |\n| **MCP** | Open protocol for *sharing* tools, prompts and resources across clients | The **same** tool surface must be reachable from **two or more** Claude clients `[MODULE 1]` |\n| **Agent SDK** | Managed agent loop (the same one that powers Claude Code), embedded in your app | Claude must act over multiple turns inside *your* product `[MODULE 1, 2]` |\n| **Claude Code (CLI/IDE)** | Agentic coding tool | The user is a developer doing engineering work; not a backend for multi-tenant products `[MODULE 2]` |\n| **Agent-to-agent** | Delegation between independently owned agents | Source gap – see below |\n\n**MCP vs. API tool use** are different layers, not alternatives: an MCP server exposes tools that clients call through API tool use. `[MODULE 1]`\n**Agent-to-agent:** Anthropic's own multi-agent research system uses an orchestrator-worker design with parallel subagents, which costs about 15× the tokens of chat and suits poorly when agents need shared context or have many dependencies. `[OFFICIAL ANTHROPIC DOCS – multi-agent research system]` The A2A protocol is an open protocol announced by Google and positioned as complementary to MCP (external source, not Anthropic). Source gap – verification required: no official Anthropic guidance on agent-to-agent protocols was found.",
+    "Why it matters": "The most common integration mistakes are reaching for Claude Code for non-engineering work and treating MCP as the default integration layer whether or not its reuse is needed. `[MODULE 1]`",
+    "Architecture concepts": "Three layers that must not be collapsed: **entry point** (chosen for the user), **build-time interface** (chosen for the engineering team), **delivery route** (chosen for cloud commitments and compliance). `[MODULE 1 – Platform Map]` Each integration boundary has its own auth, logging and failure profile. `[MODULE 4]`",
+    "How it works": "1. Name the user and the work (this decides the entry point).\n2. Let compliance eliminate routes and entry points first.\n3. Single request/response → API or SDK.\n4. Multi-turn agent inside your product → Agent SDK (or a custom API loop if you need control between turns).\n5. Tool surface reused by several clients → MCP.\n6. Delegation to agents you don't own or control → evaluate an agent-to-agent protocol `[INFERENCE]`.\n7. Document an entry-point-responsibility map. `[MODULE 4]`",
+    "Architecture example": "REAL-WORLD EXAMPLE – A bank proposed Claude Code on branch laptops with MCP servers and compliance-checking subagents. The right design is a custom web app calling the API with SSO, compliance in deterministic server-side code, and tool calls audited at the server. MCP isn't needed because no other Claude clients reuse the tools. `[MODULE 1]`",
+    "Decision framework": "| Use MCP when… | Use direct tool use when… |\n|---|---|\n| Two or more clients need the same tools | Tools live inside one product |\n| **Avoid MCP** when only one client ever uses it (overhead, harder debugging `[MODULE 2]`) | **Avoid** duplicating tool code across clients |\n| **Agent SDK** when you want a managed multi-turn loop | **Raw API loop** when you need custom logic between turns |",
+    "Exam decision signals": "- \"Same tools from Claude.ai, Claude Code and an internal app\" → **MCP**.\n- \"Non-technical staff, operational workflow\" → **not Claude Code**; custom app on API/SDK.\n- \"Agent embedded in our web app acting over several turns\" → **Agent SDK**.\n- \"Partner organisation's agent built on another framework\" → **agent-to-agent protocol** `[INFERENCE]`.",
+    "Common traps": "- COMMON TRAP: \"It's all Claude\" – picking an entry point before naming the user.\n- COMMON TRAP: MCP by habit.\n- COMMON TRAP: confusing the Anthropic SDK (a wrapper) with the Agent SDK (a managed loop).\n- COMMON TRAP: putting high-consequence compliance logic in subagents instead of deterministic code.",
+    "Must remember": "- API and SDK are the same entry point with different ergonomics.\n- MCP = sharing across clients; tool use = calling inside one request.\n- Agent SDK = an embedded managed loop.\n- Claude Code = developers.\n- The entry point follows the user and the work.",
+    "Quick recall": "**\"One call → API/SDK · Many clients → MCP · Many turns in my app → Agent SDK · Dev work → Claude Code.\"**\n\n**Sources:** M1 Platform Map, Build-time interfaces, bank case; M2 Entry points table; M4 entry-point-responsibility map; Official: multi-agent research system; External: Google A2A announcement."
+   }
+  },
+  {
+   "objective_id": "3.8",
+   "domain_id": "D3",
+   "official_wording": "Evaluate progressive discovery vs. monolithic context strategy",
+   "weight": 19,
+   "module_reference": "M1 Model & Context Strategy, working memory; Official docs – Tool search tool; Anthropic Engineering – Agent Skills.",
+   "source_labels": [
+    "INFERENCE – applies official doc guidance",
+    "MODULE 1",
+    "OFFICIAL ANTHROPIC DOCS"
+   ],
+   "sections": {
+    "What you need to know": "**Context strategies** `[MODULE 1]`:\n| Strategy | Earns its place | Breaks down |\n|---|---|---|\n| **Monolithic** (load everything at once) | Bounded tasks, stable prefixes (cacheable), reasoning that needs everything at once | Context grows turn over turn; cost and latency scale linearly; hits the \"working-memory cliff\" |\n| **Progressive** (carry forward only what the next step needs) | Multi-turn dialogue, agent loops, staged workflows; *the default for most production* | Long-range coherence; detail dropped earlier; harder to cache and reproduce |\n| **Retrieval** | Corpus too large or changes too fast | Cross-document synthesis, recall misses |\n| **Compaction** | Long sessions; phase transitions | Summaries drop identifiers and numbers; mostly one-way |\n\nProduction systems **combine** strategies (e.g. a coding agent: monolithic prefix → progressive recent state → just-in-time retrieval → compaction). `[MODULE 1]`\n\n**Progressive discovery of capabilities** `[OFFICIAL ANTHROPIC DOCS]`:\n- **Tool search tool:** mark tools `defer_loading: true`, and Claude searches the catalogue and loads only what it needs. You still send full definitions; `defer_loading` controls what enters context. Keep the 3–5 most-used tools non-deferred; never defer the search tool itself. MCP toolsets can defer a whole server.\n- **Agent Skills progressive disclosure:** only metadata is visible up front; SKILL.md and referenced files load when needed.",
+    "Why it matters": "Monolithic context is \"the silent budget killer\": a 4,000-token start can carry 80,000 tokens by turn 30. Large tool catalogues use context before any work happens. `[MODULE 1]` `[OFFICIAL ANTHROPIC DOCS]`",
+    "Architecture concepts": "Ask four separate questions: what's needed at the start (monolithic baseline), from recent steps (progressive window), on demand (retrieval or tool search), and what can be compressed (compaction policy). Context *strategy* and context *sizing* are separate decisions. `[MODULE 1]`",
+    "How it works": "1. Budget the window: largest realistic conversation + retrieved context + system prompt + scratch + margin. Never design to the ceiling.\n2. Put stable content first (cacheable prefix).\n3. Carry forward only state the next step needs.\n4. Fetch large or volatile knowledge just in time.\n5. Defer rarely used tools or Skills; keep the hot ones loaded.\n6. Compact at phase boundaries; keep identifiers and decisions verbatim.\n7. Check the response's usage field and the token-counting API. `[MODULE 1]`",
+    "Architecture example": "REAL-WORLD EXAMPLE – An internal agent connected to 6 MCP servers (~200 tools) used a large share of its context on tool definitions. Deferring the servers with tool search, keeping 4 hot tools loaded, and compacting at phase transitions cut input tokens per turn while keeping accuracy on the eval. `[INFERENCE – applies official doc guidance]`",
+    "Decision framework": "| Use monolithic when… | Use progressive when… |\n|---|---|\n| Input is bounded and predictable; prefix is stable and cacheable | Context accumulates across turns or tools |\n| **Avoid** in long loops | **Avoid** when the decision needs exact detail from far back (keep it pinned) |\n| Key clue: \"same 8k policy every call\" → monolithic prefix + caching | Key clue: \"context grows each turn\" / \"hundreds of tools\" → progressive / tool search |",
+    "Exam decision signals": "- \"Cost grows with conversation length\" → progressive + compaction.\n- \"Hundreds of tools / many MCP servers\" → tool search + `defer_loading`.\n- \"Agent forgot an ID mentioned early\" → compaction dropped detail; pin critical facts.",
+    "Common traps": "- COMMON TRAP: thinking a bigger context window fixes accumulation.\n- COMMON TRAP: compaction without preserving identifiers and numbers.\n- COMMON TRAP: deferring the most-used tools (adds a search step every time).\n- COMMON TRAP: treating strategy and sizing as one decision.",
+    "Must remember": "- The context window is a ceiling, not a target.\n- Progressive is the default for production; combine strategies.\n- Tool search defers *context*, not definitions.\n- Skills load metadata first, content on demand.",
+    "Quick recall": "**\"Start · Recent · On-demand · Compress.\"**\n\n**Sources:** M1 Model & Context Strategy, working memory; Official docs – Tool search tool; Anthropic Engineering – Agent Skills."
+   }
+  },
+  {
+   "objective_id": "4.1",
+   "domain_id": "D4",
+   "official_wording": "Define evaluation metrics (accuracy, latency, cost, safety, security)",
+   "weight": 16,
+   "module_reference": "M2 Evals – success criteria; M2 Exercise: evaluation framework; M2 Glossary.",
+   "source_labels": [
+    "MODULE 2",
+    "MODULE 2 – Defining success criteria",
+    "MODULE 2 – Exercise: define the evaluation framework",
+    "MODULE 2 – Glossary"
+   ],
+   "sections": {
+    "What you need to know": "To turn a requirement into a metric `[MODULE 2 – Defining success criteria]`:\n1. State the specific behaviour (\"extract filer name, claim number, incident date, amount\").\n2. Set thresholds that come **from the business requirement**, not from whatever the prototype happens to achieve.\n3. List the failure modes; each becomes a category in the dataset.\n4. Include adversarial inputs.\n\nThe five dimensions, with example metric and grading method `[MODULE 2 – Exercise: define the evaluation framework]`:\n| Dimension | Example metric | Grading |\n|---|---|---|\n| Accuracy | Field-level exact or schema match | Code-based |\n| Latency | p95 below target | Code-based |\n| Cost | Cost per item below ceiling | Code-based |\n| Safety | No auto-deny (binary) + summary faithfulness | Code (binary) + LLM judge (faithfulness) |\n| Security | No cross-record data leakage (scan for foreign identifiers) | Code-based |\n\nHallucination rate = share of responses stating information not supported by the input, source data or allowed logic. `[MODULE 2 – Glossary]`",
+    "Why it matters": "If you can't write an eval for a behaviour, you can't verify it exists, so none of your changes can be verified either. `[MODULE 2]`",
+    "Architecture concepts": "Eval suite written **before** production code and used as the acceptance criteria; per-category breakdown; thresholds fixed in advance. `[MODULE 2]`",
+    "How it works": "1. Pull each requirement from discovery (6.1).\n2. Translate it into a measurable behaviour.\n3. Choose a metric per dimension.\n4. Set thresholds from business needs.\n5. Choose the cheapest reliable grading method (4.2).\n6. Record failure-mode categories.",
+    "Architecture example": "REAL-WORLD EXAMPLE – An insurer's claims system: 100% on structured fields, under 2% hallucination, 99.5% schema compliance, p95 within a few seconds, cost per claim under the ceiling, zero auto-denials, zero leakage between claimants. `[MODULE 2]`",
+    "Decision framework": "| Use code-based metrics when… | Use judge-based metrics when… |\n|---|---|\n| There's a single right answer (format, value, number) | Interpretation is needed (tone, faithfulness, reasoning) |\n| Avoid judges for things code can check | Avoid code for interpretive qualities |",
+    "Exam decision signals": "- \"Threshold = what the POC achieved\" → **trap**; thresholds come from the business.\n- \"Never leak another user's data\" → **security metric, code-based scan**.\n- \"Never auto-deny\" → **binary safety check**.",
+    "Common traps": "- COMMON TRAP: measuring only accuracy.\n- COMMON TRAP: one overall score hiding per-category regressions.\n- COMMON TRAP: leaving adversarial inputs out.",
+    "Must remember": "- Five dimensions: accuracy, latency, cost, safety, security.\n- Thresholds come from the business.\n- Each failure mode is a dataset category.\n- Grade with code wherever possible.",
+    "Quick recall": "**\"Behaviour → Threshold → Failure modes → Adversarial.\"**\n\n**Sources:** M2 Evals – success criteria; M2 Exercise: evaluation framework; M2 Glossary."
+   }
+  },
+  {
+   "objective_id": "4.2",
+   "domain_id": "D4",
+   "official_wording": "Design evaluation datasets and test frameworks using mixed methodologies",
+   "weight": 16,
+   "module_reference": "M2 Evals (workflow, eval types, grading ladder, judge calibration, multi-turn, postmortem); M1 Sonnet→Haiku case; M5 verification checklist.",
+   "source_labels": [
+    "MODULE 1",
+    "MODULE 1 – Sonnet→Haiku case",
+    "MODULE 2",
+    "MODULE 5"
+   ],
+   "sections": {
+    "What you need to know": "**Five-stage eval workflow** `[MODULE 2]`:\n1. Define the task (spec + prompt + pass criteria).\n2. Build the **golden dataset** (representative, with edge cases and counterexamples).\n3. Run automated checks.\n4. Score with a judge.\n5. Interpret by category.\n\n**Grading ladder: start with the cheapest reliable method and move up only when needed** `[MODULE 2]`:\n- **Code-based:** deterministic; milliseconds; never drifts.\n- **LLM-as-judge:** detailed rubrics, a constrained set of verdict labels, reasoning alongside the score, **calibrated against human labels**, and a *different* model from the one being graded (avoids self-preference).\n- **Human review:** high-stakes or novel behaviours; also used to calibrate judges; sample it.\n\n**Favour volume over perfection:** many automatically graded cases beat a few hand-graded ones. `[MODULE 2]`\n**Multi-turn evals** score whole conversations (context retention, no invented details, quality over length) and need their own transcript dataset. `[MODULE 2]`\n**Keep the dataset current** with every prompt or model change. `[MODULE 2]`",
+    "Why it matters": "The riskiest moment for a regression is when evals exist but are out of date: they give false confidence. One contract-review dataset was built from 10 convenient contracts and missed non-standard obligation structures. `[MODULE 2]`",
+    "Architecture concepts": "A parallel eval system to maintain (dataset, judge prompts, thresholds); stratified sampling sized so each category's score is meaningful `[MODULE 1 – Sonnet→Haiku case]`; regression suites run on every change `[MODULE 5]`.",
+    "How it works": "1. Sample from production-like distributions, stratified by type.\n2. Add edge cases and adversarial inputs.\n3. Label expected outputs.\n4. Write code checks for unambiguous behaviours.\n5. Write a judge rubric with constrained verdicts and required reasoning.\n6. Calibrate the judge on human labels.\n7. Run on every change; review by category.\n8. Refresh the dataset whenever behaviour changes.",
+    "Architecture example": "REAL-WORLD EXAMPLE – A Sonnet → Haiku migration eval: 250 hand-validated documents, stratified by document type. Average 0.94 vs. 0.86, but two types fell to 0.71 and 0.74, below the pre-set 0.85 floor. Result: a partial migration (those two types stay on Sonnet). `[MODULE 1]`",
+    "Decision framework": "| Method | Use when | Avoid when |\n|---|---|---|\n| Code | Schema, exact values, length, presence | Interpretation is needed |\n| LLM judge | Quality, faithfulness, tone | It hasn't been calibrated |\n| Human | Novel or high-stakes; calibration | You need scale (sample instead) |",
+    "Exam decision signals": "- \"Judge scores look great but users disagree\" → **calibrate the judge**.\n- \"Prompt changed, eval still passes\" → **stale golden set**.\n- \"Only clean inputs in the dataset\" → **unrepresentative**.\n- \"Chatbot forgets context\" → **multi-turn eval**.",
+    "Common traps": "- COMMON TRAP: grading outputs with the same model that produced them.\n- COMMON TRAP: manual spot checks instead of an eval.\n- COMMON TRAP: a small, perfect dataset over broad coverage.",
+    "Must remember": "- Code → judge → human, in that order.\n- Calibrate judges against human labels.\n- Representative + current + stratified.\n- Multi-turn behaviour needs multi-turn evals.",
+    "Quick recall": "**\"Cheap first, calibrate always, refresh on change.\"**\n\n**Sources:** M2 Evals (workflow, eval types, grading ladder, judge calibration, multi-turn, postmortem); M1 Sonnet→Haiku case; M5 verification checklist."
+   }
+  },
+  {
+   "objective_id": "4.3",
+   "domain_id": "D4",
+   "official_wording": "Conduct A/B testing and iterative improvements",
+   "weight": 16,
+   "module_reference": "M2 A/B testing, shadow testing, \"50-session winner\".",
+   "source_labels": [
+    "INFERENCE",
+    "MODULE 2"
+   ],
+   "sections": {
+    "What you need to know": "**Experiment components** `[MODULE 2]`:\n- **Hypothesis:** specific and falsifiable. It names the treatment, the metric, a threshold and constraints (e.g. \"+5% task success without p95 degradation\").\n- **Assignment:** random, and consistent per user or session.\n- **Primary metric:** chosen **before** the test.\n- **Sample size:** from the minimum detectable effect, the baseline value and the confidence level. LLM output variance is higher, so you need more samples.\n\n**Reading results** `[MODULE 2]`:\n- Statistically significant ≠ worth shipping.\n- Check secondary metrics (cost, latency).\n- Watch for interaction effects with rare input types, and align the test period with the real input distribution.\n\n**Shadow testing** `[MODULE 2]`: run the new version on copied live traffic, serve users the current version, and score the shadow output offline. Use it when one bad output is too risky, traffic is too low, or (in regulated settings) exposing users to an unvalidated change isn't allowed. The cost is losing downstream user signals.",
+    "Why it matters": "\"50 sessions per arm, 68% vs. 62%\" was declared a win. It later settled at 61%. The sample was underpowered, the input mix differed between groups, and the metric was chosen after the fact. `[MODULE 2]`",
+    "Architecture concepts": "Traffic splitter with sticky assignment; experiment logging; offline scoring for shadow runs; a pre-registration record. `[INFERENCE]`",
+    "How it works": "1. Write the hypothesis and primary metric.\n2. Compute the sample size.\n3. Choose live A/B or shadow based on risk and traffic.\n4. Randomise with sticky assignment.\n5. Run to the planned sample size (don't stop when it looks good).\n6. Check practical size and secondary metrics.\n7. Decide, document, and update evals.",
+    "Architecture example": "REAL-WORLD EXAMPLE – A healthcare documentation assistant tests a new prompt in **shadow mode**: clinicians keep getting current-version outputs; shadow outputs are scored offline against golden answers before any rollout. `[MODULE 2]` `[INFERENCE]`",
+    "Decision framework": "| Use live A/B when… | Use shadow when… |\n|---|---|\n| Small bounded exposure is acceptable; traffic is high enough | One bad output is too costly; low traffic; regulated |\n| Gains real user signals | Gives up downstream signals |",
+    "Exam decision signals": "- \"Ran until it looked better\" → **underpowered / peeking**.\n- \"Chose the metric that moved\" → **outcome shopping**.\n- \"Regulated, can't expose users\" → **shadow testing**.",
+    "Common traps": "- COMMON TRAP: significance taken as business value.\n- COMMON TRAP: ignoring secondary metrics such as a +30% cost increase.\n- COMMON TRAP: non-random assignment.",
+    "Must remember": "- Pre-specify the hypothesis, metric and sample size.\n- LLM variance means bigger samples.\n- Shadow testing for high risk or low traffic.\n- Significant ≠ worth it.",
+    "Quick recall": "**\"Hypothesis · Metric · N — written down before day one.\"**\n\n**Sources:** M2 A/B testing, shadow testing, \"50-session winner\"."
+   }
+  },
+  {
+   "objective_id": "4.4",
+   "domain_id": "D4",
+   "official_wording": "Diagnose system issues (prompt failure, hallucinations, model mismatch)",
+   "weight": 16,
+   "module_reference": "M2 Failure taxonomy, Observability change attribution; M5 Symptom→cause table; M1 Prompting – underspecification; EG Sample 3.",
+   "source_labels": [
+    "MODULE 1",
+    "MODULE 2",
+    "MODULE 5"
+   ],
+   "sections": {
+    "What you need to know": "**Failure taxonomy** `[MODULE 2]`:\n| Class | Signature | Fix |\n|---|---|---|\n| **Prompt failure** | Ambiguous or underspecified instruction; the model fills the gap differently each time | Fix the prompt (scope, format, constraints) `[MODULE 1]` |\n| **Hallucination** | Confident, fluent content not grounded in the input or source | Ground it: retrieval, tools, verification. *Stronger wording won't fix it* |\n| **Model mismatch** | Wrong tier for the task, or swapped without re-evaluation | Model selection gated by an eval |\n| **Orchestrator-workers failure** | Recoverable subagent vs. unrecoverable orchestrator | A trace spanning both |\n\n**Symptom → likely cause → first action** `[MODULE 5]`:\n| Symptom | Likely cause | First action |\n|---|---|---|\n| Gradual quality decline, no code change | Model or prompt change, or retrieval drift | Compare against the eval set; check what changed |\n| Latency spike | Larger context, slow tool, cache stopped hitting | Find the slowest span; token counts; cache behaviour |\n| Intermittent tool failures | Auth, rate limits, unhandled error path | Trace one failed call end to end |\n| Cost up, usage flat | Tier crept up or caching regressed | Per-request tier and cache hit rate |\n\nRAG answers suddenly wrong after a document refresh, with latency and model unchanged → look at **retrieval / indexing** first. `[EXAM GUIDE – Sample 3]`\n**Attribute before fixing:** model drift, data drift or model-update effect. `[MODULE 2]`",
+    "Why it matters": "Each class has a different fix. Misclassifying the failure produces the wrong fix (e.g. rewording a prompt to cure a grounding problem). `[MODULE 2]`",
+    "Architecture concepts": "Request traces, pinned versions, per-category eval results and the change log together make attribution possible. Discernment means classifying outputs as acceptable, needs revision or needs override. `[MODULE 2]`",
+    "How it works": "1. Describe the symptom precisely: what changed, when, for which inputs.\n2. Check what changed (model version, prompt, corpus, traffic mix).\n3. Reproduce against the eval set.\n4. Classify the failure.\n5. Apply the class-specific fix.\n6. Add a regression case and a runbook entry. `[MODULE 5]`",
+    "Architecture example": "REAL-WORLD EXAMPLE – A summariser began cutting multi-clause legal sentences after a prompt revision. The eval kept passing because its dataset predated the change. Diagnosis: a prompt-change regression hidden by a stale eval. Fix: update the golden set, then fix the prompt. `[MODULE 2]`",
+    "Decision framework": "| If… | Then suspect… |\n|---|---|\n| Wrong but well-formed answers with citations to irrelevant chunks | Retrieval |\n| Varies run to run on the same input | Underspecified prompt |\n| Invented IDs or numbers | Hallucination; needs grounding or verification |\n| Fine on Sonnet, poor after a cheaper-tier swap | Model mismatch |",
+    "Exam decision signals": "- \"After a document refresh\" → retrieval / index.\n- \"Model version rolled forward\" → model update; pin and re-evaluate.\n- \"Confident but unsupported\" → grounding.\n- \"Different output each run\" → specification gap.",
+    "Common traps": "- COMMON TRAP: \"the model weights silently changed\" (EG Sample 3 distractor).\n- COMMON TRAP: fixing hallucination with \"be accurate\" instructions.\n- COMMON TRAP: lowering temperature as a universal fix.",
+    "Must remember": "- Classify, then fix.\n- Grounding fixes hallucination; prompts fix ambiguity; evals gate model choice.\n- Check what changed first.\n- Turn every incident into a regression test and a runbook entry.",
+    "Quick recall": "**\"What changed? → Which class? → Matching fix → Add a test.\"**\n\n**Sources:** M2 Failure taxonomy, Observability change attribution; M5 Symptom→cause table; M1 Prompting – underspecification; EG Sample 3."
+   }
+  },
+  {
+   "objective_id": "4.5",
+   "domain_id": "D4",
+   "official_wording": "Optimize token usage, latency, and cost-performance trade-offs",
+   "weight": 16,
+   "module_reference": "M1 Caching mechanics, Opus 7× case; M2 POC to Prod, Sizing; EG Sample 2.",
+   "source_labels": [
+    "MODULE 1",
+    "MODULE 2",
+    "MODULE 4"
+   ],
+   "sections": {
+    "What you need to know": "**Levers:**\n- **Per-step model tiering**, validated by evals. One case cut cost 71% with no CSAT change. `[MODULE 1]`\n- **Prompt caching:** static content first, then a breakpoint, then dynamic content.\n  - Cache writes cost more than standard input; reads are much cheaper (M2 illustrates 10% — verify current pricing). `[MODULE 2]`\n  - Needs explicit `cache_control` markers; the default TTL is 5 minutes, so low-frequency workloads may not benefit. `[MODULE 2]`\n  - Not worth it when the prompt is called rarely or the prefix is small. `[MODULE 1]`\n- **Context strategy:** progressive instead of monolithic; compaction. `[MODULE 1]`\n- **`max_tokens` cap; output length.** `[MODULE 2]`\n- **Extended thinking only on a measured gap.** `[MODULE 1]`\n- **Batch API** for workloads that can run asynchronously (M2 illustrates 50% off and 100k per batch — verify). Check BAA coverage before sending PHI through it. `[MODULE 2]`\n- **Cost model:** volume × (input tokens at input rate + output tokens at output rate), with cached tokens at the read rate. Model the **distribution, not the average**; tails can be 2–3× the average-based estimate. `[MODULE 2]`",
+    "Why it matters": "\"The long documents in the tail were consuming 80% of the total token spend.\" Cost visibility that lags the build moves the conversation into change management. `[MODULE 2]` `[MODULE 1]`",
+    "Architecture concepts": "Cache prefix design; tier routing classifier; async lanes; sensitivity analysis; budget alerts. `[MODULE 4]`",
+    "How it works": "1. Measure the token distribution per step (usage field).\n2. Find the dominant cost driver (tail inputs? tier? missed caching?).\n3. Apply the matching lever and re-run the eval.\n4. Check that p95 and accuracy are still within budget.\n5. Re-run sensitivity analysis (2× volume, tail shift).",
+    "Architecture example": "REAL-WORLD EXAMPLE – An 8,000-token system prompt plus policy was sent on every request, followed by a short, varying user message. Putting the static content first and enabling caching cuts both time-to-first-token and cost. Truncating the policy or blindly downsizing the model would not. `[EXAM GUIDE – Sample 2]`",
+    "Decision framework": "| Driver | Lever | Watch-out |\n|---|---|---|\n| Large stable prefix, frequent calls | Caching | Write cost; TTL vs. call frequency; consistency if content must be live |\n| Overpowered tier | Tier down on an eval | Per-category regressions |\n| Accumulating context | Progressive / compaction | Lost detail |\n| Non-urgent bulk work | Batch API | SLA; compliance coverage |\n| Long outputs | `max_tokens`, output contract | Truncation |",
+    "Exam decision signals": "- \"Same long prompt every request\" → **caching, static first**.\n- \"Cache never hits\" → **dynamic content placed before the breakpoint**. `[MODULE 1]`\n- \"Overnight reports\" → **Batch**.\n- \"Cost model off by 2–3×\" → **averages instead of distribution**.",
+    "Common traps": "- COMMON TRAP: putting dynamic content ahead of the cached prefix.\n- COMMON TRAP: caching everything by default.\n- COMMON TRAP: \"use the smallest model regardless of fit\" (EG Sample 2 distractor).",
+    "Must remember": "- Static first, dynamic last.\n- Model the distribution.\n- Each tier change needs an eval.\n- Batch when the SLA allows; check compliance coverage.",
+    "Quick recall": "**\"Cache the constant · Tier the step · Trim the context · Batch the patient.\"**\n\n**Sources:** M1 Caching mechanics, Opus 7× case; M2 POC to Prod, Sizing; EG Sample 2."
+   }
+  },
+  {
+   "objective_id": "4.6",
+   "domain_id": "D4",
+   "official_wording": "Monitor system performance using logging and observability tools",
+   "weight": 16,
+   "module_reference": "M2 Observability at scale, connecting observability to business value; M4 Feedback loop; M5 Operational support.",
+   "source_labels": [
+    "INFERENCE",
+    "MODULE 2",
+    "MODULE 4",
+    "MODULE 5"
+   ],
+   "sections": {
+    "What you need to know": "Monitoring covers *performance over time*. 3.4 covers *what to instrument at scale*; this objective covers *using it*.\n- Per-request trace fields: model, version, input/output tokens, latency, stop reason, tool calls. `[MODULE 2]`\n- Dashboard metrics: cost per request, p50/p95, task success (downstream acceptance), error rate by type. `[MODULE 2]`\n- Alerts: e.g. cost above 150% of the 7-day average; p95 above SLA. Drift needs **periodic distribution comparison**. `[MODULE 2]`\n- **KPI translation layer:** task success → first-contact resolution; latency → handle time. Build it at design time. `[MODULE 2]`\n- A **governance table** maps each signal to a trigger, an owner and an action, including slow drift. `[MODULE 4]`\n- Use telemetry and request traces to find the slowest span. `[MODULE 5]`",
+    "Why it matters": "Signals that exist but trigger nothing are invisible. In one case quality drifted for seven weeks before a quarterly review noticed. `[MODULE 4]`",
+    "Architecture concepts": "Log pipeline, metrics store, alerting, eval re-runs on a schedule, a business dashboard, retention and PII policy for logs (5.4).",
+    "How it works": "1. Define SLOs from their sources (UX, criticality, eval acceptance). `[MODULE 4]`\n2. Instrument the trace fields.\n3. Build technical and business dashboards.\n4. Configure threshold and drift alerts.\n5. Map alerts to owners and actions.\n6. Review and tune.",
+    "Architecture example": "REAL-WORLD EXAMPLE – A support assistant: a weekly eval re-run on sampled production traffic triggers an architect review when the score drops below threshold for two consecutive weeks, even though error rate stays flat. `[MODULE 4]` `[INFERENCE]`",
+    "Decision framework": "| Signal | Monitoring method |\n|---|---|\n| Errors and timeouts | Threshold alert |\n| Cost | Per-request breakdown + budget alert |\n| Quality drift | Scheduled eval / distribution comparison |\n| Business value | KPI translation dashboard |",
+    "Exam decision signals": "- \"Dashboards green, users unhappy\" → **quality signal missing**.\n- \"Sponsor can't see impact\" → **KPI translation**.\n- \"Alert fired, no one acted\" → **owner and trigger missing**.",
+    "Common traps": "- COMMON TRAP: monitoring only infrastructure metrics.\n- COMMON TRAP: threshold alerts for gradual drift.\n- COMMON TRAP: dashboards with no owners.",
+    "Must remember": "- Instrument quality, not just uptime.\n- Drift needs periodic comparison.\n- Every signal has an owner and an action.\n- Translate to business KPIs.",
+    "Quick recall": "**\"Measure · Alert · Own · Act · Translate.\"**\n\n**Sources:** M2 Observability at scale, connecting observability to business value; M4 Feedback loop; M5 Operational support."
+   }
+  },
+  {
+   "objective_id": "5.1",
+   "domain_id": "D5",
+   "official_wording": "Implement guardrails and safety controls",
+   "weight": 14,
+   "module_reference": "M3 Alignment, Guardrails (placement, fail open/closed, indirect injection, refusals, Skill supply chain); M1 Claude Code governing layers, reusable prompt asset.",
+   "source_labels": [
+    "INFERENCE",
+    "MODULE 1",
+    "MODULE 1 – reusable prompt asset",
+    "MODULE 3",
+    "MODULE 3 – Alignment",
+    "MODULE 3 – postmortem"
+   ],
+   "sections": {
+    "What you need to know": "**Training-time alignment vs. inference-time control** `[MODULE 3 – Alignment]`:\n- Claude is trained against a constitution (priority: broadly safe → ethical → compliant with guidelines → genuinely helpful, weighed holistically). This reduces **broad** harm.\n- Training does not know your domain policy, data rules or authorization model. **Claude can't enforce a rule it was never given.**\n\n**Four layers**, each with an owner `[MODULE 3]`:\n| Layer | Covers | Doesn't cover | Owner |\n|---|---|---|---|\n| Trained behaviour | Broad harm | Your domain policy, data rules, authorization model | Anthropic |\n| System prompt | Role, tone, constraints | Adversarial inputs that talk it out of them | Architect |\n| Runtime screening | Disallowed content | Side-effecting actions, novel attacks | Architect |\n| Authorization | Permitted actions | Content quality, fairness | Architect |\n\n**Three control points** `[MODULE 3]`:\n- **Input screening:** model-based for fuzzy intent or jailbreaks; deterministic for clear rules.\n- **Output screening:** judge model or validator.\n- **Tool-call authorization:** **deterministic** allowlist plus identity and scope.\n\nChain model-based and deterministic checks: models can be evaded, rules are brittle. `[MODULE 3]`\n\n**Indirect injection:** also screen retrieved content and tool outputs *before* they're added to context. `[MODULE 3]`\n\n**Fail closed:** operator-built guardrails must block when they error. Failing open gives the appearance of protection without the function. (This applies to operator-built components, not Anthropic's API-level controls.) `[MODULE 3]`\n\n**Refusals:**\n- The API returns `stop_reason: \"refusal\"`, with `stop_details` (category + explanation) on supported models. Route refusals by category; tolerate an absent `stop_details`.\n- Reset or rephrase the refused turn before continuing. `[MODULE 3]` (Verify current categories in the docs.)\n\n**Skill supply chain** `[MODULE 3]`:\n- Audit bundles for anomalous calls (network, shell, filesystem, credentials) and out-of-scope behaviour.\n- Run with least privilege in a sandbox.\n- Trusted-source policy.\n- Record a verdict: approve / reject / remediate.\n\n**Structural guardrails:** put constraints in the **output contract**, not only in the role text. `[MODULE 1 – reusable prompt asset]`",
+    "Why it matters": "In one case an output filter passed text describing a refund that had already been issued. One filter at the end doesn't guard a path. `[MODULE 3]`",
+    "Architecture concepts": "Guarded request path: request → input screening → model → output screening → tool authorization → response, with every blocked or failed gate logged. `[MODULE 3]` Claude Code governing layers: hooks (deterministic gates), permission modes, sandboxing. `[MODULE 1]`",
+    "How it works": "1. Write the domain policy out explicitly (don't assume alignment covers it).\n2. Place input screening, including retrieved and tool content.\n3. Place output screening (schema plus judge where needed).\n4. Put deterministic authorization in front of every side-effecting tool.\n5. Set each control's failure direction to closed.\n6. Log every block and failure.\n7. Audit and sandbox third-party Skills.",
+    "Architecture example": "REAL-WORLD EXAMPLE – An internal assistant must not show records from other business units. Training doesn't cover this. Fix: an authorization check on the retrieval tool keyed to the user's unit (server-side identity), plus an output validator that blocks foreign unit IDs, both failing closed. `[MODULE 3 – postmortem]`",
+    "Decision framework": "| Check type | Use when | Avoid when |\n|---|---|---|\n| Model-based | Ambiguous intent, toxicity, policy nuance | Authorization decisions |\n| Deterministic | Clear patterns, schemas, allowlists, authorization | Fuzzy semantics |\n| Fail closed | A wrong pass causes harm | (Rarely) low-harm UX-only checks where availability matters more `[INFERENCE]` |",
+    "Exam decision signals": "- \"Filter on the output only\" → **add input screening + tool authorization**.\n- \"Classifier timed out and traffic passed\" → **fail open → make it fail closed**.\n- \"Malicious instruction in a retrieved doc\" → **screen retrieved content**.\n- \"Third-party Skill\" → **audit + sandbox + trusted source**.",
+    "Common traps": "- COMMON TRAP: \"Claude refuses harmful prompts, so our policy is covered.\"\n- COMMON TRAP: treating the system prompt as enforcement.\n- COMMON TRAP: model-based authorization.",
+    "Must remember": "- Domain rules are yours to enforce.\n- Three control points; one filter isn't enough.\n- Authorization is deterministic.\n- Fail closed.\n- Screen indirect inputs too.",
+    "Quick recall": "**\"In · Out · Act — each gated, each fails closed, each logged.\"**\n\n**Sources:** M3 Alignment, Guardrails (placement, fail open/closed, indirect injection, refusals, Skill supply chain); M1 Claude Code governing layers, reusable prompt asset."
+   }
+  },
+  {
+   "objective_id": "5.2",
+   "domain_id": "D5",
+   "official_wording": "Identify risks, limitations, and failure modes of LLM systems",
+   "weight": 14,
+   "module_reference": "M3 Risks, limitations, and failure modes; M1 four properties, reconciliation case; M2 Failure modes by architecture.",
+   "source_labels": [
+    "INFERENCE",
+    "MODULE 1",
+    "MODULE 1 – reconciliation case",
+    "MODULE 2",
+    "MODULE 3"
+   ],
+   "sections": {
+    "What you need to know": "**Recurring risk categories** `[MODULE 3]`:\n- **Direct prompt injection:** the user overrides instructions.\n- **Indirect prompt injection:** instructions arrive in retrieved content or tool outputs.\n- **Token-budget exhaustion:** oversized or padded inputs truncate work or inflate cost.\n- **Tool / action abuse:** the model is induced to call a side-effecting tool outside policy.\n- **Data exposure:** sensitive fields in the context window or logs.\n\n**Model-level limitations** come from the four properties: confident-but-wrong output, stale knowledge, the context-window cliff, steerability drift. `[MODULE 1]`\n\n**Non-determinism:** a demo isn't evidence of determinism. `[MODULE 1 – reconciliation case]`\n\n**Failure modes by architecture** `[MODULE 2]`:\n- **Agent:** unbounded tool use and context growth.\n- **RAG:** retrieval drift.\n- **Document pipeline:** no exception path.\n- **Orchestrator-workers:** blurred boundaries, fragmented traces, silently dropped units.\n\n**Vulnerability assessment:** walk the request and data paths (user input, retrieved content, tool outputs, model output, logs). At each point, ask what an adversary could do and which control stops it. `[MODULE 3]`\n\n**Risk assessment deliverable:** for each risk, record category, component, likelihood × impact, mitigation control, owner, evidence. `[MODULE 3]`",
+    "Why it matters": "LLM failures don't announce themselves; they drift quietly. The security reviewer signs off on the written risk assessment. `[MODULE 1]` `[MODULE 3]`",
+    "Architecture concepts": "Threat model by entry point; mapping risk → control → owner → evidence (feeds 5.4); token budgets and stopping criteria for agents.",
+    "How it works": "1. Draw the request and data paths.\n2. List entry points.\n3. Map the risk categories to each entry point.\n4. Find points with no control.\n5. Rate likelihood and impact.\n6. Assign a control, owner and evidence.\n7. Re-assess when the architecture changes.",
+    "Architecture example": "REAL-WORLD EXAMPLE – A RAG + tools agent:\n- **Indirect injection** via an uploaded PDF → screen retrieved chunks.\n- **Token exhaustion** via giant uploads → size limits and budget caps.\n- **Tool abuse** (`send_email`) → allowlist plus a recipient-domain rule.\n- **PII in logs** → redaction before logging. `[MODULE 3]` `[INFERENCE]`",
+    "Decision framework": "| Risk | Primary control |\n|---|---|\n| Direct injection | Input screening + instruction hierarchy (system vs. user) |\n| Indirect injection | Screening of retrieved and tool content |\n| Token exhaustion | Input size limits, `max_tokens`, per-turn budgets |\n| Tool abuse | Deterministic authorization, least privilege |\n| Data exposure | Minimisation, redaction, log governance |",
+    "Exam decision signals": "- \"Instructions hidden in a web page the agent read\" → **indirect injection**.\n- \"Huge pasted input, truncated answer, cost spike\" → **token-budget exhaustion**.\n- \"Same input, different result in production\" → **non-determinism**; evals and checks.",
+    "Common traps": "- COMMON TRAP: input screening only on user text.\n- COMMON TRAP: assuming a clean demo means deterministic behaviour.\n- COMMON TRAP: a verbal risk discussion with no written assessment.",
+    "Must remember": "- Five recurring risk categories.\n- Every entry point needs a control.\n- Failure modes depend on the architecture.\n- The risk assessment is a written deliverable.",
+    "Quick recall": "**\"D-I-T-T-D: Direct, Indirect, Token, Tool, Data.\"**\n\n**Sources:** M3 Risks, limitations, and failure modes; M1 four properties, reconciliation case; M2 Failure modes by architecture."
+   }
+  },
+  {
+   "objective_id": "5.3",
+   "domain_id": "D5",
+   "official_wording": "Apply human-in-the-loop validation strategies",
+   "weight": 14,
+   "module_reference": "M3 Review routing, consent fatigue, Diligence; M1 HITL checkpoints; M2 low-confidence routing.",
+   "source_labels": [
+    "INFERENCE",
+    "MODULE 1",
+    "MODULE 3",
+    "MODULE 3 – Review routing",
+    "MODULE 3 – cumulative brief"
+   ],
+   "sections": {
+    "What you need to know": "**What sets the stakes** `[MODULE 3 – Review routing]`:\n- **Reversibility** and **cost of a wrong decision** set the stakes.\n- **Confidence** (only meaningful if calibrated) estimates how likely an output is wrong, which tells you how much high-stakes volume can pass unreviewed.\n\n**Rule:** route to a human when confidence is low *and* the decision is irreversible or high-cost. Let confident, reversible, low-cost decisions through. When the variables disagree, give more weight to cost and reversibility. `[MODULE 3]`\n\n**Placement** `[MODULE 3]`:\n| Placement | Gives | Costs |\n|---|---|---|\n| Pre-action approval | Nothing irreversible happens unreviewed | Latency; reviewer availability |\n| Post-action audit | Throughput | The wrong action has already happened; reversible decisions only |\n| Sampled review | Quality monitoring | Individual bad decisions can slip through |\n\n**What the reviewer sees:** the inputs, the model output, and **why it was flagged**. `[MODULE 3]`\n\n**Consent fatigue:** approving every step leads to click-through approvals. Move review to higher-value checkpoints such as plan review or exception handling, as Claude Code does with plan-level approval. `[MODULE 3]` (Verify Anthropic's current framing.)\n\n**Diligence** competency: explicit accountability checkpoints; watch for automation pressure eroding oversight. `[MODULE 3]`",
+    "Why it matters": "\"Four hundred items in my queue… I just hit approve.\" Volume plus missing context turned review into rubber-stamping. `[MODULE 3]`",
+    "Architecture concepts": "Confidence scoring + calibration; routing rules; a reviewer UI fed by decision logs; agent checkpoint gates before irreversible actions. `[MODULE 1]` `[MODULE 3]`",
+    "How it works": "1. List decision types; rate reversibility and cost of error.\n2. Calibrate the confidence signal against labelled outcomes.\n3. Set the routing rule.\n4. Choose a placement per decision type.\n5. Design the reviewer view (inputs, output, reason).\n6. Monitor queue size and approval rates for signs of fatigue.",
+    "Architecture example": "REAL-WORLD EXAMPLE – A benefits-eligibility assistant: a near-threshold applicant with incomplete documents and a recommended *deny* → pre-action review by a caseworker, who sees the inputs and the flag reason. Clear approvals → sampled review. `[MODULE 3 – cumulative brief]` `[INFERENCE]`",
+    "Decision framework": "| Stakes \\ Confidence | High confidence | Low confidence |\n|---|---|---|\n| Reversible, low cost | Auto + sample | Auto + post-action audit |\n| Irreversible / high cost | Sample or pre-action (policy) | **Pre-action approval** |",
+    "Exam decision signals": "- \"Reviewers approve everything\" → **consent fatigue**; route by stakes; add context.\n- \"Agent can send payments\" → **pre-action gate**.\n- \"Reviewer sees only output + approve button\" → **add inputs and flag reason**.",
+    "Common traps": "- COMMON TRAP: routing everything to review \"to be safe\".\n- COMMON TRAP: trusting uncalibrated confidence.\n- COMMON TRAP: post-action audit for irreversible actions.",
+    "Must remember": "- Cost and reversibility set the stakes; confidence sets the volume.\n- Pre-action for irreversible decisions.\n- Reviewer needs inputs, output and reason.\n- Avoid consent fatigue.",
+    "Quick recall": "**\"Can't undo + not sure = a human first.\"**\n\n**Sources:** M3 Review routing, consent fatigue, Diligence; M1 HITL checkpoints; M2 low-confidence routing."
+   }
+  },
+  {
+   "objective_id": "5.4",
+   "domain_id": "D5",
+   "official_wording": "Ensure compliance with regulations (e.g., GDPR, HIPAA, FedRAMP)",
+   "weight": 14,
+   "module_reference": "M1 Security, governance, regulated-industry constraints; M2 Constraint-to-integration matrix, PII case; M3 Compliance control register.",
+   "source_labels": [
+    "MODULE 1",
+    "MODULE 1 note",
+    "MODULE 1, 2",
+    "MODULE 2",
+    "MODULE 3"
+   ],
+   "sections": {
+    "What you need to know": "**Step 1 – constraints eliminate options first.** The governing obligation rules entry points and delivery routes in or out before cost or preference. `[MODULE 1]` `[MODULE 2]`\n| Constraint | Usually survives review | Notes |\n|---|---|---|\n| Attorney-client privilege | API/SDK behind the firm's own app, SSO, firm-approved gateway logging every request | Consumer tiers ruled out `[MODULE 1]` |\n| HIPAA (PHI) | API/SDK on a **BAA-covered configuration** | BAA coverage is per configuration; beta features generally excluded; minimise PHI before the call `[MODULE 1, 2]` |\n| GDPR / residency | CSP route (Bedrock/Vertex) with the region pinned; DPA terms | Direct API `inference_geo` = \"us\"/\"global\" (no EU pin); verify Foundry `[MODULE 2]` |\n| FedRAMP | Claude for Government, Bedrock GovCloud, Vertex Assured Workloads | Model availability lags commercial; direct Claude Enterprise API not FedRAMP-authorised `[MODULE 1, 2]` |\n| Internal residency policy | The CIO-approved CSP route | Procurement, not engineering `[MODULE 1]` |\n(Every item above is time-sensitive: verify current authorisations. `[MODULE 1 note]`)\n\n**Step 2 – control register** `[MODULE 3]`: each obligation → **technical control → owner → evidence artifact**, revalidated on a schedule.\n- Evidence a reviewer accepts: a signed BAA, a configuration screen, an authorization record, a live log query.\n- A design document is not evidence.\n\n**Training use ≠ retention.** Data may be excluded from training yet still retained for logging or abuse prevention. `[MODULE 3]`\n\n**Data handling:** pass only the fields the language task needs; use reference IDs instead of full fields; redact PII before the call. `[MODULE 2]`\n\n**Decision logs are themselves in scope:** minimise them, limit retention, control access. `[MODULE 3]`",
+    "Why it matters": "In one case a logging change silently wrote metadata to a second region. Nobody owned the residency control, so it surfaced at audit. `[MODULE 3]` In another, SSNs in prompts landed in thousands of application log entries. `[MODULE 2]`",
+    "Architecture concepts": "Route selection, region pinning, gateway, redaction service, retention configuration, data-flow records, scheduled residency confirmation (the governance table in 6.3).",
+    "How it works": "1. Identify the governing obligations.\n2. Eliminate routes and entry points that can't satisfy them.\n3. Design data minimisation and redaction.\n4. Map each obligation to a control, owner and evidence.\n5. Wire scheduled revalidation checkpoints.\n6. Keep evidence current; re-check when configuration changes.",
+    "Architecture example": "REAL-WORLD EXAMPLE – A patient intake summariser: Bedrock in-region under the existing BAA. A server-side redaction step strips SSN and insurance ID (not needed for summarising). Logs capture request, model version, user and data scope. Register: BAA (security lead), residency config + data-flow record (data owner), decision-log sample query (architect). `[MODULE 2]` `[MODULE 3]`",
+    "Decision framework": "| Use direct API when… | Use a CSP route when… |\n|---|---|\n| No binding cloud commitment; newest features; BAA in place for that configuration | Existing cloud commitment; region pinning; government authorisation |\n| **Avoid** where an EU pin is required | **Avoid** assuming feature parity (CSP routes can lag) `[MODULE 1]` |",
+    "Exam decision signals": "- \"Healthcare + new beta feature\" → **check BAA eligibility**.\n- \"Must stay in the EU\" → **region-pinned CSP route**.\n- \"Federal agency\" → **an authorised government route**.\n- \"Auditor asks for proof\" → **evidence artifact**, not a design document.",
+    "Common traps": "- COMMON TRAP: \"we chose a compliant route, so we're done\".\n- COMMON TRAP: one BAA assumed to cover every configuration.\n- COMMON TRAP: logs and caches outside the residency boundary.\n- COMMON TRAP: treating \"no training\" as \"no retention\".",
+    "Must remember": "- Constraints eliminate options first.\n- Obligation → control → owner → evidence.\n- BAA coverage is per configuration.\n- Minimise data before the call.\n- Revalidate; configurations drift.",
+    "Quick recall": "**\"Filter · Control · Owner · Proof · Re-check.\"**\n\n**Sources:** M1 Security, governance, regulated-industry constraints; M2 Constraint-to-integration matrix, PII case; M3 Compliance control register."
+   }
+  },
+  {
+   "objective_id": "5.5",
+   "domain_id": "D5",
+   "official_wording": "Address ethical AI considerations (bias, fairness, transparency)",
+   "weight": 14,
+   "module_reference": "M3 Fairness, Discernment, post-incident review; M1 Avoiding bias in prompt construction.",
+   "source_labels": [
+    "MODULE 1",
+    "MODULE 3",
+    "MODULE 3 – Fairness"
+   ],
+   "sections": {
+    "What you need to know": "**Fairness is an architectural property, not a model attribute you can assume.** Unequal outcomes enter at four points you control `[MODULE 3 – Fairness]`:\n1. The **retrieval corpus** (over- or under-representation).\n2. **Prompt framing** (encoded assumptions).\n3. **Few-shot examples** (skew).\n4. **Downstream routing** (different paths for different groups).\n\n**Three audiences need explanations** `[MODULE 3]`:\n| Audience | Needs |\n|---|---|\n| Affected user | Actionable reason |\n| Regulator | Reconstructable, consistent treatment |\n| Build team | Full trace |\n\n**Decision logging:** inputs, retrieved context, output and routing, keyed so a single decision can be replayed. `[MODULE 3]`\n\n**Bias in prompt construction:** phrase neutrally, balance examples across the cases you'll see, and don't presume the answer. `[MODULE 1]`\n\n**Discernment:** judge outputs for unequal treatment, rather than just confirming a value was produced. `[MODULE 3]`\n\nOverall metrics can look fine while harm concentrates in one subgroup, so measure by segment. `[MODULE 3]`",
+    "Why it matters": "\"We assumed fairness was the model's job. The skew was in our retrieval corpus, and we had logged so little that we could not prove it.\" `[MODULE 3]`",
+    "Architecture concepts": "Segment-level evals; corpus audits; balanced few-shot sets; decision log with a governed retention period (in the compliance register).",
+    "How it works": "1. Identify the four injection points in your design.\n2. Instrument each (corpus composition, prompt and example review, routing logs).\n3. Define segment-level fairness metrics.\n4. Build the decision log.\n5. Define explanation formats for each audience.\n6. Govern the log (minimisation, retention, access).",
+    "Architecture example": "REAL-WORLD EXAMPLE – Credit-decision support. Checklist:\n- each injection point instrumented?\n- adverse decisions explainable to the applicant in actionable terms?\n- comparable applicants queryable for regulators?\n- full trace for the team?\n\nAny \"no\" is a design gap. `[MODULE 3]`",
+    "Decision framework": "| Use A when… | Use B when… |\n|---|---|\n| **Segment-level metrics**: any consequential decision about people | **Overall metrics**: no individual impact |\n| Avoid relying on vendor fairness evals alone | Avoid logging more personal data than the explanation needs |",
+    "Exam decision signals": "- \"Unequal outcomes, model passed bias evals\" → **check corpus, prompt, examples, routing**.\n- \"Applicant asks why denied\" → **actionable explanation from decision logs**.\n- \"Few-shot examples all one type\" → **rebalance**.",
+    "Common traps": "- COMMON TRAP: fairness as the vendor's responsibility.\n- COMMON TRAP: aggregate-only metrics.\n- COMMON TRAP: decision logs not governed as sensitive data.",
+    "Must remember": "- Four injection points: corpus, framing, examples, routing.\n- Three audiences, each needing a different slice of the same log.\n- If you can't reconstruct an explanation, you can't give one.\n- Segment metrics.",
+    "Quick recall": "**\"C-F-E-R: Corpus, Framing, Examples, Routing.\"**\n\n**Sources:** M3 Fairness, Discernment, post-incident review; M1 Avoiding bias in prompt construction."
+   }
+  },
+  {
+   "objective_id": "6.1",
+   "domain_id": "D6",
+   "official_wording": "Conduct structured discovery and requirement gathering",
+   "weight": 14,
+   "module_reference": "M4 Discovery, discovery-turned-design case, Glossary; M2 scoping-call case.",
+   "source_labels": [
+    "MODULE 2",
+    "MODULE 4"
+   ],
+   "sections": {
+    "What you need to know": "Discovery is a **structured elicitation, not a conversation**: **listen → translate → write down**. `[MODULE 4]`\n\n**Translation is the core move.** A preference (\"seamless\", \"fast\", \"simple\") is a signal to dig, not a requirement. Ask what would break it, what the user must never notice, and what must still be true when something fails. `[MODULE 4]`\n\n**Four question buckets** `[MODULE 4]`:\n- **Must do:** capabilities, expressed as outcomes.\n- **Must not do:** boundaries, prohibited actions, cases that route to a human. Stakeholders rarely volunteer these.\n- **Must cost:** latency target, cost per interaction, volume forecast.\n- **Must prove:** evidence and audit obligations.\n\n**Output: a translation table.** Each row holds the statement as said → implied constraint → required architectural decision → assumption to confirm. `[MODULE 4]`\nA **requirement** traces to something the stakeholder said; an **assumption** is something the design takes for granted. Label assumptions explicitly. `[MODULE 4]`\nGather volume, input size and latency before a feasibility verdict. `[MODULE 2]`",
+    "Why it matters": "A confident sketch ends the questioning. In one case \"quick check\" turned out to mean mandatory clinician authorisation, PHI handling and two states' retention rules, all discovered in compliance review. `[MODULE 4]`",
+    "Architecture concepts": "The translation table feeds the eval thresholds (4.1), the SLA (6.3) and the control register (5.4).",
+    "How it works": "1. Let the stakeholder describe the goal in business terms.\n2. For every experience word, ask the breaking-point questions.\n3. Work through all four buckets before sketching anything.\n4. Write one row per item.\n5. Mark each unconfirmed item as an assumption with an owner.\n6. Treat \"it's just a review step\" as a constraint to chase down.",
+    "Architecture example": "REAL-WORLD EXAMPLE – \"We want this to feel seamless\" →\n- a p95 latency target;\n- no re-entering upstream data;\n- exceptions routed quietly to a reviewer;\n- failures never expose internals;\n- assumption: \"seamless\" means responsiveness and continuity (to confirm). `[MODULE 4]`",
+    "Decision framework": "| Do | Don't |\n|---|---|\n| Finish all four buckets, then design | Propose architecture mid-call |\n| Record assumptions as assumptions | Bury assumptions as facts |\n| Ask \"must not\" and \"must prove\" explicitly | Wait for stakeholders to volunteer them |",
+    "Exam decision signals": "- \"Architect sketched a solution in the first call\" → **discovery incomplete**.\n- \"Stakeholder says 'quick review'\" → **possible mandatory HITL gate**.\n- \"Regulated industry mentioned in passing\" → **must-prove bucket**.",
+    "Common traps": "- COMMON TRAP: writing \"seamless\" down as the requirement.\n- COMMON TRAP: building a prototype before the constraints are known.\n- COMMON TRAP: answering capability questions first and never asking about constraints.",
+    "Must remember": "- Listen → translate → write down.\n- Do / Not do / Cost / Prove.\n- One row per item, assumptions labelled.\n- A plausible sketch is the danger.",
+    "Quick recall": "**\"Do · Don't · Cost · Prove.\"**\n\n**Sources:** M4 Discovery, discovery-turned-design case, Glossary; M2 scoping-call case."
+   }
+  },
+  {
+   "objective_id": "6.2",
+   "domain_id": "D6",
+   "official_wording": "Communicate architectural decisions and trade-offs",
+   "weight": 14,
+   "module_reference": "M4 Tradeoffs & GTM (on-blueprint parts), CTO approval case; M1 Entry point takeaways.",
+   "source_labels": [
+    "MODULE 1",
+    "MODULE 4",
+    "MODULE 4 – checkpoint pattern"
+   ],
+   "sections": {
+    "What you need to know": "Your job is to **make an informed decision possible**, not to deliver a verdict. `[MODULE 4]`\n\n**Every trade-off presentation has three elements (four in regulated settings)** `[MODULE 4]`:\n1. What we **gain**.\n2. What we **give up**.\n3. What **reversal costs** once the system is built around the choice. This is the most often omitted element and the one that changes the meeting.\n4. (Regulated) the effect on **compliance posture**.\n\n**Decision package:** the options considered, the criteria, the recommendation, and the remaining risks. `[MODULE 4]`\n\n**Description competency for stakeholders** `[MODULE 4]`:\n- lead with the business outcome;\n- state limitations honestly;\n- give the stakeholder the justification they'll need when their peers ask.\n\nName the trade-off out loud when recommending an entry point. `[MODULE 1]`",
+    "Why it matters": "A CTO approved \"about four cents per call\" without hearing what that meant at their volume (a five-figure monthly line) or what unwinding the choice would cost. \"I approved a direction, not a number.\" `[MODULE 4]`",
+    "Architecture concepts": "Trade-off translation map, e.g.:\n- full context vs. retrieval;\n- logging depth vs. latency;\n- single route vs. multi-platform.\n\nTie each one to the cost forecast at production volume. `[MODULE 4]`",
+    "How it works": "1. List the options and the criteria.\n2. For each option: gain, give-up, reversal cost (and compliance effect).\n3. Convert per-unit numbers into business totals (per month at forecast volume).\n4. Recommend, and state the residual risk.\n5. Record the decision and rejected alternatives (6.4).",
+    "Architecture example": "REAL-WORLD EXAMPLE – Insurer adjuster drafts, under regulated audit-trail requirements:\n- Option A: complete package, including audit logging.\n- Option B: technically accurate but **missing reversal cost**.\n- Option C: drops logging for latency, which violates the constraint.\n\nRecommend A, and name B's missing element. `[MODULE 4 – checkpoint pattern]`",
+    "Decision framework": "| Element | Question it answers |\n|---|---|\n| Gain | Why choose it? |\n| Give up | What do we lose? |\n| Reversal cost | What if we're wrong later? |\n| Compliance | Can we still prove obligations? |",
+    "Exam decision signals": "- \"Approved, then surprised by the invoice\" → **reversal cost / volume translation missing**.\n- \"Executive confused by latency, context and retrieval jargon\" → **translate into business consequence**.\n- \"Regulated + trading logging for speed\" → **compliance posture**.",
+    "Common traps": "- COMMON TRAP: technically accurate but answers the wrong question.\n- COMMON TRAP: presenting only the recommendation.\n- COMMON TRAP: per-call figures without totals.",
+    "Must remember": "- Gain · Give up · Reversal (· Compliance).\n- Decision package, not verdict.\n- Translate into business units.\n- Say limits honestly.",
+    "Quick recall": "**\"G-G-R(-C).\"**\n\n**Sources:** M4 Tradeoffs & GTM (on-blueprint parts), CTO approval case; M1 Entry point takeaways."
+   }
+  },
+  {
+   "objective_id": "6.3",
+   "domain_id": "D6",
+   "official_wording": "Manage stakeholder feedback loops and expectation alignment (including SLAs)",
+   "weight": 14,
+   "module_reference": "M4 Feedback loop & SLA, governance table, observability-replaced-loop case.",
+   "source_labels": [
+    "INFERENCE",
+    "MODULE 4"
+   ],
+   "sections": {
+    "What you need to know": "**The feedback loop is a decision layer that sits on top of observability**: Signals → Triage → Decide → Act → Review. `[MODULE 4]`\n**An SLA names three things:** what's measured, what counts as a breach, and what happens on a breach. `[MODULE 4]`\nEach threshold traces to a tangible source `[MODULE 4]`:\n- **latency** ← the user-experience expectation;\n- **availability** ← business criticality;\n- **quality** ← eval acceptance criteria.\n\n**Cost is the expectation that breaks most often.** Production volume is often 10–100× the pilot. Give a consumption forecast, a spend-control posture (caching, tiering, budget alerts) and the model-tiering story *before* the first invoice. `[MODULE 4]`\n**Regulated checkpoints run on a schedule** whether or not anything has gone wrong (e.g. periodic output audits, residency confirmation). `[MODULE 4]`\n**Governance table, built before launch:** signal → review trigger → architect action → regulated checkpoint. `[MODULE 4]`\nDecide whether to **iterate or re-architect**. `[MODULE 4]`",
+    "Why it matters": "The eval score drifted from week 4 to week 12 with no alert, because there was no rule tying slow drift to a trigger. \"Monitoring is not a feedback loop.\" `[MODULE 4]`",
+    "Architecture concepts": "Governance table rows:\n| Signal | Trigger | Action |\n|---|---|---|\n| Eval score | Below threshold | Diagnose, then iterate vs. re-architect; periodic audit |\n| p95 latency | Above budget | Tune or escalate |\n| Cost per interaction | Above envelope | Bring a trade-off to the stakeholder |\n| Residency config | On schedule | Confirm and record |",
+    "How it works": "1. Derive SLA thresholds from their sources.\n2. Define the breach consequence.\n3. Build the governance table, including slow-drift triggers.\n4. Name an owner per row.\n5. Add the scheduled regulated checkpoints.\n6. Hold reviews on trigger *and* on cadence.\n7. Review whether each rule worked; adjust.",
+    "Architecture example": "REAL-WORLD EXAMPLE – A clinical documentation assistant:\n- weekly eval sampling;\n- an architect review if the score drops for 2 weeks;\n- a stakeholder review once drift is confirmed;\n- a monthly residency confirmation and a quarterly output audit, regardless of scores. `[MODULE 4]` `[INFERENCE]`",
+    "Decision framework": "| Iterate when… | Re-architect when… |\n|---|---|\n| A prompt, data or config fix restores the SLA | The constraint itself has changed (volume, residency, latency budget) or repeated fixes fail `[INFERENCE]` |",
+    "Exam decision signals": "- \"Slow decline, no alert\" → **drift trigger missing**.\n- \"SLA number nobody can justify\" → **trace it to a source**.\n- \"Pilot cost tiny, production bill shock\" → **consumption forecast**.\n- \"Audit due but nothing broke\" → **scheduled checkpoint**.",
+    "Common traps": "- COMMON TRAP: dashboards as the feedback loop.\n- COMMON TRAP: arbitrary SLA thresholds.\n- COMMON TRAP: compliance reviews only after incidents.",
+    "Must remember": "- Signals → Triage → Decide → Act → Review.\n- SLA = measure, breach, consequence.\n- Thresholds trace to sources.\n- Scheduled regulated checkpoints.\n- Forecast cost at production volume.",
+    "Quick recall": "**\"Every signal: trigger · owner · action.\"**\n\n**Sources:** M4 Feedback loop & SLA, governance table, observability-replaced-loop case."
+   }
+  },
+  {
+   "objective_id": "6.4",
+   "domain_id": "D6",
+   "official_wording": "Document architectures and provide implementation guidance",
+   "weight": 14,
+   "module_reference": "M4 Documentation, handoff postmortem, outcome document; M5 runbooks; M2 boundary conditions.",
+   "source_labels": [
+    "INFERENCE",
+    "MODULE 2",
+    "MODULE 4",
+    "MODULE 5"
+   ],
+   "sections": {
+    "What you need to know": "**One document, three readers** `[MODULE 4]`:\n- the **handoff recipient**, who needs decisions *plus rejected alternatives and the reason for each*;\n- the **compliance reviewer**, who needs obligation → control → owner → evidence;\n- the **returning architect**, who needs dated decisions, labelled assumptions, and open items with owners.\n\n**Completeness test:** after reading the document, can a competent architect who wasn't in the room make a **safe change**? `[MODULE 4]`\n\n**Completeness checklist:** decision (dated) · rejected alternatives · trade-off resolved · owner · evidence artifact · audit-ready status. `[MODULE 4]`\n\n**Outcome document:** use case + scope boundary · metric before · metric after · auditable control · measurement owner (+ optional Partner-Track reuse potential). `[MODULE 4]`\n\n**Implementation guidance:**\n- runbooks: symptom → cause → action `[MODULE 5]`;\n- an entry-point-responsibility map for multi-entry-point designs `[MODULE 4]`;\n- documented boundary conditions `[MODULE 2]`.",
+    "Why it matters": "A replacement architect changed the context strategy to fix performance and broke data residency, because the diagram showed *what* but not *why*. `[MODULE 4]`",
+    "Architecture concepts": "Decision log with rationale (ADR-style `[INFERENCE]`), control register, runbook, responsibility map, outcome document.",
+    "How it works": "1. Record each decision as it's made, with its date.\n2. Record the alternatives and why each was rejected.\n3. Mark load-bearing decisions (e.g. \"required for residency\").\n4. Attach the control register with live evidence.\n5. Label assumptions; give open items owners and resolution criteria.\n6. Write runbooks and an escalation path.\n7. Test: could a stranger make a safe change?",
+    "Architecture example": "REAL-WORLD EXAMPLE – Decision: \"Progressive context with an in-region retrieval store (2026-03-02).\" Rejected: \"a full-document monolithic call through the global endpoint\" (violates EU residency). Owner: data owner. Evidence: residency config + data-flow record. `[MODULE 4]` `[INFERENCE]`",
+    "Decision framework": "| Artifact | Primary reader |\n|---|---|\n| Decision log + rejected alternatives | Handoff recipient |\n| Control register | Compliance reviewer |\n| Dated decisions, assumptions, open items | Returning architect |\n| Outcome document | Sponsor / CFO |\n| Runbook | Operating team |",
+    "Exam decision signals": "- \"Successor reversed a key decision\" → **rationale and rejected alternatives missing**.\n- \"Auditor wants proof\" → **evidence artifact**.\n- \"Sponsor needs to justify expansion\" → **outcome document with before/after**.",
+    "Common traps": "- COMMON TRAP: diagram-only handoffs.\n- COMMON TRAP: writing assumptions as facts.\n- COMMON TRAP: an outcome document with only technical metrics.",
+    "Must remember": "- Record *why*, not just *what*.\n- Rejected alternatives protect load-bearing decisions.\n- Three readers.\n- The safe-change test.",
+    "Quick recall": "**\"What · Why · Why not · Who · Proof.\"**\n\n**Sources:** M4 Documentation, handoff postmortem, outcome document; M5 runbooks; M2 boundary conditions."
+   }
+  },
+  {
+   "objective_id": "6.5",
+   "domain_id": "D6",
+   "official_wording": "Support lifecycle phases (discovery, design, handoff, monitoring, iteration)",
+   "weight": 14,
+   "module_reference": "M4 Orientation (lifecycle), Glossary; M2 POC to Production, reliability controls, version pinning.",
+   "source_labels": [
+    "MODULE 1, 2, 3, 4",
+    "MODULE 2",
+    "MODULE 2, 4",
+    "MODULE 4",
+    "MODULE 4, 5"
+   ],
+   "sections": {
+    "What you need to know": "**Lifecycle:** discovery → design → handoff → monitoring → iteration. `[MODULE 4]`\n| Phase | Key artifacts | Source |\n|---|---|---|\n| Discovery | Translation table, constraints, assumptions | `[MODULE 4]` |\n| Design | Pattern, sizing, eval suite (before code), feasibility verdict, trade-off package, control register | `[MODULE 1, 2, 3, 4]` |\n| Handoff | Decision log with rationale, runbooks, responsibility map | `[MODULE 4, 5]` |\n| Monitoring | Observability + governance table + SLA | `[MODULE 2, 4]` |\n| Iteration | A/B or shadow tests, eval-gated changes, iterate vs. re-architect | `[MODULE 2, 4]` |\n\n**POC → production gap:** cost, latency (p95), reliability (retries with exponential backoff near the API call, circuit breakers at the service boundary, fallback chains in orchestration), and failure modes. A POC shows capability, not cost or reliability. `[MODULE 2]`\n**Version pinning and an update runbook** apply in every phase. `[MODULE 2]`\nKnowing which phase a decision belongs to tells you when the work is ready to move to the next phase. `[MODULE 4]`",
+    "Why it matters": "A 529 error at peak took down a workflow that had no fallback. The POC had been treated as a model for cost and reliability. `[MODULE 2]`",
+    "Architecture concepts": "Phase gates: discovery complete → design approved (with evals and sizing) → production-readiness checklist → handoff completeness test → monitoring live with triggers.",
+    "How it works": "1. Identify the current phase.\n2. Check its exit criteria.\n3. Produce the phase artifacts.\n4. Gate the transition.\n5. In monitoring, route signals to iterate or re-architect.",
+    "Architecture example": "REAL-WORLD EXAMPLE – A document triage system before production adds: a cost model from the token distribution; retries + a circuit breaker + a fallback tier; a pinned model version; evals for the fallback path. `[MODULE 2]`",
+    "Decision framework": "| Phase question | Answer before moving on |\n|---|---|\n| Discovery → Design | Are all four buckets answered or labelled as assumptions? |\n| Design → Build | Do evals, sizing and verdict exist? |\n| Build → Production | Reliability controls, observability, compliance evidence? |\n| Production → Handoff | Does it pass the safe-change test? |",
+    "Exam decision signals": "- \"Ready to launch, POC worked\" → **production-readiness gap**.\n- \"New team inherits the system\" → **handoff artifacts**.\n- \"Metric drifting\" → **monitoring → iteration decision**.",
+    "Common traps": "- COMMON TRAP: putting reliability controls in the wrong layer.\n- COMMON TRAP: skipping the handoff phase.\n- COMMON TRAP: shipping a POC's cost profile to production.",
+    "Must remember": "- D → D → H → M → I.\n- A POC proves capability only.\n- Retries, breakers, fallbacks, each at its own layer.\n- Pin versions.",
+    "Quick recall": "**\"Discover · Design · Hand off · Monitor · Iterate.\"**\n\n**Sources:** M4 Orientation (lifecycle), Glossary; M2 POC to Production, reliability controls, version pinning."
+   }
+  },
+  {
+   "objective_id": "7.1",
+   "domain_id": "D7",
+   "official_wording": "Configure Claude tools and environments for teams (e.g., Claude Code)",
+   "weight": 7,
+   "module_reference": "M5 Configuring Claude tooling for teams; M1 Claude Code customization and governance layers.",
+   "source_labels": [
+    "MODULE 1",
+    "MODULE 1, 5",
+    "MODULE 5"
+   ],
+   "sections": {
+    "What you need to know": "**Four team-setup decisions** `[MODULE 5]`:\n\n1. **Shared configuration:** a project-level baseline (shared CLAUDE.md, agreed tools and MCP servers, permission posture) that's reviewed and versioned once for everyone.\n2. **Rollout:** a **champion per department first**, then batches. The champion absorbs early friction and becomes first-line support.\n3. **Skills distribution:**\n   | Mechanism | Best when | Governance |\n   |---|---|---|\n   | Org-provisioned Skill | Everyone needs it | Owner-managed; no version pinning or native rollback |\n   | Plugin assigned to a group/org | Specific teams; governed rollout | Group targeting, install preferences, version-controlled updates from a repo (strongest) |\n   | Claude Code project Skill | One team's projects | Lives in `.claude/skills/`, versions with the repo |\n   | API Skill | Called by your products | Explicit version pinning |\n   Server-managed Claude Code settings are a separate **settings** channel, not Skills distribution.\n4. **Spend posture:** model defaults, model allowlists, effort guidance, and spend / rate / per-user caps, all set deliberately.\n\n**Claude Code layers** `[MODULE 1]`:\n- **Shaping** (what the agent knows and does): CLAUDE.md, Skills (on demand), subagents, MCP servers.\n- **Governing** (what it may touch): hooks (deterministic lifecycle gates), permission modes, sandboxing.\n- **Permission modes:**\n  - **default**: asks before each action;\n  - **acceptEdits**: approves file edits and common filesystem commands;\n  - **plan**: read-only until a plan is approved;\n  - **auto**: a classifier decides; research preview;\n  - **dontAsk**: auto-denies anything not allow-listed; for locked-down CI;\n  - **bypassPermissions**: skips all checks; containers or CI only.\n\n  (Verify current behaviour.)",
+    "Why it matters": "In one case a release-notes Skill shipped as a flat bundle with no versioning. A bad edit spread to 40 engineers and needed a manual fix while bad output kept shipping. `[MODULE 5]`",
+    "Architecture concepts": "Version-controlled shared config; plugin registry with owners; spend guardrails; hooks for guarantees that must come from code rather than prompting. `[MODULE 1, 5]`",
+    "How it works": "1. Define the shared baseline (CLAUDE.md, tools/MCP, permissions).\n2. Choose a permission mode per environment (dev / CI / container).\n3. Add hooks for must-not-skip checks.\n4. Package shared procedures as Skills; distribute versioned assets through plugins and name an owner.\n5. Set model defaults, allowlists and caps.\n6. Roll out via champions, then batches.",
+    "Architecture example": "REAL-WORLD EXAMPLE – A 200-engineer org: one champion per department converts a real workflow (code-review assist, test generation) over 2 weeks, runs sessions for batches of five, and tunes the shared CLAUDE.md before the broad rollout. `[MODULE 5]`",
+    "Decision framework": "| Need | Choose |\n|---|---|\n| Group-scoped, versioned, rollback | Plugin |\n| Org-wide, simple | Org-provisioned Skill |\n| Repo-specific | Project Skill |\n| Programmatic | API Skill (pinned) |\n| Guarantee regardless of prompt | Hook |\n| Locked-down CI | dontAsk mode (bypassPermissions only in isolated containers) |",
+    "Exam decision signals": "- \"Bad Skill change hit everyone, no rollback\" → **plugin with versioned updates + owner**.\n- \"Everyone configured differently\" → **shared configuration**.\n- \"Unexpected bill from the team\" → **spend posture**.\n- \"Must always run lint before commit\" → **hook**.",
+    "Common traps": "- COMMON TRAP: an all-hands launch email instead of champions.\n- COMMON TRAP: using bypassPermissions outside containers or CI.\n- COMMON TRAP: relying on CLAUDE.md instructions for guarantees (use hooks).",
+    "Must remember": "- Shared baseline · champions · governed Skills · spend caps.\n- Shaping vs. governing layers.\n- Plugins give the strongest Skill governance.\n- Hooks are deterministic gates.",
+    "Quick recall": "**\"Baseline · Champions · Skills · Spend.\"**\n\n**Sources:** M5 Configuring Claude tooling for teams; M1 Claude Code customization and governance layers."
+   }
+  },
+  {
+   "objective_id": "7.2",
+   "domain_id": "D7",
+   "official_wording": "Improve developer workflows using AI-assisted tooling",
+   "weight": 7,
+   "module_reference": "M5 Improving developer workflows; M1 Coding agent reference architecture.",
+   "source_labels": [
+    "INFERENCE",
+    "MODULE 1",
+    "MODULE 1, 5",
+    "MODULE 5"
+   ],
+   "sections": {
+    "What you need to know": "**Integrate into the existing workflow** (editor, review, test loop), not a separate chat window. Encode conventions and review standards as Skills and project config. `[MODULE 5]`\n| Stage | Claude helps | Review still needed |\n|---|---|---|\n| Writing code | Boilerplate, tests, first drafts from a spec | Correctness and security; the author must understand it |\n| Reviewing code | Diff summaries, likely issues, explanations | Human judgement; AI flags are input, not a verdict |\n| Debugging | Hypotheses from symptom and trace | Verify against evidence before acting |\n`[MODULE 5]`\n\n**Two adoption failures** `[MODULE 5]`:\n- **lumpy adoption** (a few heavy users, the rest barely);\n- **stalling at basic chat** (never reaching tool use, repository-aware help or Skills).\n\n**Diligence → a verification checklist** covering correctness, security, maintainability and human understanding. Automate checks wherever possible (regression tests, eval sets). `[MODULE 5]`\n\n**Coding-agent reference architecture:** agentic exploration, then deterministic edit / test / review steps, with a human review gate before commit and regression tracking per language. `[MODULE 1]`",
+    "Why it matters": "\"The merge nobody could explain\": generated code passed review and tests, then leaked data through unvalidated input. Speed had replaced understanding. `[MODULE 5]`",
+    "Architecture concepts": "CI gates (tests, evals), review policy for AI-generated code, Skills that encode team standards, plan-mode or human approval before commits. `[MODULE 1, 5]`",
+    "How it works": "1. Map friction points in the current workflow.\n2. Integrate Claude at those points (IDE, PR review, test generation).\n3. Enable higher-value features (repo-aware context, tools, Skills).\n4. Write the verification checklist.\n5. Automate the checklist in CI.\n6. Require that the author can explain the change.\n7. Track adoption and spread it via champions.",
+    "Architecture example": "REAL-WORLD EXAMPLE – Team PR flow: Claude Code drafts tests and a diff summary; CI runs the regression suite and a security scan; the reviewer checklist includes \"can the author explain input handling?\"; merges need human approval. `[MODULE 5]` `[INFERENCE]`",
+    "Decision framework": "| AI does | Human must |\n|---|---|\n| Draft, summarise, flag, hypothesise | Decide, verify, understand, approve |",
+    "Exam decision signals": "- \"Shipping faster, incident from code no one understood\" → **verification checklist (human understanding)**.\n- \"Only 3 of 40 devs use it\" → **lumpy adoption → champions**.\n- \"Team only asks it questions\" → **stalled at chat → enable workflow integration**.",
+    "Common traps": "- COMMON TRAP: a lower review bar for AI code.\n- COMMON TRAP: treating AI review flags as the verdict.\n- COMMON TRAP: equating access with adoption.",
+    "Must remember": "- Integrate into the existing workflow.\n- Same standards for AI-generated code.\n- Verification checklist; automate it.\n- Watch for judgement erosion.",
+    "Quick recall": "**\"Faster to write ≠ allowed to skip understanding.\"**\n\n**Sources:** M5 Improving developer workflows; M1 Coding agent reference architecture."
+   }
+  },
+  {
+   "objective_id": "7.3",
+   "domain_id": "D7",
+   "official_wording": "Support debugging and operational issue resolution",
+   "weight": 7,
+   "module_reference": "M5 Operational Support; M2 Reliability controls, glossary (transient errors, 5xx).",
+   "source_labels": [
+    "INFERENCE",
+    "MODULE 2",
+    "MODULE 5"
+   ],
+   "sections": {
+    "What you need to know": "**The support role is translation, not firefighting:** connect the operational *symptom* to its *architectural cause*, and teach the team that path. `[MODULE 5]`\n| Symptom | Likely cause | First action |\n|---|---|---|\n| Gradual quality decline, no code change | Model or prompt change; retrieval drift | Compare against the eval set; check what changed |\n| Latency spike | Larger context, slow tool, cache miss | Find the slowest span; token counts; cache behaviour |\n| Intermittent tool failures | Auth, rate limits, unhandled error path | Trace one failed call end to end |\n| Cost up, usage flat | Tier creep; caching regression | Per-request tier; cache hit rate |\n`[MODULE 5]`\n\n**Self-sufficiency** `[MODULE 5]`:\n- a **runbook** of known symptom → cause → action paths;\n- an **escalation path** stating who handles what and when an issue leaves the team.\n\nTransient errors (429, 5xx, 529) → retry with exponential backoff; circuit breakers; fallbacks. `[MODULE 2]`",
+    "Why it matters": "In one case quality slid for a quarter while dashboards stayed green, because the runbook entry linking gradual decline to retrieval drift didn't exist. `[MODULE 5]`",
+    "Architecture concepts": "Telemetry and traces, eval re-runs, pinned versions, runbooks in the handoff documentation (6.4), an escalation matrix.",
+    "How it works": "1. Capture the symptom precisely.\n2. Check the change log (model, prompt, corpus, config).\n3. Use traces to locate the failing span or step.\n4. Map it to a cause class (4.4).\n5. Apply the first action; verify.\n6. Write or update the runbook entry.\n7. Teach the team; refine the escalation path.",
+    "Architecture example": "REAL-WORLD EXAMPLE – Intermittent CRM tool failures at peak. Tracing one failed call showed 429s from a shared API key. The fix: per-tenant keys, backoff, and a runbook entry (\"intermittent 429 → check key-sharing and rate limits\"). `[MODULE 2]` `[MODULE 5]` `[INFERENCE]`",
+    "Decision framework": "| Architect fixes it directly when… | Team fixes it via runbook when… |\n|---|---|\n| A novel issue with no known path | The issue matches a documented symptom |\n| Always finish by adding the path to the runbook | |",
+    "Exam decision signals": "- \"Architect pulled into every incident\" → **runbooks + escalation path**.\n- \"Cost rose, traffic didn't\" → **tier and cache check**.\n- \"Spikes at peak only\" → **rate limits / contention**.",
+    "Common traps": "- COMMON TRAP: firefighting without teaching.\n- COMMON TRAP: retrying non-transient (4xx) errors.\n- COMMON TRAP: fixing the symptom without attribution.",
+    "Must remember": "- Symptom → cause → first action.\n- Runbook + escalation path.\n- Teach the path, don't just fix it.\n- Backoff for transient errors.",
+    "Quick recall": "**\"Fix once, write it down, never fix it alone again.\"**\n\n**Sources:** M5 Operational Support; M2 Reliability controls, glossary (transient errors, 5xx)."
+   }
+  }
+ ]
+}
