@@ -29,7 +29,7 @@ Unresolved issues:         4  (see below)
 | ☑ | Mock-exam distribution reflects official weighting | D1 11 / D2 8 / D3 12 / D4 10 / D5 9 / D6 9 / D7 4 = 63 |
 | ☑ | Every practice question explains every option | 150 questions |
 | ☑ | Every question maps to a domain and objective |  |
-| ☑ | Unsupported or derived claims are clearly marked | 50 [INFERENCE] labels · 7 source-gap flags |
+| ☑ | Unsupported or derived claims are clearly marked | 50 [INFERENCE] labels · 9 source-gap flags |
 | ☑ | Study thresholds not presented as the official passing-score conversion | Stated in guide, study plan and trainer copy |
 | ☑ | No generated question is described as an actual Anthropic exam question | Disclaimer in the bank and its README |
 | ☑ | Terminology consistent across Learn, Practice, Mock, Glossary, Progress | All components share objective IDs and wording from content/objectives.json |

@@ -12,6 +12,7 @@ Claude Certified Architect – Professional (CCAR-P) exam preparation guide and 
 | 4 | [Glossary — 124 terms](content/glossary.md) · [Learn episodes — 7 × 38 parts](content/learn/) | Done |
 | 5 | [Study plans (2-day / 5-day)](docs/study-plan.md) · [Rapid-revision guide](docs/rapid-revision.md) · [Traceability matrix](docs/traceability.md) · [Quality report](docs/quality-report.md) | Done |
 | 6 | [Interactive trainer](https://rajeevpsd.github.io/CCAR-P/): Home · Practice · Mock exam · Learn · Glossary · Progress (`site/`) | Done |
+| 7 | [Advisory: current-docs check of time-sensitive product facts](docs/verification-log.md) (not applied; content keeps module wording) | Done |
 
 ## Build
 ```
