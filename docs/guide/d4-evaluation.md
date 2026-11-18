@@ -297,13 +297,13 @@ REAL-WORLD EXAMPLE – A summariser began cutting multi-clause legal sentences a
 **Levers:**
 - **Per-step model tiering**, validated by evals. One case cut cost 71% with no CSAT change. `[MODULE 1]`
 - **Prompt caching:** static content first, then a breakpoint, then dynamic content.
-  - Cache writes cost more than standard input; reads are much cheaper (M2 illustrates 10% — verify current pricing). `[MODULE 2]`
-  - Needs explicit `cache_control` markers; the default TTL is 5 minutes, so low-frequency workloads may not benefit. `[MODULE 2]`
+  - Cache writes cost more than standard input; reads are much cheaper (M2 illustrates 10%; verified 0.1×, with lower read multipliers on some current models, V3). `[MODULE 2]`
+  - Needs explicit `cache_control` markers; the default TTL is 5 minutes (a 1-hour TTL is available at a 2× write cost), so low-frequency workloads may not benefit. `[MODULE 2]`
   - Not worth it when the prompt is called rarely or the prefix is small. `[MODULE 1]`
 - **Context strategy:** progressive instead of monolithic; compaction. `[MODULE 1]`
 - **`max_tokens` cap; output length.** `[MODULE 2]`
 - **Extended thinking only on a measured gap.** `[MODULE 1]`
-- **Batch API** for workloads that can run asynchronously (M2 illustrates 50% off and 100k per batch — verify). Check BAA coverage before sending PHI through it. `[MODULE 2]`
+- **Batch API** for workloads that can run asynchronously (50% of standard prices; up to 100,000 requests or 256 MB per batch; most batches finish within an hour, up to 24 h; verified, V4). Check BAA coverage before sending PHI through it. `[MODULE 2]`
 - **Cost model:** volume × (input tokens at input rate + output tokens at output rate), with cached tokens at the read rate. Model the **distribution, not the average**; tails can be 2–3× the average-based estimate. `[MODULE 2]`
 
 #### Why it matters

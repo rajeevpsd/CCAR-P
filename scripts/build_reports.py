@@ -106,7 +106,7 @@ trace = ["# Coverage & Traceability Matrix",
          "| Objective | Gap | Recommended official documentation |",
          "|---|---|---|",
          "| 3.7 | Agent-to-agent protocols: the modules cover only orchestrator→subagent; no official Anthropic guidance was found. Treated as an inferred decision principle, using the external Google A2A announcement as context. | Anthropic docs on the Agent SDK, subagents and MCP; watch for any Anthropic statement on agent interoperability |",
-         "| (all) | Time-sensitive product facts (model names, thinking controls, cache and Batch pricing, `inference_geo`, Foundry residency, FedRAMP routes, permission modes, `stop_details` categories) | platform.claude.com docs (models, pricing, prompt caching, batch, data residency), Claude Code docs, Trust Center. See `00-source-analysis.md` §6 |",
+         "| (all) | Time-sensitive product facts (model names, thinking controls, cache and Batch pricing, `inference_geo`, Foundry residency, FedRAMP routes, permission modes, `stop_details` categories) | platform.claude.com docs (models, pricing, prompt caching, batch, data residency), Claude Code docs, Trust Center. Verified 2026-11-19: see `verification-log.md` (open: refusal categories beyond `cyber`, Foundry EU residency) |",
          ""]
 (ROOT / "docs" / "traceability.md").write_text("\n".join(trace), encoding="utf-8")
 
@@ -168,7 +168,7 @@ report = ["# Quality Report", "",
           "## Quality gate", "", "| | Check | Detail |", "|---|---|---|", *checks, "",
           "## Unresolved issues", "",
           "1. **Objective 3.7, agent-to-agent:** there's no official Anthropic source; questions test only the inferred decision principle.",
-          "2. **Time-sensitive product facts** (see `00-source-analysis.md` §6) must be re-verified against current docs before exam day; questions avoid depending on exact figures.",
+          "2. **Time-sensitive product facts** (see `00-source-analysis.md` §6) were verified against current docs on 2026-11-19 (`verification-log.md`: 4 confirmed, 1 confirmed with additions, 2 partial, 2 outdated and corrected). Residual gaps: `stop_details` categories beyond `cyber`, and Foundry EU residency. Re-check before exam day.",
           "3. **Question pool size:** 150 items is about 2.4 non-overlapping 63-item mocks; repeat mocks will reuse items (expansion deferred by decision).",
           "4. **Audio:** Learn narration is text written for read-aloud; whether to produce audio files is deferred until the trainer is reviewed.",
           ""]

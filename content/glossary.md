@@ -333,7 +333,7 @@ Format: each term is a `### Term` heading followed by fields. `group` is `Cross-
 - objectives: 2.1
 - definition: The Claude model family, trading capability against cost and latency.
 - significance: Not choosing a tier means defaulting to the most expensive one.
-- exam: Sonnet by default; move only on eval evidence, per step and per category.
+- exam: Start from a baseline tier (Sonnet per M1; Opus 5.5 per current docs) and move only on eval evidence, per step and per category.
 - confusion: Judging a downgrade on its average score.
 - related: Eval gate, Rollback criterion
 - source: M1
@@ -351,12 +351,12 @@ Format: each term is a `### Term` heading followed by fields. `group` is `Cross-
 ### Extended thinking / adaptive thinking
 - group: D2
 - objectives: 2.1, 3.3, 4.5
-- definition: A separate reasoning pass in thinking tokens (billed as output) before the answer. Adaptive thinking with an effort level is the recommended control on current models.
+- definition: A separate reasoning pass in thinking tokens (billed as output) before the answer. On current models, adaptive thinking with output_config.effort replaces budget_tokens; Claude 4.7 and later reject manual budget_tokens with a 400.
 - significance: A cost and latency trade-off.
 - exam: Enable it only for a measured accuracy gap, after prompt work.
 - confusion: "It can't hurt"; enabling it on classifiers.
 - related: Effort parameter
-- source: M1 (verify version specifics)
+- source: M1; Official docs, extended thinking (verified 2026-11-19)
 
 ### Model version pinning
 - group: D2
@@ -441,10 +441,10 @@ Format: each term is a `### Term` heading followed by fields. `group` is `Cross-
 ### Cache breakpoint / TTL
 - group: D2
 - objectives: 2.5, 4.5
-- definition: The boundary between the cacheable prefix and dynamic content, and how long the cache entry lives (5-minute default per M2).
+- definition: The boundary between the cacheable prefix and dynamic content, and how long the cache entry lives: 5-minute default (write 1.25×), or 1-hour (write 2×); reads 0.1× of base input.
 - significance: Prefix order and call frequency decide whether caching pays off.
 - exam: "A cache that never hits" means dynamic content came first.
-- confusion: Assuming a longer TTL fixes a changing prefix.
+- confusion: Assuming a longer TTL fixes a changing prefix (the 1-hour TTL doubles the write cost and still misses a changing prefix).
 - related: Prompt caching
 - source: M1; M2
 
@@ -795,7 +795,7 @@ Format: each term is a `### Term` heading followed by fields. `group` is `Cross-
 ### Batch API
 - group: D4
 - objectives: 4.5
-- definition: Asynchronous bulk processing at a discount (M2 illustrates 50% and up to 100k requests per batch; verify current terms).
+- definition: Asynchronous bulk processing at a discount (50% of standard prices; up to 100,000 requests or 256 MB per batch; results within 24 hours).
 - significance: Cuts cost when the SLA allows waiting.
 - exam: Confirm compliance coverage before routing regulated data through it.
 - confusion: Using it for interactive paths.
@@ -887,9 +887,9 @@ Format: each term is a `### Term` heading followed by fields. `group` is `Cross-
 ### Refusal stop reason
 - group: D5
 - objectives: 5.1
-- definition: The API's stop_reason "refusal" when streaming classifiers intervene, with stop_details (category and explanation) on supported models.
+- definition: The API's stop_reason "refusal" when streaming classifiers intervene, with stop_details always present on a refusal; category and explanation can be null.
 - significance: Lets the app route refusals by class.
-- exam: Tolerate a missing stop_details; reset the refused turn before continuing.
+- exam: Branch on stop_reason, not on a populated category; reset the refused turn before continuing.
 - confusion: Hard-coding category lists (verify current docs).
 - related: Guardrails
 - source: M3
@@ -949,7 +949,7 @@ Format: each term is a `### Term` heading followed by fields. `group` is `Cross-
 - objectives: 5.4
 - definition: Processing and storing data, including logs and caches, within an approved region, configured at the integration layer.
 - significance: Rules out routes that can't pin the region.
-- exam: An EU pin needs a region-pinned CSP route (per the modules; verify).
+- exam: An EU pin needs a region-pinned CSP route; direct-API inference_geo offers only "us" or "global" (verified 2026-11-19).
 - confusion: Forgetting log and cache copies.
 - related: CSP delivery route
 - source: M2; M3
@@ -1211,7 +1211,7 @@ Format: each term is a `### Term` heading followed by fields. `group` is `Cross-
 ### Permission modes (Claude Code)
 - group: D7
 - objectives: 7.1
-- definition: default, acceptEdits, plan, auto (research preview), dontAsk (locked-down CI), bypassPermissions (containers or CI only).
+- definition: default, acceptEdits, plan, auto (a classifier reviews each action), dontAsk (locked-down CI), bypassPermissions (containers or CI only).
 - significance: Governs what the agent may do without prompting.
 - exam: Use bypassPermissions only in isolated environments.
 - confusion: Behaviour changes over time; verify current docs.

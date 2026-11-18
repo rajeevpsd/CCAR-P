@@ -112,7 +112,9 @@ Source: `[MODULE 2]`
 Source: `[MODULE 2]`
 
 ## 14. Model tiers: Opus vs. Sonnet vs. Haiku — Obj 2.1
-| | Opus | Sonnet (default) | Haiku |
+> Version note: the "Sonnet default" is module content. Current docs recommend Opus 5.5 as the starting point (see `verification-log.md` V1). The exam-relevant rule is eval-gated movement between tiers.
+
+| | Opus | Sonnet (module default) | Haiku |
 |---|---|---|---|
 | **Use when** | An eval shows Sonnet misses the bar on hard reasoning | Starting point for most production work | An eval confirms acceptable quality on simple, high-volume steps |
 | **Avoid when** | As a blanket default | — | Steps that fail per-category floors |

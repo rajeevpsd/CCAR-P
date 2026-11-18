@@ -151,7 +151,7 @@ REAL-WORLD EXAMPLE – A multi-tenant SaaS support agent was found with: (a) the
 
 #### What you need to know
 The main configuration levers and their effects:
-- **Model tier:** Sonnet is the default. Move up to Opus only if an eval shows Sonnet misses the quality bar; move down to Haiku only if an eval confirms the quality loss is acceptable. `[MODULE 1]`
+- **Model tier:** Sonnet is the default (module; current docs recommend Opus 5.5 as the starting point, see V1). Move up to Opus only if an eval shows Sonnet misses the quality bar; move down to Haiku only if an eval confirms the quality loss is acceptable. `[MODULE 1]`
 - **Extended / adaptive thinking:** thinking tokens are billed as output and add latency. Turn it on only for a measured accuracy gap after prompt work. `[MODULE 1]`
 - **Context strategy and size:** cost and latency grow linearly with input length. `[MODULE 1]`
 - **Retrieval design:** smaller chunks and hybrid indexes raise quality *and* latency. `[MODULE 1 – RAG]`
@@ -486,7 +486,7 @@ REAL-WORLD EXAMPLE – A bank proposed Claude Code on branch laptops with MCP se
 Production systems **combine** strategies (e.g. a coding agent: monolithic prefix → progressive recent state → just-in-time retrieval → compaction). `[MODULE 1]`
 
 **Progressive discovery of capabilities** `[OFFICIAL ANTHROPIC DOCS]`:
-- **Tool search tool:** mark tools `defer_loading: true`, and Claude searches the catalogue and loads only what it needs. You still send full definitions; `defer_loading` controls what enters context. Keep the 3–5 most-used tools non-deferred; never defer the search tool itself. MCP toolsets can defer a whole server.
+- **Tool search tool:** mark tools `defer_loading: true`, and Claude searches the catalogue and loads only what it needs. You still send full definitions; `defer_loading` controls what enters context. Keep the 3–5 most-used tools non-deferred; never defer the search tool itself. At least one tool must be non-deferred, or the API returns a 400 (verified, V7). MCP toolsets can defer a whole server.
 - **Agent Skills progressive disclosure:** only metadata is visible up front; SKILL.md and referenced files load when needed.
 
 #### Why it matters

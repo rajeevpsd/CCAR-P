@@ -27,7 +27,8 @@ modules: [M1, M2, M5]
 
 #### What you need to know
 **The tiers** (Opus, Sonnet, Haiku) trade capability against cost and latency. `[MODULE 1]`
-- **Sonnet is the default** starting point.
+- **Sonnet is the default** starting point. `[MODULE 1]`
+  > **VERIFICATION NOTE** `[OFFICIAL ANTHROPIC DOCS – verified 2026-11-19]`: the current Models overview recommends **Claude Opus 5.5** as the starting point for most workloads, Fable 5.2 for demanding reasoning, Sonnet 5.5 for speed plus intelligence, and Haiku 5.5 for high-volume classification, extraction and routing. All four have 1M-token context windows and adaptive thinking. The module's "Sonnet default" is outdated. **What stays true for the exam:** the default tier is a starting point, and every move is gated by an eval. See `docs/verification-log.md` V1.
 - **Opus:** demanding reasoning, advanced coding, research synthesis, *when an eval shows Sonnet misses the bar*.
 - **Haiku:** only when an eval confirms the quality trade-off is acceptable (e.g. classification, routing).
 
@@ -38,7 +39,8 @@ modules: [M1, M2, M5]
 
 **Use different tiers per step** where the evals support it. `[MODULE 1]`
 **Context window capacity is part of the tier decision** (e.g. 1M vs. 200k tokens decides whether a 300-page contract needs chunking). `[MODULE 2]`
-**Extended thinking:** adaptive thinking with an effort setting is the recommended control on current models. Thinking tokens are billed as output. Enable it only for a measured accuracy gap after prompt work. `[MODULE 1]` (Version specifics: verify.)
+**Extended thinking:** adaptive thinking with an effort setting is the recommended control on current models. Thinking tokens are billed as output. Enable it only for a measured accuracy gap after prompt work. `[MODULE 1]`
+> **VERIFICATION NOTE** `[OFFICIAL ANTHROPIC DOCS – verified 2026-11-19]`: manual extended thinking (`type: "enabled"` with `budget_tokens`) is legacy. Claude 4.7 and later models reject it with a 400. Use adaptive thinking (`thinking: {type: "adaptive"}`) with `output_config.effort`. Fable 5.2 and Opus 5.5 always think, so the lever there is **effort**, not on/off. Switching thinking modes invalidates the prompt cache for the first request after the switch. See V2.
 **Version pinning** plus monitoring the deprecations page. `[MODULE 2]`
 A prompt tuned on one model is a starting point for another, not a finished artifact. `[MODULE 1]`
 
@@ -286,7 +288,7 @@ REAL-WORLD EXAMPLE – A long legal chat began returning truncated answers late 
 **Prompt caching** reuses a stable prefix `[MODULE 1]` `[MODULE 2]`:
 - **Cache breakpoints:** mark where the fixed part ends.
 - **Ordering:** static before dynamic, always.
-- **TTL:** match it to how often content changes and how often it's called (default 5 minutes `[MODULE 2]`).
+- **TTL:** match it to how often content changes and how often it's called (default 5 minutes `[MODULE 2]`). `[OFFICIAL ANTHROPIC DOCS – verified 2026-11-19]`: a **1-hour TTL** is also available. Writes cost 1.25× base input (5-minute) or 2× (1-hour); reads cost 0.1× (lower on some current models). See V3.
 - **Write overhead:** writes cost more than standard input. For rarely called or small prefixes, caching can cost more than it saves.
 - Needs explicit `cache_control` markers. `[MODULE 2]`
 - The response is identical with or without caching. `[MODULE 2]`

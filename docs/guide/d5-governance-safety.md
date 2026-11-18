@@ -48,8 +48,9 @@ Chain model-based and deterministic checks: models can be evaded, rules are brit
 **Fail closed:** operator-built guardrails must block when they error. Failing open gives the appearance of protection without the function. (This applies to operator-built components, not Anthropic's API-level controls.) `[MODULE 3]`
 
 **Refusals:**
-- The API returns `stop_reason: "refusal"`, with `stop_details` (category + explanation) on supported models. Route refusals by category; tolerate an absent `stop_details`.
-- Reset or rephrase the refused turn before continuing. `[MODULE 3]` (Verify current categories in the docs.)
+- The API returns a successful HTTP 200 with `stop_reason: "refusal"`. `stop_details` is always present on a refusal, but its `category` and `explanation` can be null. **Branch on `stop_reason` (or `stop_details.type`), never on a populated category**, and supply your own user-facing message when they are null. `[OFFICIAL ANTHROPIC DOCS – verified 2026-11-19]` (V5)
+- Current docs also describe retrying a refused request on a fallback model (`fallbacks`, beta). Treat this as an architecture option, not exam scope.
+- Reset or rephrase the refused turn before continuing. `[MODULE 3]` Of the module's category list, only `cyber` is confirmed in current docs; treat the rest as **Source gap – verification required**.
 
 **Skill supply chain** `[MODULE 3]`:
 - Audit bundles for anomalous calls (network, shell, filesystem, credentials) and out-of-scope behaviour.
@@ -263,8 +264,8 @@ REAL-WORLD EXAMPLE – A benefits-eligibility assistant: a near-threshold applic
 |---|---|---|
 | Attorney-client privilege | API/SDK behind the firm's own app, SSO, firm-approved gateway logging every request | Consumer tiers ruled out `[MODULE 1]` |
 | HIPAA (PHI) | API/SDK on a **BAA-covered configuration** | BAA coverage is per configuration; beta features generally excluded; minimise PHI before the call `[MODULE 1, 2]` |
-| GDPR / residency | CSP route (Bedrock/Vertex) with the region pinned; DPA terms | Direct API `inference_geo` = "us"/"global" (no EU pin); verify Foundry `[MODULE 2]` |
-| FedRAMP | Claude for Government, Bedrock GovCloud, Vertex Assured Workloads | Model availability lags commercial; direct Claude Enterprise API not FedRAMP-authorised `[MODULE 1, 2]` |
+| GDPR / residency | CSP route (Bedrock/Vertex) with the region pinned; DPA terms | Direct API `inference_geo` = "us"/"global" only (no EU pin); Claude 4.6+ models; "us" costs 1.1×. On Bedrock and Google-managed Vertex the region comes from the endpoint or inference profile; Foundry uses the US Data Zone Standard deployment for US-only `[MODULE 2]` `[OFFICIAL ANTHROPIC DOCS – verified 2026-11-19]` (V6) |
+| FedRAMP | Claude for Government, Bedrock GovCloud, Vertex Assured Workloads | Model availability lags commercial; Claude Enterprise has no USG authorisation; ITAR data only via Bedrock GovCloud (IL4/IL5); Claude for Government and Vertex are not IL5 environments `[OFFICIAL ANTHROPIC DOCS – verified 2026-11-19]` (V8); `[MODULE 1, 2]` |
 | Internal residency policy | The CIO-approved CSP route | Procurement, not engineering `[MODULE 1]` |
 (Every item above is time-sensitive: verify current authorisations. `[MODULE 1 note]`)
 
