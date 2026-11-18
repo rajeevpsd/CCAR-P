@@ -1,0 +1,1999 @@
+{
+ "terms": [
+  {
+   "term": "Augmented LLM",
+   "group": "Cross-domain",
+   "objectives": [
+    "1.3",
+    "1.2"
+   ],
+   "definition": "A single model call enhanced with retrieval, tools or memory. It does one bounded job, and control flow doesn't branch on what the model decides.",
+   "architect_significance": "The simplest pattern; the starting point before workflows or agents.",
+   "exam_relevance": "Pick it for well-defined, verifiable single-step tasks.",
+   "common_confusion": "Calling any tool-using call an \"agent\". If your code controls the flow, it isn't one.",
+   "related": [
+    "Workflow",
+    "Agent"
+   ],
+   "source": "M1 Pattern Selection; Official – Building effective agents"
+  },
+  {
+   "term": "Agent",
+   "group": "Cross-domain",
+   "objectives": [
+    "1.3",
+    "1.4",
+    "3.1"
+   ],
+   "definition": "A system where the model decides its own sequence of tool calls toward a goal. The control flow lives inside the model.",
+   "architect_significance": "Unlocks open-ended work, but its autonomy is your liability surface. It needs budgets, permission limits and stopping criteria.",
+   "exam_relevance": "Use only when the path can't be listed in advance and errors can be recovered.",
+   "common_confusion": "\"Open-ended feeling\" isn't the same as \"unenumerable steps\".",
+   "related": [
+    "Workflow",
+    "Stopping criteria",
+    "Least privilege"
+   ],
+   "source": "M1 Pattern Selection"
+  },
+  {
+   "term": "Workflow",
+   "group": "Cross-domain",
+   "objectives": [
+    "1.3",
+    "1.5"
+   ],
+   "definition": "Steps orchestrated in your own code along predefined paths; each step may or may not call Claude.",
+   "architect_significance": "Testable, loggable, auditable; the default when the steps are knowable.",
+   "exam_relevance": "\"Auditor asks which step approved it\" → workflow.",
+   "common_confusion": "Rebuilding a workflow inside an agent loop with guardrail tools.",
+   "related": [
+    "Prompt chaining",
+    "Routing",
+    "Evaluator-optimizer"
+   ],
+   "source": "M1; Official – Building effective agents"
+  },
+  {
+   "term": "Eval",
+   "group": "Cross-domain",
+   "objectives": [
+    "4.1",
+    "4.2",
+    "2.1",
+    "3.5"
+   ],
+   "definition": "A structured test set that pairs inputs with expected outputs or criteria and produces a score you can compare across changes.",
+   "architect_significance": "The acceptance criteria and the gate for every model, prompt or retrieval change.",
+   "exam_relevance": "Write evals before production code, and keep them current.",
+   "common_confusion": "Manual spot checks aren't an eval.",
+   "related": [
+    "Golden dataset",
+    "LLM-as-judge",
+    "Delta threshold"
+   ],
+   "source": "M1/M2 Glossary"
+  },
+  {
+   "term": "Least privilege",
+   "group": "Cross-domain",
+   "objectives": [
+    "3.1",
+    "3.2",
+    "5.1",
+    "7.1"
+   ],
+   "definition": "Give each agent, subagent or user only the capabilities its task requires.",
+   "architect_significance": "Removing a capability eliminates its risk; monitoring only compensates for it.",
+   "exam_relevance": "Remove unneeded tools rather than logging or confirming their use.",
+   "common_confusion": "Treating confirmation prompts as least privilege.",
+   "related": [
+    "Tool-call authorization",
+    "Capability bloat"
+   ],
+   "source": "M2; EG Sample 1"
+  },
+  {
+   "term": "Context window",
+   "group": "Cross-domain",
+   "objectives": [
+    "2.4",
+    "3.8",
+    "1.1"
+   ],
+   "definition": "The model's active attention space, measured in tokens. Content outside it doesn't exist for the model, and it resets between calls.",
+   "architect_significance": "A hard edge for both capability and billing.",
+   "exam_relevance": "Budget below the ceiling; measure tokens rather than estimating them.",
+   "common_confusion": "Thinking the window is a memory, or a data-governance boundary.",
+   "related": [
+    "Working memory",
+    "Progressive context",
+    "Compaction"
+   ],
+   "source": "M1"
+  },
+  {
+   "term": "Four properties of generative AI",
+   "group": "Cross-domain",
+   "objectives": [
+    "1.1",
+    "5.2",
+    "4.4"
+   ],
+   "definition": "Next-token prediction, knowledge, working memory and steerability. Each is a capability paired with a limitation and a mitigation.",
+   "architect_significance": "The lens for decomposition, feasibility and risk.",
+   "exam_relevance": "Map the symptom to the property, then to the compensating control.",
+   "common_confusion": "Treating the properties as flaws to fix rather than forces to design around.",
+   "related": [
+    "Feasibility verdict",
+    "Hallucination"
+   ],
+   "source": "M1 How Claude Behaves; M2 Feasibility"
+  },
+  {
+   "term": "Human-in-the-loop (HITL)",
+   "group": "Cross-domain",
+   "objectives": [
+    "5.3",
+    "1.4",
+    "1.2"
+   ],
+   "definition": "A deliberate point where a person reviews or approves model output, placed by risk and reversibility.",
+   "architect_significance": "Focuses limited reviewer attention on high-stakes decisions.",
+   "exam_relevance": "Pre-action approval for irreversible actions; sampling for low-stakes ones.",
+   "common_confusion": "Routing everything to review causes consent fatigue.",
+   "related": [
+    "Review routing",
+    "Consent fatigue"
+   ],
+   "source": "M1; M3"
+  },
+  {
+   "term": "Observability",
+   "group": "Cross-domain",
+   "objectives": [
+    "3.4",
+    "4.6",
+    "6.3"
+   ],
+   "definition": "The ability to see what the system is doing, reconstruct why, and detect when it goes wrong.",
+   "architect_significance": "A precondition for letting agents act; LLMs fail quietly.",
+   "exam_relevance": "Log request, response, context and outcome; use a shared trace ID across agents.",
+   "common_confusion": "Error-rate dashboards alone don't count as observability.",
+   "related": [
+    "Trace",
+    "Change attribution",
+    "Feedback loop"
+   ],
+   "source": "M1/M2"
+  },
+  {
+   "term": "Prompt caching",
+   "group": "Cross-domain",
+   "objectives": [
+    "2.5",
+    "4.5",
+    "3.8"
+   ],
+   "definition": "Reusing a processed, stable prompt prefix across requests to cut cost and latency. The response is identical either way.",
+   "architect_significance": "The biggest lever when a long, stable prefix is reused often.",
+   "exam_relevance": "Static content first, then the breakpoint, then dynamic content; check TTL and write cost.",
+   "common_confusion": "Caching answers rather than prefixes; caching rarely called prompts.",
+   "related": [
+    "Cache breakpoint",
+    "TTL"
+   ],
+   "source": "M1; M2; EG Sample 2"
+  },
+  {
+   "term": "Live state",
+   "group": "Cross-domain",
+   "objectives": [
+    "3.6",
+    "1.1",
+    "2.4"
+   ],
+   "definition": "Data that changes during a conversation or process (order status, balances, inventory), owned by a system of record.",
+   "architect_significance": "Must be fetched by a tool call, not retrieved from an index.",
+   "exam_relevance": "\"Answer contradicts the database\" → you need a tool call.",
+   "common_confusion": "Shortening the index refresh to \"fix\" stale live state.",
+   "related": [
+    "RAG",
+    "Tool use",
+    "System of record"
+   ],
+   "source": "M1/M2 Glossary"
+  },
+  {
+   "term": "Tool use",
+   "group": "Cross-domain",
+   "objectives": [
+    "3.7",
+    "3.6",
+    "5.1"
+   ],
+   "definition": "Claude calls external functions or APIs during a response and uses the results.",
+   "architect_significance": "Turns text generation into action, which is why side-effecting tools need authorization.",
+   "exam_relevance": "The mechanism for live state and deterministic computation.",
+   "common_confusion": "MCP vs. tool use. MCP shares tools across clients, and those tools are invoked through tool use.",
+   "related": [
+    "MCP",
+    "Tool-call authorization"
+   ],
+   "source": "M1/M2 Glossary"
+  },
+  {
+   "term": "Delegation (AI Fluency)",
+   "group": "Cross-domain",
+   "objectives": [
+    "1.5",
+    "1.1",
+    "5.3"
+   ],
+   "definition": "The AI Fluency competency of deciding which work Claude should own, which humans keep, and which is collaborative.",
+   "architect_significance": "Produces the delegation map.",
+   "exam_relevance": "Justify by reversibility, stakes and accountability.",
+   "common_confusion": "Can Claude do it vs. should Claude own it.",
+   "related": [
+    "Decomposition"
+   ],
+   "source": "M1"
+  },
+  {
+   "term": "Description (AI Fluency)",
+   "group": "Cross-domain",
+   "objectives": [
+    "2.2",
+    "6.2"
+   ],
+   "definition": "The AI Fluency competency of stating precisely what you want: scope, format, constraints. It applies both to prompts and to stakeholders.",
+   "architect_significance": "Separates prompts that hold in production from demo prompts, and it's how decisions land with stakeholders.",
+   "exam_relevance": "Underspecification is the failure it prevents.",
+   "common_confusion": "More words isn't more description.",
+   "related": [
+    "Underspecification",
+    "Output contract"
+   ],
+   "source": "M1; M4"
+  },
+  {
+   "term": "Discernment (AI Fluency)",
+   "group": "Cross-domain",
+   "objectives": [
+    "4.4",
+    "5.5"
+   ],
+   "definition": "Judging output quality (acceptable, needs revision, needs override) rather than accepting it at face value.",
+   "architect_significance": "Feeds evals and monitoring; also spots unequal treatment.",
+   "exam_relevance": "Teams without it watch metrics move without checking the outputs.",
+   "common_confusion": "Confirming a value was produced isn't judging whether it's right.",
+   "related": [
+    "Failure taxonomy",
+    "Fairness"
+   ],
+   "source": "M2; M3"
+  },
+  {
+   "term": "Diligence (AI Fluency)",
+   "group": "Cross-domain",
+   "objectives": [
+    "5.3",
+    "7.2"
+   ],
+   "definition": "Taking responsibility for verifying and vouching for AI outputs, and keeping human accountability checkpoints in place.",
+   "architect_significance": "Becomes a verification checklist and review gates.",
+   "exam_relevance": "Watch for automation pressure eroding oversight.",
+   "common_confusion": "Faster shipping isn't the same as trustworthy shipping.",
+   "related": [
+    "Verification checklist",
+    "HITL"
+   ],
+   "source": "M3; M5"
+  },
+  {
+   "term": "Decomposition",
+   "group": "D1",
+   "objectives": [
+    "1.5",
+    "1.1"
+   ],
+   "definition": "Splitting a request into what Claude does, what existing systems do and what humans do, then breaking Claude's share into steps or units.",
+   "architect_significance": "Over-assigning to Claude is the most common and most expensive early mistake.",
+   "exam_relevance": "Assign each part to an owner before picking a pattern.",
+   "common_confusion": "Task decomposition vs. ownership decomposition. Both matter.",
+   "related": [
+    "Delegation",
+    "Fan-out"
+   ],
+   "source": "M1"
+  },
+  {
+   "term": "Feasibility verdict",
+   "group": "D1",
+   "objectives": [
+    "1.1"
+   ],
+   "definition": "One of three outcomes: feasible as scoped, feasible with constraints, or not feasible. Each comes with its load-bearing constraints.",
+   "architect_significance": "A verdict without constraints doesn't survive production.",
+   "exam_relevance": "Gather volume, input size and latency before issuing one.",
+   "common_confusion": "Capability isn't feasibility.",
+   "related": [
+    "Boundary conditions",
+    "Sizing"
+   ],
+   "source": "M2"
+  },
+  {
+   "term": "Boundary conditions",
+   "group": "D1",
+   "objectives": [
+    "1.1",
+    "6.4"
+   ],
+   "definition": "The stated conditions under which an architecture works or doesn't (e.g. documents up to N pages).",
+   "architect_significance": "Written into the SOW so both sides know what's in scope.",
+   "exam_relevance": "An undocumented constraint becomes a production failure.",
+   "common_confusion": "Treating boundaries as risks to mention verbally.",
+   "related": [
+    "Feasibility verdict"
+   ],
+   "source": "M2"
+  },
+  {
+   "term": "Reference architecture",
+   "group": "D1",
+   "objectives": [
+    "1.2",
+    "1.3",
+    "3.6"
+   ],
+   "definition": "A proven wiring for a recurring problem class: agent, RAG, document pipeline (evaluator-optimizer), routing/triage, coding agent.",
+   "architect_significance": "Teams have already learned what breaks in each.",
+   "exam_relevance": "Most common misuse: retrieval applied to live state.",
+   "common_confusion": "Reference ≠ blueprint; adapt it to the workload.",
+   "related": [
+    "RAG",
+    "Routing"
+   ],
+   "source": "M1"
+  },
+  {
+   "term": "Prompt chaining",
+   "group": "D1",
+   "objectives": [
+    "1.3",
+    "1.5"
+   ],
+   "definition": "A workflow where each call processes the previous output, with programmatic gates between steps.",
+   "architect_significance": "Predictable sequences with checkpoints.",
+   "exam_relevance": "Fixed sequence plus checks → chain.",
+   "common_confusion": "Chaining independent steps that could run in parallel.",
+   "related": [
+    "Workflow",
+    "Gate"
+   ],
+   "source": "Official – Building effective agents"
+  },
+  {
+   "term": "Routing (workflow)",
+   "group": "D1",
+   "objectives": [
+    "1.3"
+   ],
+   "definition": "Classify the input, then dispatch it to a specialised downstream path, model or handler.",
+   "architect_significance": "Separation of concerns; lets cheaper tiers handle easy cases.",
+   "exam_relevance": "Distinct categories and accurate classification.",
+   "common_confusion": "Building an agent for what is really four routes.",
+   "related": [
+    "Workflow"
+   ],
+   "source": "Official – Building effective agents; M1"
+  },
+  {
+   "term": "Parallelization",
+   "group": "D1",
+   "objectives": [
+    "1.3",
+    "1.5"
+   ],
+   "definition": "Running independent subtasks at once (sectioning) or the same task several times for confidence (voting).",
+   "architect_significance": "Speed and confidence.",
+   "exam_relevance": "Only for independent units.",
+   "common_confusion": "Parallelization (subtasks fixed in advance) vs. orchestrator-workers (subtasks decided at runtime).",
+   "related": [
+    "Fan-out"
+   ],
+   "source": "Official – Building effective agents"
+  },
+  {
+   "term": "Orchestrator-workers",
+   "group": "D1",
+   "objectives": [
+    "1.4",
+    "1.3"
+   ],
+   "definition": "A central model decomposes work at runtime, delegates to workers or subagents, and synthesises their results.",
+   "architect_significance": "Handles work that's too large or too varied for one context.",
+   "exam_relevance": "Subtasks not known in advance.",
+   "common_confusion": "Assuming coverage instead of reconciling it.",
+   "related": [
+    "Orchestrator",
+    "Subagent",
+    "Coverage check"
+   ],
+   "source": "M1; M2; Official"
+  },
+  {
+   "term": "Evaluator-optimizer",
+   "group": "D1",
+   "objectives": [
+    "1.3",
+    "1.2"
+   ],
+   "definition": "One step generates, another evaluates against criteria, and the loop refines.",
+   "architect_significance": "Common in document pipelines where a first pass isn't reliable.",
+   "exam_relevance": "Clear criteria plus measurable gains from refinement.",
+   "common_confusion": "Using it without reliable evaluation criteria.",
+   "related": [
+    "Generator-verifier loop"
+   ],
+   "source": "M1; Official"
+  },
+  {
+   "term": "Fan-out",
+   "group": "D1",
+   "objectives": [
+    "1.4",
+    "1.5"
+   ],
+   "definition": "Split a large work item into independent units, dispatch one subagent per unit, then synthesise.",
+   "architect_significance": "Clean per-unit contexts plus concurrency.",
+   "exam_relevance": "Reconcile results returned against units dispatched.",
+   "common_confusion": "\"48 reviewed\" when 50 were dispatched.",
+   "related": [
+    "Coverage check"
+   ],
+   "source": "M1"
+  },
+  {
+   "term": "Coverage check",
+   "group": "D1",
+   "objectives": [
+    "1.4"
+   ],
+   "definition": "A synthesis rule requiring results returned to equal units dispatched, and flagging any gap.",
+   "architect_significance": "Prevents a confident summary over incomplete work.",
+   "exam_relevance": "The fix for silently dropped subagent units.",
+   "common_confusion": "Assuming every subagent returns something.",
+   "related": [
+    "Fan-out"
+   ],
+   "source": "M1"
+  },
+  {
+   "term": "Orchestrator",
+   "group": "D1",
+   "objectives": [
+    "1.4"
+   ],
+   "definition": "The agent that owns the goal; it decomposes, delegates and synthesises, but doesn't do sub-task work itself.",
+   "architect_significance": "Its failure is often unrecoverable, so protect and checkpoint its state.",
+   "exam_relevance": "Recoverable subagent failure vs. unrecoverable orchestrator failure.",
+   "common_confusion": "Letting the orchestrator do the sub-task work.",
+   "related": [
+    "Subagent"
+   ],
+   "source": "M1"
+  },
+  {
+   "term": "Subagent",
+   "group": "D1",
+   "objectives": [
+    "1.4",
+    "3.1",
+    "7.1"
+   ],
+   "definition": "An agent with its own context that owns one scoped sub-task and returns a structured result.",
+   "architect_significance": "Failures are usually recoverable; tools should be scoped to the task.",
+   "exam_relevance": "Make subagent work idempotent and give it least-privilege tools.",
+   "common_confusion": "Putting compliance-critical checks in subagents instead of deterministic code.",
+   "related": [
+    "Orchestrator",
+    "Trust hierarchy"
+   ],
+   "source": "M1; M2"
+  },
+  {
+   "term": "Business value pillars",
+   "group": "D1",
+   "objectives": [
+    "1.6"
+   ],
+   "definition": "Efficiency, transformation, productivity, cost (the run cost of the solution) and performance SLAs.",
+   "architect_significance": "Keeps ROI claims in the sponsor's language.",
+   "exam_relevance": "Tag each value claim with its pillar.",
+   "common_confusion": "Efficiency (same work, cheaper) vs. transformation (work that wasn't possible before).",
+   "related": [
+    "ROI mapping"
+   ],
+   "source": "EG; M2"
+  },
+  {
+   "term": "ROI mapping",
+   "group": "D1",
+   "objectives": [
+    "1.6"
+   ],
+   "definition": "Measured baseline → projected state in the same unit (including review effort) → minus run cost from sizing → payback with sensitivity.",
+   "architect_significance": "Turns \"can we build it?\" into \"is it worth building?\".",
+   "exam_relevance": "Common traps are an estimated baseline, assuming full automation, and average-based cost.",
+   "common_confusion": "Build cost (counted in payback) vs. run cost.",
+   "related": [
+    "Sizing",
+    "Outcome document"
+   ],
+   "source": "M2"
+  },
+  {
+   "term": "Fine-tuning",
+   "group": "D1",
+   "objectives": [
+    "1.3",
+    "2.3"
+   ],
+   "definition": "Training a model variant on task data. Access is limited, and it locks you to a fixed model version.",
+   "architect_significance": "The last step after prompting, tools and stronger patterns.",
+   "exam_relevance": "Justified only for very high volume, critical latency, or format consistency that prompting couldn't achieve.",
+   "common_confusion": "Reaching for it first when prompting \"isn't reliable\".",
+   "related": [
+    "Prompt engineering"
+   ],
+   "source": "M1"
+  },
+  {
+   "term": "Model tiers (Opus / Sonnet / Haiku)",
+   "group": "D2",
+   "objectives": [
+    "2.1"
+   ],
+   "definition": "The Claude model family, trading capability against cost and latency.",
+   "architect_significance": "Not choosing a tier means defaulting to the most expensive one.",
+   "exam_relevance": "Sonnet by default; move only on eval evidence, per step and per category.",
+   "common_confusion": "Judging a downgrade on its average score.",
+   "related": [
+    "Eval gate",
+    "Rollback criterion"
+   ],
+   "source": "M1"
+  },
+  {
+   "term": "Rollback criterion / delta threshold",
+   "group": "D2",
+   "objectives": [
+    "2.1",
+    "4.2"
+   ],
+   "definition": "The pass/fail line for a change, set before the eval runs.",
+   "architect_significance": "Stops teams negotiating with themselves after seeing the data.",
+   "exam_relevance": "A partial migration can follow from per-category failures.",
+   "common_confusion": "Setting the threshold after the results are in.",
+   "related": [
+    "Eval"
+   ],
+   "source": "M1"
+  },
+  {
+   "term": "Extended thinking / adaptive thinking",
+   "group": "D2",
+   "objectives": [
+    "2.1",
+    "3.3",
+    "4.5"
+   ],
+   "definition": "A separate reasoning pass in thinking tokens (billed as output) before the answer. Adaptive thinking with an effort level is the recommended control on current models.",
+   "architect_significance": "A cost and latency trade-off.",
+   "exam_relevance": "Enable it only for a measured accuracy gap, after prompt work.",
+   "common_confusion": "\"It can't hurt\"; enabling it on classifiers.",
+   "related": [
+    "Effort parameter"
+   ],
+   "source": "M1 (verify version specifics)"
+  },
+  {
+   "term": "Model version pinning",
+   "group": "D2",
+   "objectives": [
+    "2.1",
+    "3.4",
+    "6.5"
+   ],
+   "definition": "Fixing the model version in configuration, monitoring deprecations, and keeping an update runbook.",
+   "architect_significance": "Makes changes attributable and governed.",
+   "exam_relevance": "An unpinned version that rolled forward is a governance gap.",
+   "common_confusion": "Thinking pinning is a pattern choice. It's an operational discipline.",
+   "related": [
+    "Change attribution"
+   ],
+   "source": "M2"
+  },
+  {
+   "term": "System prompt (enterprise)",
+   "group": "D2",
+   "objectives": [
+    "2.2"
+   ],
+   "definition": "A designed, reusable asset stating role and scope, constraints and an output contract.",
+   "architect_significance": "Ambiguity is a defect multiplied across every request.",
+   "exam_relevance": "Underspecification produces inconsistent outputs.",
+   "common_confusion": "A system prompt isn't an enforcement layer.",
+   "related": [
+    "Template",
+    "Output contract"
+   ],
+   "source": "M1"
+  },
+  {
+   "term": "Template",
+   "group": "D2",
+   "objectives": [
+    "2.2"
+   ],
+   "definition": "A prompt with parameterised slots inside fixed scaffolding that carries the safety and consistency guarantees.",
+   "architect_significance": "Makes the safe path the default path.",
+   "exam_relevance": "Filling a slot must not remove a constraint.",
+   "common_confusion": "Free-form slots placed above the guardrails.",
+   "related": [
+    "System prompt"
+   ],
+   "source": "M1"
+  },
+  {
+   "term": "Output contract",
+   "group": "D2",
+   "objectives": [
+    "2.2",
+    "1.2"
+   ],
+   "definition": "The required shape of a response (fields, format, citations), stated in the prompt and validated afterwards.",
+   "architect_significance": "Lets guardrails be structural rather than just prose.",
+   "exam_relevance": "Enforce \"never promise X\" through the format, plus screening.",
+   "common_confusion": "Stating rules only in the role text.",
+   "related": [
+    "Schema"
+   ],
+   "source": "M1"
+  },
+  {
+   "term": "Underspecification",
+   "group": "D2",
+   "objectives": [
+    "2.2",
+    "4.4"
+   ],
+   "definition": "A gap in a prompt that the model fills with its own assumption, differently each time.",
+   "architect_significance": "The main source of variation in reused prompts.",
+   "exam_relevance": "Diagnose by asking, for each requirement, \"stated or only hoped for?\".",
+   "common_confusion": "Blaming the model tier for it.",
+   "related": [
+    "Prompt failure"
+   ],
+   "source": "M1"
+  },
+  {
+   "term": "Zero-shot / Few-shot / Chain-of-thought",
+   "group": "D2",
+   "objectives": [
+    "2.3"
+   ],
+   "definition": "Instruction only; a handful of examples; step-by-step reasoning before the answer.",
+   "architect_significance": "Each step up adds tokens and latency.",
+   "exam_relevance": "Start zero-shot, add examples for format, add CoT for multi-step reasoning.",
+   "common_confusion": "CoT everywhere; using few-shot for arithmetic precision.",
+   "related": [
+    "Technique selection"
+   ],
+   "source": "M1"
+  },
+  {
+   "term": "Working memory",
+   "group": "D2",
+   "objectives": [
+    "2.4",
+    "1.1"
+   ],
+   "definition": "The property describing the context window's hard edge. Things work until they abruptly don't.",
+   "architect_significance": "Over-limit requests fail in specific, recognisable ways.",
+   "exam_relevance": "400 means too many tokens; 413 means too many bytes; model_context_window_exceeded means generation hit the ceiling.",
+   "common_confusion": "Mixing up a rejected request with a mid-generation stop.",
+   "related": [
+    "Context window"
+   ],
+   "source": "M1"
+  },
+  {
+   "term": "Token-counting API / usage field",
+   "group": "D2",
+   "objectives": [
+    "2.4",
+    "4.5"
+   ],
+   "definition": "Ways to measure actual tokens before sending a request and on every response.",
+   "architect_significance": "Limits and billing apply to measured counts.",
+   "exam_relevance": "Measure, don't estimate by characters.",
+   "common_confusion": "Fixed characters-per-token ratios.",
+   "related": [
+    "Context window"
+   ],
+   "source": "M1"
+  },
+  {
+   "term": "Cache breakpoint / TTL",
+   "group": "D2",
+   "objectives": [
+    "2.5",
+    "4.5"
+   ],
+   "definition": "The boundary between the cacheable prefix and dynamic content, and how long the cache entry lives (5-minute default per M2).",
+   "architect_significance": "Prefix order and call frequency decide whether caching pays off.",
+   "exam_relevance": "\"A cache that never hits\" means dynamic content came first.",
+   "common_confusion": "Assuming a longer TTL fixes a changing prefix.",
+   "related": [
+    "Prompt caching"
+   ],
+   "source": "M1; M2"
+  },
+  {
+   "term": "Skill",
+   "group": "D2",
+   "objectives": [
+    "2.5",
+    "7.1",
+    "3.8"
+   ],
+   "definition": "A versioned, self-contained unit (SKILL.md plus optional scripts) that packages a repeatable procedure. On the API it's attached via container.skills and needs the Code Execution Tool.",
+   "architect_significance": "Governed reuse across teams; loads progressively.",
+   "exam_relevance": "Repeatable, distributed and governed → Skill; flexible and local → prompt library.",
+   "common_confusion": "Assuming the platform screens Skills for you.",
+   "related": [
+    "Plugin",
+    "Progressive disclosure"
+   ],
+   "source": "M1; M5; Official – Agent Skills"
+  },
+  {
+   "term": "Modular prompt library",
+   "group": "D2",
+   "objectives": [
+    "2.5"
+   ],
+   "definition": "A shared collection of prompt fragments that engineers assemble in their own code.",
+   "architect_significance": "Lightweight reuse within one team.",
+   "exam_relevance": "Lean toward it for flexible, frequently tweaked prompts.",
+   "common_confusion": "Using it where versioned rollback is needed.",
+   "related": [
+    "Skill"
+   ],
+   "source": "M1"
+  },
+  {
+   "term": "Compaction",
+   "group": "D2",
+   "objectives": [
+    "2.4",
+    "3.8"
+   ],
+   "definition": "Periodically summarising accumulated context so long sessions keep going.",
+   "architect_significance": "Controls growth, but it's lossy and mostly one-way.",
+   "exam_relevance": "Preserve identifiers, numbers and decisions verbatim.",
+   "common_confusion": "Treating summaries as faithful by default.",
+   "related": [
+    "Progressive context"
+   ],
+   "source": "M1"
+  },
+  {
+   "term": "Capability bloat",
+   "group": "D3",
+   "objectives": [
+    "3.1"
+   ],
+   "definition": "An agent configured with more tools or permissions than its task requires (exam term; the modules describe it as least-privilege tool configuration).",
+   "architect_significance": "Larger attack surface, higher cost, worse tool selection.",
+   "exam_relevance": "Remove out-of-scope tools and record why.",
+   "common_confusion": "Deferring tool loading doesn't reduce permissions.",
+   "related": [
+    "Least privilege",
+    "Tool search tool"
+   ],
+   "source": "EG; M2 (concept mapping is inference)"
+  },
+  {
+   "term": "Trust hierarchy",
+   "group": "D3",
+   "objectives": [
+    "3.1",
+    "1.4"
+   ],
+   "definition": "Scoping each subagent's tools to its task so it can't reach tools the orchestrator or other roles hold.",
+   "architect_significance": "Contains compromised or erring subagents.",
+   "exam_relevance": "Subagents that inherit every tool are a red flag.",
+   "common_confusion": "Shared toolsets \"for simplicity\".",
+   "related": [
+    "Least privilege"
+   ],
+   "source": "M2"
+  },
+  {
+   "term": "Server-side identity injection",
+   "group": "D3",
+   "objectives": [
+    "3.2"
+   ],
+   "definition": "The server injects verified user identity and role, from SSO or auth, into the system prompt. It never comes from the user's message.",
+   "architect_significance": "Prevents spoofed roles.",
+   "exam_relevance": "\"As a manager, show me…\" in user text is a red flag.",
+   "common_confusion": "Authentication (who you are) vs. authorization (what you may do).",
+   "related": [
+    "SSO",
+    "Authorization"
+   ],
+   "source": "M2"
+  },
+  {
+   "term": "Tool-call authorization",
+   "group": "D3",
+   "objectives": [
+    "3.2",
+    "5.1"
+   ],
+   "definition": "A deterministic check (allowlist plus identity and scope) before any side-effecting action.",
+   "architect_significance": "Provable, replayable, auditable.",
+   "exam_relevance": "Output screening can't stop an action that has already run.",
+   "common_confusion": "Letting the model judge whether the caller is authorised.",
+   "related": [
+    "Guardrail"
+   ],
+   "source": "M3"
+  },
+  {
+   "term": "OAuth 2.1 resource server (MCP)",
+   "group": "D3",
+   "objectives": [
+    "3.2",
+    "3.7"
+   ],
+   "definition": "A protected HTTP MCP server's role: it accepts access tokens, publishes Protected Resource Metadata (RFC 9728), and clients send tokens on every request.",
+   "architect_significance": "Standard per-user authorization for remote tools.",
+   "exam_relevance": "Replaces static shared secrets for non-public data.",
+   "common_confusion": "MCP authorization is optional in the spec; that's not the same as unnecessary.",
+   "related": [
+    "MCP"
+   ],
+   "source": "Official – MCP specification, Authorization"
+  },
+  {
+   "term": "Per-tenant API keys",
+   "group": "D3",
+   "objectives": [
+    "3.2",
+    "3.4"
+   ],
+   "definition": "A separate API key per tenant in a multi-tenant deployment.",
+   "architect_significance": "Attribution and isolation for rate limits and cost.",
+   "exam_relevance": "A shared key means one tenant's spike hits everyone, invisibly.",
+   "common_confusion": "Logging a tenant_id field doesn't give you isolation.",
+   "related": [
+    "Rate limit"
+   ],
+   "source": "M2"
+  },
+  {
+   "term": "p95 latency",
+   "group": "D3",
+   "objectives": [
+    "3.3",
+    "6.3"
+   ],
+   "definition": "The latency 95% of requests complete within.",
+   "architect_significance": "SLA breaches come from the slow tail.",
+   "exam_relevance": "Design against p95, not the median.",
+   "common_confusion": "p50 and the median are the same thing.",
+   "related": [
+    "SLA"
+   ],
+   "source": "M2"
+  },
+  {
+   "term": "Change attribution",
+   "group": "D3",
+   "objectives": [
+    "3.4",
+    "4.4"
+   ],
+   "definition": "Telling apart model drift, data drift and model-update effects when a metric moves.",
+   "architect_significance": "Each has a different fix.",
+   "exam_relevance": "Needs version and prompt IDs plus distribution comparison.",
+   "common_confusion": "Fixing before attributing.",
+   "related": [
+    "Model drift",
+    "Data drift"
+   ],
+   "source": "M2"
+  },
+  {
+   "term": "Model drift / Data drift",
+   "group": "D3",
+   "objectives": [
+    "3.4",
+    "4.6"
+   ],
+   "definition": "Model drift: the model's outputs on stable inputs change over time. Data drift: the input distribution changes.",
+   "architect_significance": "Gradual, so threshold alerts often miss them.",
+   "exam_relevance": "Use periodic distribution comparison.",
+   "common_confusion": "Both differ from a model version update.",
+   "related": [
+    "Change attribution"
+   ],
+   "source": "M2"
+  },
+  {
+   "term": "Trace / shared trace ID",
+   "group": "D3",
+   "objectives": [
+    "3.4",
+    "1.4"
+   ],
+   "definition": "A per-request record (model, version, tokens, latency, stop reason, tool calls), with one ID propagated across all agents in a run.",
+   "architect_significance": "Makes a multi-agent run reconstructable.",
+   "exam_relevance": "The fix for fragmented logs.",
+   "common_confusion": "Separate per-agent dashboards don't replace it.",
+   "related": [
+    "Observability"
+   ],
+   "source": "M1; M2"
+  },
+  {
+   "term": "RAG (retrieval-augmented generation)",
+   "group": "D3",
+   "objectives": [
+    "3.5",
+    "3.6"
+   ],
+   "definition": "Chunk and index a corpus ahead of time, retrieve relevant chunks at query time, and pass them into context.",
+   "architect_significance": "For stable knowledge, large corpora, and citations.",
+   "exam_relevance": "Not for live state. Measure retrieval separately from generation.",
+   "common_confusion": "Similarity isn't truth.",
+   "related": [
+    "Chunking",
+    "Hybrid retrieval"
+   ],
+   "source": "M1; M2"
+  },
+  {
+   "term": "Chunking (fixed / semantic / hierarchical)",
+   "group": "D3",
+   "objectives": [
+    "3.5"
+   ],
+   "definition": "Splitting the corpus into retrievable units: uniform spans, meaning-based breaks, or structure-preserving sections.",
+   "architect_significance": "Choose by the structure of the source.",
+   "exam_relevance": "Hierarchical for contracts, manuals and policies.",
+   "common_confusion": "One default chunk size for everything.",
+   "related": [
+    "RAG"
+   ],
+   "source": "M1"
+  },
+  {
+   "term": "Dense / Sparse / Hybrid retrieval",
+   "group": "D3",
+   "objectives": [
+    "3.5",
+    "3.6"
+   ],
+   "definition": "Dense (embeddings) matches meaning; sparse (e.g. BM25) matches exact tokens; hybrid combines both.",
+   "architect_significance": "Choose by query pattern.",
+   "exam_relevance": "Identifiers being missed → add sparse.",
+   "common_confusion": "Dense-only for part numbers.",
+   "related": [
+    "Reciprocal rank fusion"
+   ],
+   "source": "M1"
+  },
+  {
+   "term": "Reciprocal rank fusion (RRF)",
+   "group": "D3",
+   "objectives": [
+    "3.5"
+   ],
+   "definition": "A low-tuning way to merge ranked lists by scoring each item on its rank in each list.",
+   "architect_significance": "The defensible default for hybrid retrieval.",
+   "exam_relevance": "Hybrid → fuse with RRF.",
+   "common_confusion": "Averaging raw similarity scores across different indexes.",
+   "related": [
+    "Hybrid retrieval"
+   ],
+   "source": "M1"
+  },
+  {
+   "term": "MCP (Model Context Protocol)",
+   "group": "D3",
+   "objectives": [
+    "3.7",
+    "7.1"
+   ],
+   "definition": "An open protocol for exposing tools, prompts and resources from a server so any MCP-aware client can use them.",
+   "architect_significance": "Build once, connect from many clients.",
+   "exam_relevance": "Use when two or more clients need the same tools.",
+   "common_confusion": "MCP as the default integration; MCP as an agent loop.",
+   "related": [
+    "Tool use",
+    "OAuth 2.1 resource server"
+   ],
+   "source": "M1; M2"
+  },
+  {
+   "term": "Agent SDK",
+   "group": "D3",
+   "objectives": [
+    "3.7"
+   ],
+   "definition": "A managed agent loop (iteration, tool execution, termination), the same one behind Claude Code, embedded in your own application. Available for TypeScript and Python.",
+   "architect_significance": "Multi-turn agents inside your product without building the loop yourself.",
+   "exam_relevance": "Agent SDK vs. Anthropic SDK (a wrapper with no loop).",
+   "common_confusion": "You give up fine-grained control between turns.",
+   "related": [
+    "SDK",
+    "Claude Code"
+   ],
+   "source": "M1; M2"
+  },
+  {
+   "term": "Entry point / build-time interface / delivery route",
+   "group": "D3",
+   "objectives": [
+    "3.7",
+    "5.4",
+    "6.5"
+   ],
+   "definition": "Three layers. The entry point is how users reach Claude; the build-time interface is what engineers code against; the delivery route is where API traffic terminates (first-party, Bedrock, Vertex, Foundry).",
+   "architect_significance": "Three decisions, made for three different stakeholders.",
+   "exam_relevance": "Compliance eliminates routes and entry points first.",
+   "common_confusion": "\"It's all Claude.\"",
+   "related": [
+    "CSP delivery route"
+   ],
+   "source": "M1"
+  },
+  {
+   "term": "Agent-to-agent protocol",
+   "group": "D3",
+   "objectives": [
+    "3.7"
+   ],
+   "definition": "Protocols for delegating tasks between independently owned agents (e.g. the A2A protocol announced by Google, positioned as complementary to MCP).",
+   "architect_significance": "Cross-organisation or cross-framework delegation.",
+   "exam_relevance": "Source gap: no official Anthropic documentation; the decision principle is inferred.",
+   "common_confusion": "In-process subagents (agents you own) vs. external agents.",
+   "related": [
+    "MCP",
+    "Subagent"
+   ],
+   "source": "External – Google A2A announcement"
+  },
+  {
+   "term": "Progressive vs. monolithic context",
+   "group": "D3",
+   "objectives": [
+    "3.8",
+    "2.4"
+   ],
+   "definition": "Monolithic loads everything up front; progressive stages context, carrying forward only what the next step needs.",
+   "architect_significance": "Monolithic is the silent budget killer in long sessions.",
+   "exam_relevance": "Production usually combines a monolithic prefix, progressive state, retrieval and compaction.",
+   "common_confusion": "Strategy and sizing are separate decisions.",
+   "related": [
+    "Compaction",
+    "Tool search tool"
+   ],
+   "source": "M1"
+  },
+  {
+   "term": "Tool search tool / defer_loading",
+   "group": "D3",
+   "objectives": [
+    "3.8",
+    "3.1"
+   ],
+   "definition": "Lets Claude search a large tool catalogue and load only the tools it needs. Tools marked defer_loading: true load only when discovered.",
+   "architect_significance": "Progressive discovery for tools; cuts definition overhead.",
+   "exam_relevance": "Keep 3–5 hot tools loaded; never defer the search tool; still send full definitions.",
+   "common_confusion": "Deferring a tool doesn't remove its permissions.",
+   "related": [
+    "Progressive disclosure"
+   ],
+   "source": "Official – Tool search tool"
+  },
+  {
+   "term": "Progressive disclosure (Skills)",
+   "group": "D3",
+   "objectives": [
+    "3.8",
+    "2.5"
+   ],
+   "definition": "Skills show only metadata up front; SKILL.md and referenced files load when needed.",
+   "architect_significance": "Hundreds of Skills without filling the context.",
+   "exam_relevance": "An example of progressive discovery.",
+   "common_confusion": "Loading every Skill's full content up front.",
+   "related": [
+    "Skill"
+   ],
+   "source": "Official – Agent Skills"
+  },
+  {
+   "term": "Golden dataset",
+   "group": "D4",
+   "objectives": [
+    "4.2",
+    "4.1"
+   ],
+   "definition": "A labelled, representative set of inputs (including edge cases and adversarial items) that evals run against.",
+   "architect_significance": "An unrepresentative set makes scores meaningless.",
+   "exam_relevance": "Keep it current with every prompt or model change.",
+   "common_confusion": "Building it from a few convenient inputs.",
+   "related": [
+    "Eval"
+   ],
+   "source": "M2"
+  },
+  {
+   "term": "LLM-as-judge",
+   "group": "D4",
+   "objectives": [
+    "4.2"
+   ],
+   "definition": "A model that scores outputs against a rubric, for interpretive qualities.",
+   "architect_significance": "Scales interpretive grading.",
+   "exam_relevance": "Needs a rubric, constrained verdicts, reasoning, human calibration and a different grader model.",
+   "common_confusion": "Trusting an uncalibrated judge.",
+   "related": [
+    "Grading ladder"
+   ],
+   "source": "M2"
+  },
+  {
+   "term": "Grading ladder",
+   "group": "D4",
+   "objectives": [
+    "4.2"
+   ],
+   "definition": "Code-based grading first, an LLM judge when interpretation is needed, humans as the last resort.",
+   "architect_significance": "The cheapest reliable method for each behaviour.",
+   "exam_relevance": "Favour volume over perfection.",
+   "common_confusion": "Judging schema validity with a model.",
+   "related": [
+    "LLM-as-judge"
+   ],
+   "source": "M2"
+  },
+  {
+   "term": "Judge calibration",
+   "group": "D4",
+   "objectives": [
+    "4.2"
+   ],
+   "definition": "Checking a judge's verdicts against human-labelled outputs before relying on it.",
+   "architect_significance": "An uncalibrated judge is worse than none because it looks trustworthy.",
+   "exam_relevance": "\"Judge says great, experts disagree\" → calibrate.",
+   "common_confusion": "Averaging repeated judge runs doesn't calibrate anything.",
+   "related": [
+    "LLM-as-judge"
+   ],
+   "source": "M2"
+  },
+  {
+   "term": "Multi-turn eval",
+   "group": "D4",
+   "objectives": [
+    "4.2"
+   ],
+   "definition": "Scoring whole conversations for context retention, invented details, and quality as length grows.",
+   "architect_significance": "Single-turn sets miss conversation failures.",
+   "exam_relevance": "Needs its own transcript dataset.",
+   "common_confusion": "Adding more single prompts instead.",
+   "related": [
+    "Golden dataset"
+   ],
+   "source": "M2"
+  },
+  {
+   "term": "Hallucination rate",
+   "group": "D4",
+   "objectives": [
+    "4.1",
+    "4.4"
+   ],
+   "definition": "The share of responses containing information unsupported by the input, the source data or allowed logic.",
+   "architect_significance": "A key accuracy metric with a threshold.",
+   "exam_relevance": "Fix through grounding, not instructions.",
+   "common_confusion": "Hallucination (ungrounded content) vs. prompt failure (an ambiguous instruction).",
+   "related": [
+    "Grounding"
+   ],
+   "source": "M2"
+  },
+  {
+   "term": "Failure taxonomy",
+   "group": "D4",
+   "objectives": [
+    "4.4"
+   ],
+   "definition": "Prompt failure, hallucination, model mismatch, orchestrator-workers failure.",
+   "architect_significance": "Each class has its own fix.",
+   "exam_relevance": "Classify before you fix.",
+   "common_confusion": "Rewording a prompt to cure a grounding problem.",
+   "related": [
+    "Change attribution"
+   ],
+   "source": "M2"
+  },
+  {
+   "term": "Model mismatch",
+   "group": "D4",
+   "objectives": [
+    "4.4",
+    "2.1"
+   ],
+   "definition": "The wrong tier for the task, or a tier swapped without re-evaluation.",
+   "architect_significance": "Category-specific regressions after a cost-driven swap.",
+   "exam_relevance": "Remedy with eval-gated selection and per-category routing.",
+   "common_confusion": "Mistaking it for data drift.",
+   "related": [
+    "Model tiers"
+   ],
+   "source": "M2"
+  },
+  {
+   "term": "A/B test",
+   "group": "D4",
+   "objectives": [
+    "4.3"
+   ],
+   "definition": "A hypothesis, random sticky assignment, a pre-specified primary metric, and a sample size calculated for higher LLM variance.",
+   "architect_significance": "Separates improvements from noise.",
+   "exam_relevance": "Watch for underpowered tests and outcome-shopping.",
+   "common_confusion": "Statistical significance vs. practical worth.",
+   "related": [
+    "Shadow testing"
+   ],
+   "source": "M2"
+  },
+  {
+   "term": "Shadow testing",
+   "group": "D4",
+   "objectives": [
+    "4.3"
+   ],
+   "definition": "Run the new version on copied live traffic while users get the current version, and score the shadow outputs offline.",
+   "architect_significance": "Validates without exposing users.",
+   "exam_relevance": "Regulated settings, low traffic, or high per-output risk.",
+   "common_confusion": "A canary still exposes real users.",
+   "related": [
+    "A/B test"
+   ],
+   "source": "M2"
+  },
+  {
+   "term": "Batch API",
+   "group": "D4",
+   "objectives": [
+    "4.5"
+   ],
+   "definition": "Asynchronous bulk processing at a discount (M2 illustrates 50% and up to 100k requests per batch; verify current terms).",
+   "architect_significance": "Cuts cost when the SLA allows waiting.",
+   "exam_relevance": "Confirm compliance coverage before routing regulated data through it.",
+   "common_confusion": "Using it for interactive paths.",
+   "related": [
+    "Sizing"
+   ],
+   "source": "M2"
+  },
+  {
+   "term": "Sizing",
+   "group": "D4",
+   "objectives": [
+    "4.5",
+    "1.6"
+   ],
+   "definition": "A cost model from call volume, the token distribution, model tier and sensitivity analysis, built before any code.",
+   "architect_significance": "The average token count understates heavy tails by two to three times.",
+   "exam_relevance": "Model the distribution, not the average.",
+   "common_confusion": "Treating POC bills as a forecast.",
+   "related": [
+    "ROI mapping"
+   ],
+   "source": "M2"
+  },
+  {
+   "term": "KPI translation layer",
+   "group": "D4",
+   "objectives": [
+    "4.6",
+    "1.6"
+   ],
+   "definition": "A mapping from technical metrics (task success, latency) to business KPIs (first-contact resolution, handle time).",
+   "architect_significance": "Lets sponsors see value with a live query.",
+   "exam_relevance": "Build it at design time.",
+   "common_confusion": "Giving sponsors raw technical dashboards.",
+   "related": [
+    "Outcome document"
+   ],
+   "source": "M2"
+  },
+  {
+   "term": "Training-time alignment vs. inference-time control",
+   "group": "D5",
+   "objectives": [
+    "5.1"
+   ],
+   "definition": "Training-time alignment is the constitution-shaped safety behaviour that applies to every request. Inference-time control is the deployment-specific screening, authorization and review you build.",
+   "architect_significance": "Claude can't enforce a rule it was never given.",
+   "exam_relevance": "A domain policy must live in a layer you build.",
+   "common_confusion": "\"It refuses harmful prompts, so our policy is covered.\"",
+   "related": [
+    "Constitution"
+   ],
+   "source": "M3"
+  },
+  {
+   "term": "Constitution",
+   "group": "D5",
+   "objectives": [
+    "5.1",
+    "5.5"
+   ],
+   "definition": "The written document Anthropic trains Claude against: broadly safe, ethical, guideline-compliant and helpful, weighed holistically.",
+   "architect_significance": "Reduces broad harm; doesn't encode your policy.",
+   "exam_relevance": "Training-time, not deployment-time.",
+   "common_confusion": "Treating it as a runtime control.",
+   "related": [
+    "Alignment"
+   ],
+   "source": "M3"
+  },
+  {
+   "term": "Input screening / Output screening",
+   "group": "D5",
+   "objectives": [
+    "5.1"
+   ],
+   "definition": "Checks before the model call (should this reach the model?) and before the response returns (is this safe to return?).",
+   "architect_significance": "Two of the three control points.",
+   "exam_relevance": "Chain model-based and deterministic checks.",
+   "common_confusion": "One output filter isn't a guarded path.",
+   "related": [
+    "Tool-call authorization"
+   ],
+   "source": "M3"
+  },
+  {
+   "term": "Fail open vs. fail closed",
+   "group": "D5",
+   "objectives": [
+    "5.1"
+   ],
+   "definition": "When an operator-built guardrail errors, traffic either passes unscreened (open) or is blocked (closed).",
+   "architect_significance": "Failing open looks protected but does nothing.",
+   "exam_relevance": "Fail closed where a wrong pass causes harm.",
+   "common_confusion": "Applies to your components, not Anthropic's API-level controls.",
+   "related": [
+    "Circuit breaker"
+   ],
+   "source": "M3"
+  },
+  {
+   "term": "Indirect prompt injection",
+   "group": "D5",
+   "objectives": [
+    "5.1",
+    "5.2"
+   ],
+   "definition": "Malicious instructions arriving through retrieved documents or tool outputs rather than from the user.",
+   "architect_significance": "The dominant injection vector in RAG and agent deployments.",
+   "exam_relevance": "Screen retrieved and tool content before adding it to context.",
+   "common_confusion": "Screening only user input.",
+   "related": [
+    "Input screening"
+   ],
+   "source": "M3"
+  },
+  {
+   "term": "Token-budget exhaustion",
+   "group": "D5",
+   "objectives": [
+    "5.2"
+   ],
+   "definition": "Oversized or padded inputs that consume context or output budget, truncating work or inflating cost.",
+   "architect_significance": "A cost and availability risk.",
+   "exam_relevance": "Input limits, max_tokens, per-turn budgets.",
+   "common_confusion": "Mistaking it for hallucination.",
+   "related": [
+    "Risk categories"
+   ],
+   "source": "M3"
+  },
+  {
+   "term": "Refusal stop reason",
+   "group": "D5",
+   "objectives": [
+    "5.1"
+   ],
+   "definition": "The API's stop_reason \"refusal\" when streaming classifiers intervene, with stop_details (category and explanation) on supported models.",
+   "architect_significance": "Lets the app route refusals by class.",
+   "exam_relevance": "Tolerate a missing stop_details; reset the refused turn before continuing.",
+   "common_confusion": "Hard-coding category lists (verify current docs).",
+   "related": [
+    "Guardrails"
+   ],
+   "source": "M3"
+  },
+  {
+   "term": "Skill supply-chain security",
+   "group": "D5",
+   "objectives": [
+    "5.1",
+    "7.1"
+   ],
+   "definition": "Auditing Skill bundles for anomalous or out-of-scope behaviour, running them with least privilege in a sandbox, and sourcing them from trusted registries.",
+   "architect_significance": "Skills are distributable code with hidden behaviour.",
+   "exam_relevance": "Record a verdict: approve, reject or remediate.",
+   "common_confusion": "Assuming the platform screens Skills.",
+   "related": [
+    "Skill"
+   ],
+   "source": "M3"
+  },
+  {
+   "term": "Risk assessment (deliverable)",
+   "group": "D5",
+   "objectives": [
+    "5.2"
+   ],
+   "definition": "A written record of each risk's category, component, likelihood and impact, control, owner and evidence.",
+   "architect_significance": "What the security reviewer signs.",
+   "exam_relevance": "Verbal discussion doesn't count.",
+   "common_confusion": "A diagram isn't a risk assessment.",
+   "related": [
+    "Control register"
+   ],
+   "source": "M3"
+  },
+  {
+   "term": "Review routing",
+   "group": "D5",
+   "objectives": [
+    "5.3"
+   ],
+   "definition": "Sending decisions to people by stakes (reversibility and cost) and calibrated confidence.",
+   "architect_significance": "Spends limited reviewer attention well.",
+   "exam_relevance": "Low confidence plus irreversible or high-cost → human first.",
+   "common_confusion": "Routing by volume.",
+   "related": [
+    "Consent fatigue"
+   ],
+   "source": "M3"
+  },
+  {
+   "term": "Consent fatigue",
+   "group": "D5",
+   "objectives": [
+    "5.3",
+    "7.2"
+   ],
+   "definition": "Oversight breaking down when reviewers approve so many items that they stop reading.",
+   "architect_significance": "Turns review into rubber-stamping.",
+   "exam_relevance": "Move review to plan or exception checkpoints.",
+   "common_confusion": "Adding more approvers to fix it.",
+   "related": [
+    "Review routing"
+   ],
+   "source": "M3"
+  },
+  {
+   "term": "BAA (Business Associate Agreement)",
+   "group": "D5",
+   "objectives": [
+    "5.4"
+   ],
+   "definition": "A HIPAA contract that lets a vendor process PHI. Coverage is specific to the configuration and feature.",
+   "architect_significance": "Without it, the route is non-compliant.",
+   "exam_relevance": "Beta features are generally excluded unless explicitly listed.",
+   "common_confusion": "One BAA assumed to cover every configuration.",
+   "related": [
+    "PHI",
+    "HIPAA"
+   ],
+   "source": "M1; M2; M3"
+  },
+  {
+   "term": "Data residency / region pinning",
+   "group": "D5",
+   "objectives": [
+    "5.4"
+   ],
+   "definition": "Processing and storing data, including logs and caches, within an approved region, configured at the integration layer.",
+   "architect_significance": "Rules out routes that can't pin the region.",
+   "exam_relevance": "An EU pin needs a region-pinned CSP route (per the modules; verify).",
+   "common_confusion": "Forgetting log and cache copies.",
+   "related": [
+    "CSP delivery route"
+   ],
+   "source": "M2; M3"
+  },
+  {
+   "term": "Control register",
+   "group": "D5",
+   "objectives": [
+    "5.4",
+    "6.4"
+   ],
+   "definition": "A table mapping each obligation to a technical control, an owner and an evidence artifact.",
+   "architect_significance": "The auditable form of compliance.",
+   "exam_relevance": "Revalidate on a schedule; configurations drift.",
+   "common_confusion": "A compliant route isn't proof.",
+   "related": [
+    "Evidence artifact"
+   ],
+   "source": "M3"
+  },
+  {
+   "term": "Evidence artifact",
+   "group": "D5",
+   "objectives": [
+    "5.4",
+    "6.4"
+   ],
+   "definition": "Proof that a control is live: a signed agreement, a configuration screen, an authorization record, a log query.",
+   "architect_significance": "What reviewers accept.",
+   "exam_relevance": "A design document is a claim, not proof.",
+   "common_confusion": "Vendor certifications on their own.",
+   "related": [
+    "Control register"
+   ],
+   "source": "M3; M4"
+  },
+  {
+   "term": "Data minimisation",
+   "group": "D5",
+   "objectives": [
+    "5.4",
+    "3.2"
+   ],
+   "definition": "Passing only the fields the language task needs, using reference IDs where possible, and redacting PII before the call.",
+   "architect_significance": "Prevents PII from reaching request logs.",
+   "exam_relevance": "\"If the task doesn't need it, it isn't in the context.\"",
+   "common_confusion": "Encrypting logs instead of not logging the data.",
+   "related": [
+    "PHI"
+   ],
+   "source": "M2"
+  },
+  {
+   "term": "Fairness injection points",
+   "group": "D5",
+   "objectives": [
+    "5.5"
+   ],
+   "definition": "Where unequal outcomes enter: the retrieval corpus, prompt framing, few-shot examples, downstream routing.",
+   "architect_significance": "Makes fairness something an architect can instrument.",
+   "exam_relevance": "Look here when the model passed the vendor's bias evals.",
+   "common_confusion": "Assuming fairness is the vendor's job.",
+   "related": [
+    "Decision logging"
+   ],
+   "source": "M3"
+  },
+  {
+   "term": "Decision logging",
+   "group": "D5",
+   "objectives": [
+    "5.5",
+    "5.4"
+   ],
+   "definition": "Capturing inputs, retrieved context, output and routing per decision so it can be replayed and explained.",
+   "architect_significance": "Serves users, regulators and the build team.",
+   "exam_relevance": "The log is itself governed sensitive data.",
+   "common_confusion": "Aggregate metrics can't reconstruct a single decision.",
+   "related": [
+    "Fairness injection points"
+   ],
+   "source": "M3"
+  },
+  {
+   "term": "Discovery (structured elicitation)",
+   "group": "D6",
+   "objectives": [
+    "6.1"
+   ],
+   "definition": "Listen, translate, write down, across four buckets: must do, must not do, must cost, must prove.",
+   "architect_significance": "Sets the constraints the design follows.",
+   "exam_relevance": "Finish all four buckets before sketching anything.",
+   "common_confusion": "A discovery call that turns into a design session.",
+   "related": [
+    "Translation table"
+   ],
+   "source": "M4"
+  },
+  {
+   "term": "Translation table",
+   "group": "D6",
+   "objectives": [
+    "6.1"
+   ],
+   "definition": "One row per item: the statement as said, the implied constraint, the architectural decision, and the assumption to confirm.",
+   "architect_significance": "Keeps the reasoning traceable into design.",
+   "exam_relevance": "Label assumptions as assumptions.",
+   "common_confusion": "Writing preferences down as requirements.",
+   "related": [
+    "Requirement vs. assumption"
+   ],
+   "source": "M4"
+  },
+  {
+   "term": "Requirement vs. assumption",
+   "group": "D6",
+   "objectives": [
+    "6.1",
+    "6.4"
+   ],
+   "definition": "A requirement traces to something the stakeholder said; an assumption is something the design takes for granted.",
+   "architect_significance": "Unsourced assumptions are the most dangerous kind.",
+   "exam_relevance": "Assumptions need an owner and confirmation.",
+   "common_confusion": "Burying assumptions as facts.",
+   "related": [
+    "Translation table"
+   ],
+   "source": "M4"
+  },
+  {
+   "term": "Reversal cost",
+   "group": "D6",
+   "objectives": [
+    "6.2"
+   ],
+   "definition": "What it costs to undo a decision after the system has been built around it.",
+   "architect_significance": "The trade-off element that changes the meeting.",
+   "exam_relevance": "Gain, give-up, reversal cost (plus compliance effect in regulated settings).",
+   "common_confusion": "Per-call cost vs. the business total at volume.",
+   "related": [
+    "Trade-off framing"
+   ],
+   "source": "M4"
+  },
+  {
+   "term": "Feedback loop / governance table",
+   "group": "D6",
+   "objectives": [
+    "6.3"
+   ],
+   "definition": "Signals → Triage → Decide → Act → Review; a table mapping each signal to a trigger, an owner, an action and any scheduled checkpoint.",
+   "architect_significance": "Monitoring isn't a feedback loop.",
+   "exam_relevance": "Include slow-drift triggers and scheduled regulated checkpoints.",
+   "common_confusion": "Dashboards with no owners.",
+   "related": [
+    "SLA"
+   ],
+   "source": "M4"
+  },
+  {
+   "term": "SLA (Service Level Agreement)",
+   "group": "D6",
+   "objectives": [
+    "6.3",
+    "1.6"
+   ],
+   "definition": "Names what is measured, what counts as a breach, and what happens on a breach. Thresholds trace to UX expectations, business criticality or eval acceptance criteria.",
+   "architect_significance": "Makes expectations enforceable and defensible.",
+   "exam_relevance": "Arbitrary thresholds are a red flag.",
+   "common_confusion": "An SLA with no stated consequence.",
+   "related": [
+    "p95 latency"
+   ],
+   "source": "M4"
+  },
+  {
+   "term": "Decision log with rationale",
+   "group": "D6",
+   "objectives": [
+    "6.4"
+   ],
+   "definition": "Each decision recorded with its date, the rejected alternatives and the trade-off it resolved.",
+   "architect_significance": "Stops successors reversing decisions that matter.",
+   "exam_relevance": "Diagram-only handoffs fail the safe-change test.",
+   "common_confusion": "A \"what\" without a \"why\".",
+   "related": [
+    "Documentation completeness"
+   ],
+   "source": "M4"
+  },
+  {
+   "term": "Documentation completeness (safe-change test)",
+   "group": "D6",
+   "objectives": [
+    "6.4"
+   ],
+   "definition": "Can a competent architect who wasn't in the room make a safe change after reading the document?",
+   "architect_significance": "The definition of done for handoff.",
+   "exam_relevance": "Serve three readers: handoff recipient, compliance reviewer, returning architect.",
+   "common_confusion": "Measuring completeness by page count.",
+   "related": [
+    "Decision log"
+   ],
+   "source": "M4"
+  },
+  {
+   "term": "Outcome document",
+   "group": "D6",
+   "objectives": [
+    "6.4",
+    "1.6"
+   ],
+   "definition": "Use case and scope, the metric before, the metric after, an auditable control, a measurement owner (plus optional, Partner-Track reuse potential).",
+   "architect_significance": "Makes value legible to a CFO.",
+   "exam_relevance": "Technical metrics alone fail.",
+   "common_confusion": "Volume and latency aren't business outcomes.",
+   "related": [
+    "ROI mapping"
+   ],
+   "source": "M4"
+  },
+  {
+   "term": "Entry-point-responsibility map",
+   "group": "D6",
+   "objectives": [
+    "6.4",
+    "3.7"
+   ],
+   "definition": "A written record of which entry point or route owns which task, and why, made before integration.",
+   "architect_significance": "Prevents scope drift between routes.",
+   "exam_relevance": "Multi-platform deployments need one.",
+   "common_confusion": "Leaving routing logic undocumented.",
+   "related": [
+    "Entry point"
+   ],
+   "source": "M4"
+  },
+  {
+   "term": "Deployment lifecycle",
+   "group": "D6",
+   "objectives": [
+    "6.5"
+   ],
+   "definition": "Discovery → design → handoff → monitoring → iteration.",
+   "architect_significance": "Knowing the phase tells you when to move on, or go back.",
+   "exam_relevance": "Changed constraints → re-architect, not iterate.",
+   "common_confusion": "Skipping the handoff phase.",
+   "related": [
+    "POC-to-production gap"
+   ],
+   "source": "M4"
+  },
+  {
+   "term": "POC-to-production gap",
+   "group": "D6",
+   "objectives": [
+    "6.5",
+    "4.5"
+   ],
+   "definition": "Cost, latency (p95), reliability and failure modes are all invisible in a demo.",
+   "architect_significance": "A POC proves capability only.",
+   "exam_relevance": "Add a cost model, reliability controls, pinning, evals and observability.",
+   "common_confusion": "Treating a demo bill as a forecast.",
+   "related": [
+    "Reliability controls"
+   ],
+   "source": "M2"
+  },
+  {
+   "term": "Reliability controls",
+   "group": "D6",
+   "objectives": [
+    "6.5",
+    "7.3"
+   ],
+   "definition": "Retries with exponential backoff near the API call; a circuit breaker at the service boundary; fallback chains in orchestration.",
+   "architect_significance": "Graceful degradation instead of total failure.",
+   "exam_relevance": "Each control works only at the right layer.",
+   "common_confusion": "Retrying non-transient 4xx errors.",
+   "related": [
+    "Circuit breaker",
+    "Transient error"
+   ],
+   "source": "M2"
+  },
+  {
+   "term": "Circuit breaker",
+   "group": "D6",
+   "objectives": [
+    "6.5"
+   ],
+   "definition": "Trips when a dependency's error rate passes a threshold, so requests fail fast for a cooldown period.",
+   "architect_significance": "Stops one degraded dependency taking down the system.",
+   "exam_relevance": "Sits at the service boundary.",
+   "common_confusion": "Circuit breakers vs. retries.",
+   "related": [
+    "Reliability controls"
+   ],
+   "source": "M2"
+  },
+  {
+   "term": "Shared configuration",
+   "group": "D7",
+   "objectives": [
+    "7.1"
+   ],
+   "definition": "A team baseline (project CLAUDE.md, agreed tools and MCP servers, permission posture) that everyone starts from.",
+   "architect_significance": "Prevents drifted personal setups.",
+   "exam_relevance": "Review and version it once for everyone.",
+   "common_confusion": "Each engineer configuring their own.",
+   "related": [
+    "CLAUDE.md"
+   ],
+   "source": "M5"
+  },
+  {
+   "term": "Champion-per-department rollout",
+   "group": "D7",
+   "objectives": [
+    "7.1",
+    "7.2"
+   ],
+   "definition": "Enable one champion per team first to prove a workflow, then seed adoption batch by batch.",
+   "architect_significance": "Local experts and examples; avoids lumpy adoption.",
+   "exam_relevance": "Better than a mass switch-on.",
+   "common_confusion": "Equating access with adoption.",
+   "related": [
+    "Lumpy adoption"
+   ],
+   "source": "M5"
+  },
+  {
+   "term": "Plugin (Skills distribution)",
+   "group": "D7",
+   "objectives": [
+    "7.1",
+    "2.5"
+   ],
+   "definition": "A bundle of Skills assigned to a group or org, with install preferences and version-controlled updates from a repository.",
+   "architect_significance": "The strongest governance for group-scoped distribution.",
+   "exam_relevance": "The fix for a \"shipped with no way back\" Skill.",
+   "common_confusion": "Org-provisioned Skills have no native rollback.",
+   "related": [
+    "Skill"
+   ],
+   "source": "M5"
+  },
+  {
+   "term": "Spend posture",
+   "group": "D7",
+   "objectives": [
+    "7.1"
+   ],
+   "definition": "Model defaults, model allowlists, effort guidance, and spend, rate and per-user caps, set during team setup.",
+   "architect_significance": "Unmanaged model choice multiplies cost at team scale.",
+   "exam_relevance": "Set it before the first bill.",
+   "common_confusion": "Reviewing quarterly instead.",
+   "related": [
+    "Model tiers"
+   ],
+   "source": "M5"
+  },
+  {
+   "term": "CLAUDE.md",
+   "group": "D7",
+   "objectives": [
+    "7.1"
+   ],
+   "definition": "A markdown file loaded at session start with standing instructions and project conventions.",
+   "architect_significance": "A shaping layer.",
+   "exam_relevance": "Not a guarantee; use hooks for things that must always happen.",
+   "common_confusion": "Shaping vs. governing layers.",
+   "related": [
+    "Hook"
+   ],
+   "source": "M1"
+  },
+  {
+   "term": "Hook",
+   "group": "D7",
+   "objectives": [
+    "7.1",
+    "5.1"
+   ],
+   "definition": "A script that fires on Claude Code lifecycle events as a deterministic gate the agent can't skip.",
+   "architect_significance": "The guarantee comes from code rather than the prompt.",
+   "exam_relevance": "\"Must always run X before Y\" → hook.",
+   "common_confusion": "Relying on CLAUDE.md instructions instead.",
+   "related": [
+    "Permission modes"
+   ],
+   "source": "M1"
+  },
+  {
+   "term": "Permission modes (Claude Code)",
+   "group": "D7",
+   "objectives": [
+    "7.1"
+   ],
+   "definition": "default, acceptEdits, plan, auto (research preview), dontAsk (locked-down CI), bypassPermissions (containers or CI only).",
+   "architect_significance": "Governs what the agent may do without prompting.",
+   "exam_relevance": "Use bypassPermissions only in isolated environments.",
+   "common_confusion": "Behaviour changes over time; verify current docs.",
+   "related": [
+    "Sandboxing"
+   ],
+   "source": "M1"
+  },
+  {
+   "term": "Verification checklist",
+   "group": "D7",
+   "objectives": [
+    "7.2"
+   ],
+   "definition": "The correctness, security, maintainability and human-understanding checks AI-generated output must pass before production.",
+   "architect_significance": "Turns diligence into a repeatable gate.",
+   "exam_relevance": "The merger must be able to explain the code.",
+   "common_confusion": "Passing tests ≠ understood.",
+   "related": [
+    "Diligence"
+   ],
+   "source": "M5"
+  },
+  {
+   "term": "Lumpy adoption / stalling at chat",
+   "group": "D7",
+   "objectives": [
+    "7.2"
+   ],
+   "definition": "Lumpy adoption: a few heavy users, the rest barely engaged. Stalling at chat: never moving beyond Q&A to tools, repository context or Skills.",
+   "architect_significance": "The two common adoption failures.",
+   "exam_relevance": "Fix with champions and workflow integration.",
+   "common_confusion": "Restricting access as a response.",
+   "related": [
+    "Champion rollout"
+   ],
+   "source": "M5"
+  },
+  {
+   "term": "Runbook / escalation path",
+   "group": "D7",
+   "objectives": [
+    "7.3"
+   ],
+   "definition": "A runbook captures known symptom → cause → action paths; an escalation path says who handles what, and when.",
+   "architect_significance": "Builds team self-sufficiency.",
+   "exam_relevance": "Teach the path rather than firefighting.",
+   "common_confusion": "The architect fixing every incident personally.",
+   "related": [
+    "Symptom-to-cause"
+   ],
+   "source": "M5"
+  },
+  {
+   "term": "Transient error",
+   "group": "D7",
+   "objectives": [
+    "7.3",
+    "6.5"
+   ],
+   "definition": "A temporary failure (429 rate limit, timeout, 5xx including 529 overloaded) that's likely to succeed on retry.",
+   "architect_significance": "Retry with exponential backoff.",
+   "exam_relevance": "Don't retry 4xx validation errors such as a 400 for a prompt that's too long.",
+   "common_confusion": "429 (throttled) vs. 400 (invalid request).",
+   "related": [
+    "Reliability controls"
+   ],
+   "source": "M2 Glossary"
+  }
+ ]
+}

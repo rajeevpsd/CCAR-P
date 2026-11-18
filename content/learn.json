@@ -1,0 +1,2028 @@
+{
+ "episodes": [
+  {
+   "domain_id": "D1",
+   "title": "Episode 1 – Solution Design & Architecture",
+   "intro": "Welcome to episode one, Solution Design and Architecture. This domain is seventeen percent of the exam, so it's one of the big ones. Over six parts, we'll go from a vague business request to an architecture you can defend: who does what, which pattern fits, how multi-agent systems stay honest, and how to show the business why it's worth building.",
+   "parts": [
+    {
+     "objective_id": "1.1",
+     "title": "Translate business problems into Claude-based AI solutions",
+     "official_wording": "Translate business problems into Claude-based AI solutions",
+     "minutes": 7,
+     "key_concepts": [
+      "Four properties of generative AI",
+      "Claude, systems and humans",
+      "scoping sequence",
+      "feasibility verdicts",
+      "boundary conditions"
+     ],
+     "architecture_example": "\"Process insurance claims\" becomes four capabilities: field extraction by Claude with a verifier, coverage lookup from the policy database, routing by the rules engine, and a notification drafted by Claude and reviewed by the adjuster.",
+     "exam_takeaway": "Capability is not feasibility. Gather volume, input size and latency, then give a verdict with its constraints.",
+     "narration": "Let's start with the move that comes before any architecture. A partner rarely hands you a clean requirement. They say something like, \"we want AI to handle our claims.\" Your first job is to break that into separate capabilities, and give each one an owner.\n\nThere are three owners. Claude takes the language work: reading, summarising, drafting, planning. Existing systems keep anything the partner has already paid to make reliable, like the policy database or the rules engine. Humans keep the judgement calls, the approvals and the exceptions.\n\nTo decide where Claude fits, use the four properties. Next-token prediction means Claude is strong on patterns but can be fluently wrong on specifics like dates and amounts. Knowledge means rare or changing facts should come from an external source of truth. Working memory means the context window is a hard edge. And steerability means concrete instructions work, while abstract ones drift.\n\nFinally, never confirm feasibility just because a demo worked. Ask about volume, input size and latency first. Then give one of three verdicts: feasible as scoped, feasible with constraints, or not feasible. And write the constraints into the statement of work.",
+     "knowledge_check": [
+      {
+       "question": "A sponsor wants feasibility confirmed after one good demo. What comes first?",
+       "options": {
+        "A": "Confirm now, because the working demo proved it",
+        "B": "Gather volume, input size and latency",
+        "C": "Build the production system first",
+        "D": "Add a timeline contingency and confirm today"
+       },
+       "answer": "B",
+       "why": "The verdict is only as sound as the constraints gathered before it."
+      },
+      {
+       "question": "Which owner should calculate refund amounts against contract rates?",
+       "options": {
+        "A": "Claude, using the rates it learned in training",
+        "B": "A human analyst, recalculating every claim",
+        "C": "The existing rate engine",
+        "D": "A subagent"
+       },
+       "answer": "C",
+       "why": "Authoritative values and arithmetic belong to deterministic systems."
+      },
+      {
+       "question": "A design works up to 150 pages, and 8% of documents are longer. What is the verdict?",
+       "options": {
+        "A": "Feasible as scoped, since 92% of documents fit",
+        "B": "Not feasible",
+        "C": "Feasible with constraints, documented",
+        "D": "Feasible, with long documents revisited after launch"
+       },
+       "answer": "C",
+       "why": "State the verdict plus the boundary condition that makes it true."
+      }
+     ]
+    },
+    {
+     "objective_id": "1.2",
+     "title": "Design end-to-end architectures",
+     "official_wording": "Design end-to-end architectures (input → processing → output → feedback loops)",
+     "minutes": 6,
+     "key_concepts": [
+      "Input, processing, output, feedback loop",
+      "exception paths",
+      "outcome signals",
+      "governance triggers"
+     ],
+     "architecture_example": "Invoice processing: OCR and a server-side tenant ID going in, schema extraction with an evaluator pass, validated JSON with low-confidence fields routed to a human queue, and reviewer corrections feeding the golden dataset.",
+     "exam_takeaway": "A diagram that ends at \"response to user\" is missing the feedback loop. The loop is how a system notices it's degrading.",
+     "narration": "An end-to-end architecture has four stages, and each stage needs its own controls.\n\nAt the input, identity comes from your server, not from the user's message. Data is cut down to what the task actually needs. And anything coming in, including retrieved documents, is screened.\n\nProcessing is where you choose the pattern and the reference architecture, the model tier and the context strategy.\n\nAt the output, there's a contract: a schema, a validation step, output screening, and a confidence score that decides whether a person needs to look first.\n\nAnd then the stage most diagrams forget: the feedback loop. You log outcomes, like whether the downstream system accepted the result, or a reviewer corrected it. Those signals feed your evals and a governance table with triggers and owners. Without that loop, a system can quietly drift for weeks and nobody notices.\n\nOne more thing. Every pipeline needs an exception path. If messy documents travel the same road as clean ones, wrong outputs flow downstream at the same rate as right ones.",
+     "knowledge_check": [
+      {
+       "question": "Wrong extractions post to the ERP as often as right ones. What's missing?",
+       "options": {
+        "A": "A larger, more capable extraction model",
+        "B": "Prompt caching",
+        "C": "A confidence-based exception path",
+        "D": "A nightly re-run of every document batch"
+       },
+       "answer": "C",
+       "why": "Low-confidence outputs need their own route to human review."
+      },
+      {
+       "question": "Quality eroded for weeks before anyone noticed. Which stage was missing?",
+       "options": {
+        "A": "Input screening for injected content",
+        "B": "The feedback loop",
+        "C": "Model selection for each pipeline step",
+        "D": "Output schema"
+       },
+       "answer": "B",
+       "why": "Outcome signals and triggers are what detect degradation."
+      },
+      {
+       "question": "Where does verified user identity come from?",
+       "options": {
+        "A": "The user's own message, as they state it",
+        "B": "A role field in the system prompt template",
+        "C": "The server, from authentication",
+        "D": "The model"
+       },
+       "answer": "C",
+       "why": "Self-asserted identity can be faked."
+      }
+     ]
+    },
+    {
+     "objective_id": "1.3",
+     "title": "Select appropriate architectural patterns",
+     "official_wording": "Select appropriate architectural patterns (workflow, agentic, augmented LLM)",
+     "minutes": 8,
+     "key_concepts": [
+      "Augmented LLM",
+      "workflow vs. agent",
+      "five workflow sub-patterns",
+      "five decision factors",
+      "prompting before fine-tuning"
+     ],
+     "architecture_example": "A disbursement agent's traces showed only four paths. A router with four chains gave the auditor a discrete approval step.",
+     "exam_takeaway": "If you can write the steps down, write them in code. Use an agent only when the path really can't be listed in advance.",
+     "narration": "There are three shapes Claude's involvement can take.\n\nAn augmented LLM is a single call. It may use tools or retrieval, but it does one bounded job, and the control flow never branches on what the model decides.\n\nA workflow is a set of steps orchestrated in your own code. You can log it, test it, and point to exactly which step did what.\n\nAn agent is different. You give the model a goal and tools, and the model decides its own sequence of steps. The control flow lives inside the model.\n\nWorkflows come in five common shapes. Prompt chaining, with checks between steps. Routing, when the categories are clear. Parallelization, either splitting into sections or voting. Orchestrator-workers, when the subtasks can't be known until runtime. And evaluator-optimizer, when you can generate, check against criteria, and refine.\n\nTo choose, walk five factors in order: predictability, error cost, observability, latency and cost. The tightest constraint picks the pattern.\n\nAnd when prompting feels unreliable, don't jump to fine-tuning. Improve the prompt first, then add tools or retrieval, then try a stronger pattern. Fine-tuning comes last, if at all.",
+     "knowledge_check": [
+      {
+       "question": "Five known email categories with accurate classification. Which pattern fits?",
+       "options": {
+        "A": "Autonomous agent",
+        "B": "Routing workflow",
+        "C": "Multi-agent system",
+        "D": "Fine-tuned model per category"
+       },
+       "answer": "B",
+       "why": "Distinct categories with accurate classification is the routing case."
+      },
+      {
+       "question": "Which situation justifies an agent?",
+       "options": {
+        "A": "The steps are known but there are many of them",
+        "B": "The path depends on what each step uncovers",
+        "C": "The auditor needs to see a named approval step",
+        "D": "Latency is very tight"
+       },
+       "answer": "B",
+       "why": "Agents fit work where the path can't be listed in advance."
+      },
+      {
+       "question": "Prompting seems unreliable for an extraction task. What comes next?",
+       "options": {
+        "A": "Fine-tune a model on the extraction examples",
+        "B": "Switch to an agent",
+        "C": "Improve the prompt, then tools, then a stronger pattern",
+        "D": "Use the biggest model and skip the eval set"
+       },
+       "answer": "C",
+       "why": "Fine-tuning is the last step in the progression."
+      }
+     ]
+    },
+    {
+     "objective_id": "1.4",
+     "title": "Design multi-agent systems and orchestration strategies",
+     "official_wording": "Design multi-agent systems and orchestration strategies",
+     "minutes": 7,
+     "key_concepts": [
+      "Orchestrator and subagents",
+      "fan-out",
+      "asymmetric error recovery",
+      "coverage check",
+      "conflict resolution",
+      "HITL gates"
+     ],
+     "architecture_example": "A 50-section contract review reported \"48 reviewed, 3 flagged\" because two subagents silently returned nothing. A coverage check would have flagged the gap.",
+     "exam_takeaway": "Reconcile coverage, protect orchestrator state, and use the fewest agents that meet the requirement.",
+     "narration": "Some work is too large or too varied for one agent to hold in a single context. That's where multi-agent systems come in.\n\nThe orchestrator owns the goal. It breaks the work apart, delegates and synthesises, but it doesn't do the sub-tasks itself. Subagents each own one scoped piece, in their own clean context.\n\nThe most common shape is fan-out: split a big item into independent units, run one subagent per unit in parallel, then combine the results.\n\nHere's the key design insight. Failure is asymmetric. If a subagent fails, that's usually recoverable: retry it, re-route it, or flag the gap. If the orchestrator fails, the whole run can be lost. So checkpoint the orchestrator's state, and make subagent work safe to retry.\n\nThe most dangerous failure is a silent one. The summary looks complete, but some units never came back. The fix is a coverage check: results returned must equal units dispatched.\n\nAlso design how conflicts get resolved, give every agent the same trace ID, and gate any irreversible action behind a person. Anthropic's own research system found multi-agent setups use roughly fifteen times the tokens of chat, so use them only when the work truly needs them.",
+     "knowledge_check": [
+      {
+       "question": "Two subagents timed out and the summary still looked complete. What's the fix?",
+       "options": {
+        "A": "A more capable model for the orchestrator",
+        "B": "Longer timeouts",
+        "C": "A coverage check at synthesis",
+        "D": "Running every section sequentially instead"
+       },
+       "answer": "C",
+       "why": "Results returned must equal units dispatched."
+      },
+      {
+       "question": "Which failure is usually unrecoverable?",
+       "options": {
+        "A": "A subagent returning a malformed result",
+        "B": "Two subagents returning conflicting results",
+        "C": "The orchestrator losing its state",
+        "D": "A subagent timeout"
+       },
+       "answer": "C",
+       "why": "The orchestrator holds the goal and the synthesis, so protect it."
+      },
+      {
+       "question": "When is multi-agent a poor fit?",
+       "options": {
+        "A": "The work is far larger than one context",
+        "B": "The units are independent",
+        "C": "The steps depend heavily on each other",
+        "D": "Breadth-first research across many sources"
+       },
+       "answer": "C",
+       "why": "Heavy dependencies and shared context don't suit multi-agent."
+      }
+     ]
+    },
+    {
+     "objective_id": "1.5",
+     "title": "Apply decomposition techniques for complex problem solving",
+     "official_wording": "Apply decomposition techniques for complex problem solving",
+     "minutes": 5,
+     "key_concepts": [
+      "Delegation map",
+      "reversibility, stakes, accountability",
+      "capability decomposition",
+      "chains with gates",
+      "only independent units in parallel"
+     ],
+     "architecture_example": "Law-firm contract review: iManage fetches documents, Claude compares clauses against the playbook section by section in parallel, and the senior associate signs off.",
+     "exam_takeaway": "Decompose by owner first, then by step. Gate between steps, and parallelise only what is truly independent.",
+     "narration": "Decomposition happens at three levels.\n\nThe first is ownership: Claude, systems or humans. You justify each assignment with three questions. Can a wrong call be undone? What does a wrong call cost? And who has to answer for it? That's reversibility, stakes and accountability. The result is a delegation map, where some work is Claude's, some stays human, and some is collaborative, with Claude drafting and a person deciding.\n\nThe second level is capabilities. Turn the business goal into a list of named things the system must do, so each one can get the right owner.\n\nThe third level is the work itself. Chain steps with checks between them. Fan out independent units. And when an input is bigger than the context window, decompose the input itself, by section, with a synthesis step and a coverage check at the end.\n\nOne trap to avoid: only parallelise units that are truly independent. If the executive summary depends on three sections, those sections can run in parallel, but the summary has to wait for them.",
+     "knowledge_check": [
+      {
+       "question": "Which three criteria justify a delegation decision?",
+       "options": {
+        "A": "Speed, cost and the size of the model",
+        "B": "Reversibility, stakes, accountability",
+        "C": "Volume, latency and token consumption",
+        "D": "Accuracy, fluency, tone"
+       },
+       "answer": "B",
+       "why": "These decide whether Claude should own a decision."
+      },
+      {
+       "question": "Three independent sections plus a summary that depends on them. What's the plan?",
+       "options": {
+        "A": "Run all four parts in parallel at once",
+        "B": "One pass",
+        "C": "Sections in parallel, then a gated summary",
+        "D": "Chain all four parts with no checks between"
+       },
+       "answer": "C",
+       "why": "Parallelise only the independent units."
+      },
+      {
+       "question": "The input is larger than the context window. Which approach fits?",
+       "options": {
+        "A": "Truncate the input to what fits in the window",
+        "B": "Summarise the whole input in one model call first",
+        "C": "Split by section, extract, then synthesise with a coverage check",
+        "D": "Use the full input and accept any truncation"
+       },
+       "answer": "C",
+       "why": "Decompose the input when it exceeds working memory."
+      }
+     ]
+    },
+    {
+     "objective_id": "1.6",
+     "title": "Align solutions to business value pillars",
+     "official_wording": "Align solutions to business value pillars (efficiency, transformation, productivity, cost, performance SLAs)",
+     "minutes": 6,
+     "key_concepts": [
+      "Five pillars",
+      "ROI mapping in four steps",
+      "measured baseline",
+      "net of review effort",
+      "payback with sensitivity",
+      "outcome document"
+     ],
+     "architecture_example": "Claims triage drops from 40 to 15 analyst minutes, because review is still required. Net value is the hours saved minus the monthly run cost from sizing, with payback shown at lower volume too.",
+     "exam_takeaway": "Technical metrics show the system runs. A before-and-after business metric shows it's worth expanding.",
+     "narration": "A feasible design isn't automatically a worthwhile one. Here's how to make the business case.\n\nThere are five value pillars. Efficiency means the same work, faster or cheaper. Transformation means work that wasn't possible before, like reviewing every case instead of a small sample. Productivity means more output from the same people. Cost means the run cost of the solution itself. And performance SLAs are the service levels the deployment has to hold.\n\nThen build the ROI in four steps. First, measure today's baseline in a unit the business already tracks, using their own data, not intuition. Second, project the new state in the same unit, and remember: if a person still reviews some outputs, that time is still a cost. Third, subtract the monthly run cost, taken from your sizing distribution, not an average. Fourth, give a payback period, and show how it moves if volume or gains come in lower.\n\nWhen you close the engagement, the outcome document needs the business metric before and after, the control that makes that comparison auditable, and an owner who keeps measuring it.",
+     "knowledge_check": [
+      {
+       "question": "A deployment lets compliance review every communication instead of five percent. Which pillar?",
+       "options": {
+        "A": "Efficiency",
+        "B": "Transformation",
+        "C": "Cost",
+        "D": "Performance SLA"
+       },
+       "answer": "B",
+       "why": "Work that wasn't feasible before is transformation."
+      },
+      {
+       "question": "The business case assumes zero analyst hours, but twenty percent of items go to review. What's the flaw?",
+       "options": {
+        "A": "Nothing; the projection is reasonable",
+        "B": "It overstates value by ignoring review effort",
+        "C": "It should count tokens saved rather than hours",
+        "D": "Review time belongs in the one-off build cost"
+       },
+       "answer": "B",
+       "why": "Net human review effort out of the projected gain."
+      },
+      {
+       "question": "What does a CFO need from an outcome document?",
+       "options": {
+        "A": "Request volume, latency and the error rate",
+        "B": "The model tier used at each pipeline step",
+        "C": "Business metric before and after, an auditable control, and an owner",
+        "D": "The prompts used, so the CFO sees how it works"
+       },
+       "answer": "C",
+       "why": "That's what justifies expansion."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "domain_id": "D2",
+   "title": "Episode 2 – Claude Models, Prompting & Context Engineering",
+   "intro": "Episode two covers models, prompting and context engineering, thirteen percent of the exam. Five parts: choosing a model tier, designing prompts as reusable assets, picking the right technique, managing the context window, and reusing prompts through caching and Skills.",
+   "parts": [
+    {
+     "objective_id": "2.1",
+     "title": "Select appropriate Claude models based on trade-offs",
+     "official_wording": "Select appropriate Claude models based on trade-offs",
+     "minutes": 6,
+     "key_concepts": [
+      "Opus, Sonnet, Haiku",
+      "Sonnet default",
+      "eval-gated swaps",
+      "pre-set rollback criteria",
+      "per-step tiering",
+      "extended and adaptive thinking",
+      "version pinning"
+     ],
+     "architecture_example": "A Sonnet to Haiku migration averaged 0.86, but two document types fell below the pre-set 0.85 floor. Those two stayed on Sonnet and the rest moved to Haiku.",
+     "exam_takeaway": "Start with Sonnet. Every move up or down is a release, gated by an eval with a threshold you set in advance.",
+     "narration": "The Claude family has three tiers. Opus is the most capable, Sonnet balances capability, speed and cost, and Haiku is the fastest and cheapest.\n\nThe default starting point is Sonnet. Move up to Opus only when an eval shows Sonnet misses your quality bar. Move down to Haiku only when an eval confirms the quality trade-off is acceptable.\n\nTreat every model change as a release. You need a representative test set, a grading function, and a pass threshold, and you set that threshold before you run anything. Look at scores per category, not just the average. A downgrade can look fine on average while failing badly on two document types. That's when a partial migration makes sense.\n\nNot every step needs the same model. Classification might run on Haiku, summarisation on Sonnet, and only the final answer on Opus.\n\nExtended thinking is a cost and latency trade-off. Thinking tokens are billed as output, so turn it on only when an eval shows an accuracy gap that prompt work couldn't close.\n\nAnd pin your model versions, so a silent roll-forward never surprises an auditor.",
+     "knowledge_check": [
+      {
+       "question": "Which tier is the recommended default for a new build?",
+       "options": {
+        "A": "Sonnet",
+        "B": "Opus",
+        "C": "Haiku",
+        "D": "Whatever the last project used"
+       },
+       "answer": "A",
+       "why": "Start with Sonnet and move only on eval evidence."
+      },
+      {
+       "question": "When should the rollback threshold be set?",
+       "options": {
+        "A": "After seeing the results",
+        "B": "Before running the eval",
+        "C": "After launch",
+        "D": "Never"
+       },
+       "answer": "B",
+       "why": "Setting it afterwards just writes acceptance criteria to fit the data."
+      },
+      {
+       "question": "When is extended thinking justified?",
+       "options": {
+        "A": "Always, because extra reasoning can't hurt quality",
+        "B": "On every routing classifier to improve its accuracy",
+        "C": "When an eval shows an accuracy gap after prompt work",
+        "D": "Whenever the latency budget has room to spare"
+       },
+       "answer": "C",
+       "why": "It adds billed tokens and latency on every call."
+      }
+     ]
+    },
+    {
+     "objective_id": "2.2",
+     "title": "Design system prompts, templates, and guardrails",
+     "official_wording": "Design system prompts, templates, and guardrails",
+     "minutes": 6,
+     "key_concepts": [
+      "Role and scope",
+      "constraints",
+      "output contract",
+      "templates with fixed scaffolding",
+      "Description competency",
+      "underspecification",
+      "structural guardrails"
+     ],
+     "architecture_example": "A support-reply template caches role, tone, contract and a no-refund-promise rule, with slots only for the ticket and the manual section. The output contract has no field where a commitment could go.",
+     "exam_takeaway": "A system prompt reused at scale is an asset you design. Make the safe path the default path, and remember that a prompt alone isn't enforcement.",
+     "narration": "At enterprise scale, a system prompt isn't a sentence you type. It's an asset hundreds of requests a day depend on, so it needs structure.\n\nState the role and scope: what's in bounds and what's out. List the constraints: what Claude must always do and must never do. And define the output contract, the exact shape the response has to take.\n\nA template takes that further. It has fixed scaffolding that carries the safety and consistency guarantees, plus slots for the content that changes. Filling a slot should never be able to remove a constraint. The person using the template supplies the variable content and inherits the guardrails automatically.\n\nThe skill here is called Description: telling the model precisely what you want. The failure it prevents is underspecification. Wherever the prompt is silent, the model fills the gap, differently each time. So read your prompt asking, for each requirement, is this actually stated, or am I just hoping for it?\n\nFinally, put important guardrails into the structure of the output, not just the role text, and back them with runtime screening. A rule stated in prose can be drifted past.",
+     "knowledge_check": [
+      {
+       "question": "Outputs vary in structure and miss required citations. What's missing?",
+       "options": {
+        "A": "A longer list of adjectives describing tone",
+        "B": "A higher temperature for more natural variety",
+        "C": "An output contract and explicit constraints",
+        "D": "A larger model that infers the structure itself"
+       },
+       "answer": "C",
+       "why": "Underspecified prompts let the model improvise."
+      },
+      {
+       "question": "What should a template's fixed scaffolding guarantee?",
+       "options": {
+        "A": "That filling slots can't remove constraints",
+        "B": "Lower cost on every request",
+        "C": "Faster responses for users",
+        "D": "Fewer tokens in each prompt"
+       },
+       "answer": "A",
+       "why": "The safe path should be the default path."
+      },
+      {
+       "question": "How do you enforce \"never promise refunds\" most robustly?",
+       "options": {
+        "A": "Repeat the rule several times in the role text",
+        "B": "Move the rule to the very end of the prompt",
+        "C": "Build it into the output contract and add screening",
+        "D": "Raise max_tokens so every rule can be followed"
+       },
+       "answer": "C",
+       "why": "Structural constraints are harder to drift past than prose."
+      }
+     ]
+    },
+    {
+     "objective_id": "2.3",
+     "title": "Apply prompt engineering techniques",
+     "official_wording": "Apply prompt engineering techniques (zero-shot, few-shot, chain-of-thought)",
+     "minutes": 5,
+     "key_concepts": [
+      "Zero-shot first",
+      "few-shot for hard-to-describe formats",
+      "chain-of-thought for multi-step reasoning",
+      "deterministic computation for precision",
+      "balanced examples",
+      "re-tune per model"
+     ],
+     "architecture_example": "A 12-category classifier confused two categories zero-shot. Two balanced examples per confusable pair fixed it, while chain-of-thought added latency for no gain.",
+     "exam_takeaway": "Use the lightest technique that meets the requirement. Each step adds tokens and latency.",
+     "narration": "There are three core techniques, and you should reach for them in order.\n\nZero-shot is instruction only. Try it first for any well-specified task.\n\nFew-shot adds a handful of input and output examples. Use it when the format or the judgement is easier to show than to describe. But keep the examples balanced across the cases the system will really see. If every example shows the same kind of answer, you've built bias into the prompt. The same goes for leading phrasing, like \"confirm this applicant qualifies\".\n\nChain-of-thought asks the model to reason step by step before answering. It helps with multi-step logic, but it's a tax on every call, so don't use it where it doesn't move accuracy.\n\nAnd for precise arithmetic, like totals with discounts and tax, don't rely on reasoning at all. Let code execution or a deterministic service own the number.\n\nOne more point. Prompts and models ship as a pair. A more capable model often needs less scaffolding, so when you change tiers, re-tune the prompt and evaluate the pairing.",
+     "knowledge_check": [
+      {
+       "question": "Which technique should you try first on a well-specified task?",
+       "options": {
+        "A": "Chain-of-thought",
+        "B": "Few-shot with twenty examples",
+        "C": "Fine-tuning",
+        "D": "Zero-shot"
+       },
+       "answer": "D",
+       "why": "Start light and escalate only on evidence."
+      },
+      {
+       "question": "The format is hard to describe but easy to recognise. Which technique fits?",
+       "options": {
+        "A": "Chain-of-thought reasoning",
+        "B": "Balanced few-shot examples",
+        "C": "A lower temperature setting",
+        "D": "A larger max_tokens value"
+       },
+       "answer": "B",
+       "why": "Show, don't tell."
+      },
+      {
+       "question": "Pricing totals with tax are often wrong. What's the best fix?",
+       "options": {
+        "A": "Tell the model to double-check its arithmetic",
+        "B": "Add examples showing correctly computed totals",
+        "C": "Let code or a pricing service compute the totals",
+        "D": "Switch to a bigger model that does better maths"
+       },
+       "answer": "C",
+       "why": "Deterministic computation should own the number."
+      }
+     ]
+    },
+    {
+     "objective_id": "2.4",
+     "title": "Optimize context windows and manage token usage",
+     "official_wording": "Optimize context windows and manage token usage",
+     "minutes": 6,
+     "key_concepts": [
+      "Hard edge",
+      "400 vs. 413 vs. context-window stop",
+      "usage field and token counting",
+      "budget below the ceiling",
+      "skewed distributions",
+      "application-managed memory"
+     ],
+     "architecture_example": "A legal chat started truncating late in sessions. Compacting old turns while keeping clause IDs, retrieving clauses on demand, and caching the policy prefix fixed it.",
+     "exam_takeaway": "Count tokens, budget with margin, and remember the model has no memory between calls unless your application provides it.",
+     "narration": "The context window is the model's working memory, and it has a hard edge. Inside it, everything is available. Outside it, nothing exists.\n\nThere are two different ways to hit that edge, so know them apart. If the request itself is too big, the API rejects it before generation. Too many tokens gives a four hundred error. Too many bytes gives a four thirteen. But if the request fits and the response runs into the ceiling while it's generating, you get truncated output with a context-window stop reason.\n\nDon't estimate tokens from characters. Measure them, using the usage field on every response and the token-counting API before you send. Then budget for the largest realistic conversation, plus retrieved context, plus the system prompt, plus scratch space, plus margin. The window is a ceiling, not a target.\n\nWatch the distribution too. Most requests may be short, but a tail of long ones can drive most of your cost.\n\nAnd keep your terms straight. Retrieval brings knowledge in. Live state comes through tools. And memory between sessions isn't a model feature. Your application stores it and passes it back in.",
+     "knowledge_check": [
+      {
+       "question": "A request returns a 400 saying the prompt is too long. What happened?",
+       "options": {
+        "A": "Generation hit the context ceiling midway through",
+        "B": "It was rejected before generation for too many tokens",
+        "C": "A transient server error worth retrying with backoff",
+        "D": "The request body exceeded the API's byte limit"
+       },
+       "answer": "B",
+       "why": "Oversized-token requests are rejected with a 400; the byte limit gives 413."
+      },
+      {
+       "question": "How should you size context?",
+       "options": {
+        "A": "Four characters per token, designed to 95 percent",
+        "B": "Measure with usage and token counting, and leave margin",
+        "C": "Watch the monthly bill and adjust from there",
+        "D": "Use the biggest window available and stop worrying"
+       },
+       "answer": "B",
+       "why": "Measure, and treat the window as a ceiling."
+      },
+      {
+       "question": "The assistant greets returning users by name. Why?",
+       "options": {
+        "A": "The model has native memory of past users",
+        "B": "The model was fine-tuned on each returning user",
+        "C": "Prompt caching stores user preferences between sessions",
+        "D": "The application stores state and passes it back"
+       },
+       "answer": "D",
+       "why": "Continuity is managed by the application."
+      }
+     ]
+    },
+    {
+     "objective_id": "2.5",
+     "title": "Implement prompt reuse strategies",
+     "official_wording": "Implement prompt reuse strategies (caching, modular prompts, Skills)",
+     "minutes": 6,
+     "key_concepts": [
+      "Cache breakpoint",
+      "static before dynamic",
+      "TTL and write cost",
+      "prompt library vs. Skill",
+      "container.skills and the Code Execution Tool",
+      "progressive disclosure"
+     ],
+     "architecture_example": "A team's cache never hit because the per-request document came before the fixed instructions. Reordering fixed it.",
+     "exam_takeaway": "Put fixed content first and cache it. Package repeatable, distributed, governed procedures as versioned Skills.",
+     "narration": "When the same long instructions go out on every request, prompt caching is your biggest lever. The cache works on a stable prefix, so order matters. Put the fixed content first, mark a breakpoint, and put the per-request content after it. If dynamic content comes first, the prefix changes every time and the cache never hits.\n\nCaching isn't free. Writing to the cache costs more than normal input, and entries expire. The default lifetime is five minutes, so a prompt called a few times a month may never earn back the write. Model the economics: how often it's called, how big the prefix is, and how often it changes.\n\nFor reuse across a team, you have two options. A modular prompt library is a set of fragments engineers assemble in their own code. It's flexible and lightweight. A Skill is a versioned, self-contained unit that packages a procedure, its instructions and any scripts, so it can be governed and rolled back.\n\nOn the API, Skills attach to requests and need the Code Execution Tool, which brings a sandboxed execution dependency. And Skills load progressively: metadata first, full content only when needed.",
+     "knowledge_check": [
+      {
+       "question": "Caching is enabled but there are no savings. What's the likely cause?",
+       "options": {
+        "A": "The cache TTL is set too short for the traffic",
+        "B": "Dynamic content comes before the fixed prefix",
+        "C": "The model tier is too small to use caching",
+        "D": "Outputs are too long for the cache to apply"
+       },
+       "answer": "B",
+       "why": "The cache matches a stable prefix."
+      },
+      {
+       "question": "A procedure runs the same way across many teams and needs rollback. Which packaging?",
+       "options": {
+        "A": "A versioned Skill",
+        "B": "Templates pasted into each team's prompts",
+        "C": "A wiki page describing the procedure",
+        "D": "A modular prompt library assembled per use"
+       },
+       "answer": "A",
+       "why": "Repeatable, distributed and governed points to a Skill."
+      },
+      {
+       "question": "When might caching cost more than it saves?",
+       "options": {
+        "A": "A long prefix that's called constantly",
+        "B": "A static policy document that's called often",
+        "C": "A small prefix called a few times a month",
+        "D": "A stable system prompt reused all day"
+       },
+       "answer": "C",
+       "why": "Write overhead isn't recovered at low frequency."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "domain_id": "D3",
+   "title": "Episode 3 – Integration",
+   "intro": "Episode three is Integration, the biggest domain on the exam at nineteen percent. Eight parts: trimming excess tools, closing identity gaps, justifying accuracy and latency trade-offs, monitoring at scale, designing retrieval pipelines, matching retrieval to the data, choosing connection protocols, and progressive versus monolithic context.",
+   "parts": [
+    {
+     "objective_id": "3.1",
+     "title": "Evaluate tool/agent configuration for capability bloat",
+     "official_wording": "Evaluate tool/agent configuration for capability bloat",
+     "minutes": 5,
+     "key_concepts": [
+      "Least privilege",
+      "essential vs. convenient tools",
+      "trust hierarchy for subagents",
+      "removal beats monitoring",
+      "deferral is not a permission control"
+     ],
+     "architecture_example": "A support agent could read tickets, draft replies, issue refunds and delete accounts, but staff only read and draft. Remove the refund and delete tools.",
+     "exam_takeaway": "If a role doesn't need a capability, remove it. Don't log it, confirm it or instruct around it.",
+     "narration": "Every tool you connect to Claude is two things at once: an attack surface and a cost. Capability bloat is when an agent holds more tools or permissions than its task needs.\n\nSo audit the tool set the way you'd audit permissions. For each tool, ask: is this essential to the task, or just convenient? If it's out of scope, remove it, and write down why.\n\nThe exam loves one particular trap here. A plausible answer adds logging to a dangerous tool, or a confirmation prompt, or a system-prompt rule saying \"never use this\". Those are compensating controls. The privilege is still there. The strongest answer removes the capability the role doesn't need.\n\nIn multi-agent systems, scope each subagent's tools to its own job. A subagent that only reads and reports findings shouldn't inherit the orchestrator's ability to file documents or send notifications. That's the trust hierarchy.\n\nAnd one subtle point: tool search and deferred loading reduce how much of your context window tool definitions take up. They don't reduce what the agent is allowed to call.",
+     "knowledge_check": [
+      {
+       "question": "Staff only read and draft, but the agent can also delete accounts. Best change?",
+       "options": {
+        "A": "Log deletions",
+        "B": "Add a confirmation step",
+        "C": "Remove the delete tool",
+        "D": "Use a larger model"
+       },
+       "answer": "C",
+       "why": "Least privilege removes the capability at its source."
+      },
+      {
+       "question": "Do deferred tools reduce an agent's permissions?",
+       "options": {
+        "A": "Yes, deferred tools can no longer be called",
+        "B": "Yes, but only for tools with side effects",
+        "C": "Only when the tools are accessed through the API",
+        "D": "No, they only change what enters context"
+       },
+       "answer": "D",
+       "why": "A deferred tool can still be found and called."
+      },
+      {
+       "question": "Subagents inherit every orchestrator tool. What's the fix?",
+       "options": {
+        "A": "Scope each subagent's tools to its task",
+        "B": "Ask subagents to justify any write action",
+        "C": "Move the shared tools onto an MCP server",
+        "D": "Upgrade each subagent to a stronger model"
+       },
+       "answer": "A",
+       "why": "This sets up a trust hierarchy."
+      }
+     ]
+    },
+    {
+     "objective_id": "3.2",
+     "title": "Analyze authentication and authorization requirements",
+     "official_wording": "Analyze authentication and authorization requirements to identify security gaps",
+     "minutes": 7,
+     "key_concepts": [
+      "Server-side identity injection",
+      "the Claude layer inherits the existing authorization model",
+      "deterministic tool authorization",
+      "per-tenant API keys",
+      "MCP OAuth 2.1 resource server"
+     ],
+     "architecture_example": "A legal search tool ran on an all-access service account while the system prompt said \"only use permitted documents\". The fix: the tool enforces the user's matter-level permissions.",
+     "exam_takeaway": "Who you are comes from authentication, through the server. What you may do is enforced by deterministic code, never by a prompt.",
+     "narration": "Security gaps in Claude integrations usually come from three places.\n\nThe first is identity. If a user can type \"I'm a regional controller\" and unlock data, you have a spoofing gap. Identity and role must come from your authentication layer, and your server injects them into the system prompt. Never trust what the user claims in their message.\n\nThe second is authorization. The Claude layer must follow the same access model as the systems underneath it. If your search tool runs on an account that can see every record, a polite instruction in the prompt doesn't help. The tool itself must query as the verified user. And any action with side effects, like booking, refunding or sending, goes through a deterministic check of identity, action and scope.\n\nThe third is multi-tenancy. One shared API key means one tenant's spike can trip the limit for everyone, and you can't tell who caused it. Use a separate key per tenant.\n\nFor remote MCP servers holding non-public data, the specification treats the server as an OAuth 2.1 resource server. It publishes its metadata, and clients send an access token on every request, instead of sharing a static secret.",
+     "knowledge_check": [
+      {
+       "question": "Users unlock reports by stating their role in chat. What's the gap?",
+       "options": {
+        "A": "The system prompt is too short to list every role",
+        "B": "The prompt lacks few-shot examples for each role",
+        "C": "Self-asserted identity instead of server-side injection",
+        "D": "The model tier is too small to spot false claims"
+       },
+       "answer": "C",
+       "why": "Identity must come from authentication, injected by the server."
+      },
+      {
+       "question": "Sixty tenants share one API key and a spike degrades everyone. What's the fix?",
+       "options": {
+        "A": "A separate key per tenant",
+        "B": "Backoff only",
+        "C": "Batch API",
+        "D": "Put tenant_id in the prompt"
+       },
+       "answer": "A",
+       "why": "Per-tenant keys give attribution and isolation."
+      },
+      {
+       "question": "How should a protected remote MCP server authorise clients?",
+       "options": {
+        "A": "With a shared secret stored in each client's config",
+        "B": "As an OAuth 2.1 resource server with access tokens",
+        "C": "By VPN restriction alone, with no user-level checks",
+        "D": "By having each client pass the username in tool calls"
+       },
+       "answer": "B",
+       "why": "This follows the MCP authorization specification."
+      }
+     ]
+    },
+    {
+     "objective_id": "3.3",
+     "title": "Evaluate accuracy-latency trade-offs and justify configuration decisions",
+     "official_wording": "Evaluate accuracy-latency trade-offs and justify configuration decisions",
+     "minutes": 6,
+     "key_concepts": [
+      "Tier, thinking, context, retrieval and caching as levers",
+      "p95 as the target",
+      "binding constraint",
+      "one lever at a time",
+      "eval as justification"
+     ],
+     "architecture_example": "Extended thinking on a routing classifier added latency with no accuracy gain. Turning it off and moving that step to Haiku met the SLA.",
+     "exam_takeaway": "Name the constraint with the least margin and the lever that moves it, and justify the change with an eval.",
+     "narration": "Every configuration choice trades accuracy against latency and cost. The levers are model tier, extended thinking, how much context you send, how you retrieve, the output cap, and caching.\n\nStart by stating three numbers that come from the business: the accuracy bar, the latency budget, and the cost ceiling. For latency, design against p95, the time ninety-five percent of requests finish within. The median hides the slow tail, and the slow tail is what breaks SLAs.\n\nThen find the binding constraint, the one with the least margin. If latency is binding, tier and thinking are your strongest levers. If cost is binding, tier and context strategy matter most.\n\nChange one lever at a time, and measure each change against your eval. A common win is per-step tiering: a cheap model for routing, a mid tier for summarising, and the top tier only where the eval says it earns its place.\n\nOn retrieval, smaller chunks and hybrid indexes tend to raise quality and latency together. Large dense-only chunks are faster, but they miss exact-match queries like product codes.",
+     "knowledge_check": [
+      {
+       "question": "Users complain about slowness, but median latency looks fine. What should you check?",
+       "options": {
+        "A": "p95 latency",
+        "B": "Average latency",
+        "C": "Error rate",
+        "D": "Token count"
+       },
+       "answer": "A",
+       "why": "SLA breaches live in the slow tail."
+      },
+      {
+       "question": "Cost is double the ceiling and latency has margin. Which levers matter most?",
+       "options": {
+        "A": "Extended thinking only",
+        "B": "Tier and context strategy",
+        "C": "Adding hybrid retrieval",
+        "D": "Output length on the final step"
+       },
+       "answer": "B",
+       "why": "These move cost most, validated by eval."
+      },
+      {
+       "question": "What justifies a configuration decision?",
+       "options": {
+        "A": "A successful live demo",
+        "B": "The team's intuition",
+        "C": "An eval against the stated thresholds",
+        "D": "Published vendor benchmark results"
+       },
+       "answer": "C",
+       "why": "Measured evidence makes a choice defensible."
+      }
+     ]
+    },
+    {
+     "objective_id": "3.4",
+     "title": "Analyze observability challenges and select monitoring strategies at scale",
+     "official_wording": "Analyze observability challenges and select monitoring strategies at scale",
+     "minutes": 6,
+     "key_concepts": [
+      "Silent failure",
+      "request, response, context, outcome",
+      "tracing, aggregation, anomaly detection, change attribution",
+      "per-request decomposition",
+      "shared trace ID",
+      "audit coverage"
+     ],
+     "architecture_example": "Dashboards were green while a small share of long documents consumed most of the budget. Breaking cost down by input-length bucket exposed it.",
+     "exam_takeaway": "LLMs fail quietly. Instrument outcomes, break metrics down per request, and attribute a change before you fix it.",
+     "narration": "Traditional systems crash when something goes wrong. LLM systems usually don't. They give an answer that's subtly wrong, with normal latency and no error. So error-rate dashboards alone will miss most problems.\n\nOn every request, log four things. The request: model version, input tokens, prompt identifier. The response: output tokens, latency, stop reason. The context: user role, session, whether the cache was hit. And the outcome: did the downstream system accept the result, or was it rejected or corrected?\n\nThen monitor in four layers. Tracing for every request, including tool calls. Aggregation into cost, p50 and p95 latency, task success and error types, broken down per request, because averages hide the expensive tail. Anomaly detection, with alerts on spikes plus periodic comparison for slow drift. And change attribution, which separates model drift, data drift and a model version update, because each one has a different fix.\n\nFor multi-agent systems, use one shared trace ID across every agent. And for agents that take actions, check that every action is written to an audit log. An action that isn't logged is one a security reviewer can't approve.",
+     "knowledge_check": [
+      {
+       "question": "Error rate is low, yet escalations are rising. What's missing?",
+       "options": {
+        "A": "A higher error-rate alert threshold",
+        "B": "Outcome signals and drift comparison",
+        "C": "Adding p50 latency to the dashboards",
+        "D": "Verbose logging of raw prompts and PII"
+       },
+       "answer": "B",
+       "why": "Quality failures don't show up as errors."
+      },
+      {
+       "question": "You can't link subagent failures to their runs. What should you add?",
+       "options": {
+        "A": "Per-agent dashboards",
+        "B": "Longer timeouts",
+        "C": "A bigger orchestrator",
+        "D": "A shared trace ID"
+       },
+       "answer": "D",
+       "why": "One ID makes the whole run reconstructable."
+      },
+      {
+       "question": "Which three causes does change attribution separate?",
+       "options": {
+        "A": "Model drift, data drift, model update",
+        "B": "Cost, latency and error rate",
+        "C": "Prompts, tools and individual users",
+        "D": "Input size, output size and context"
+       },
+       "answer": "A",
+       "why": "Each has a different fix."
+      }
+     ]
+    },
+    {
+     "objective_id": "3.5",
+     "title": "Design a RAG pipeline with chunking and indexing strategies",
+     "official_wording": "Design a RAG pipeline with appropriate chunking and indexing strategies",
+     "minutes": 6,
+     "key_concepts": [
+      "Fixed, semantic and hierarchical chunking",
+      "dense, sparse and hybrid indexing",
+      "reciprocal rank fusion",
+      "quality vs. latency vs. maintenance",
+      "retrieval metrics"
+     ],
+     "architecture_example": "Policy answers cited an exclusion clause without the heading that limited it to commercial policies. Hierarchical chunking kept section context with each clause.",
+     "exam_takeaway": "Chunk by the shape of the source, index by the shape of the queries, and measure retrieval on its own.",
+     "narration": "A retrieval pipeline makes two key decisions: how you chunk the corpus, and how you index it.\n\nChoose chunking by the structure of the source. Fixed-size chunks with overlap suit uniform, unstructured text. Semantic chunking splits on meaning, so each chunk can stand on its own. Hierarchical chunking keeps sections and subsections together. That's what you want for contracts, manuals and policies, where a heading changes what a clause means.\n\nChoose indexing by how people ask. Dense embeddings match meaning, which is great for paraphrased questions. Sparse keyword search, like BM25, matches exact tokens: part numbers, error codes, statute citations. Most production systems see both kinds of query, so hybrid is the common answer. Merge the two ranked lists with reciprocal rank fusion, a low-tuning default.\n\nEvery choice trades retrieval quality against latency and maintenance. And retrieval quality doesn't show in the output. A confident answer built on the wrong chunk looks exactly like a right one. So measure retrieval precision and recall against a labelled set, and keep measuring as the corpus grows.",
+     "knowledge_check": [
+      {
+       "question": "Users search by part number and by description. Which index fits?",
+       "options": {
+        "A": "Dense embeddings only",
+        "B": "Sparse keyword search only",
+        "C": "Hybrid with reciprocal rank fusion",
+        "D": "No index, just a long prompt"
+       },
+       "answer": "C",
+       "why": "Mixed query patterns call for hybrid."
+      },
+      {
+       "question": "Clauses lose the context of their section heading. Which chunking fits?",
+       "options": {
+        "A": "Hierarchical",
+        "B": "Smaller fixed chunks",
+        "C": "Larger top-k",
+        "D": "A bigger embedding model"
+       },
+       "answer": "A",
+       "why": "Preserve document structure."
+      },
+      {
+       "question": "Answers turn confidently wrong after a document refresh. Where do you look first?",
+       "options": {
+        "A": "Silently changed model weights",
+        "B": "A temperature that is set too low",
+        "C": "A context window that has shrunk",
+        "D": "Retrieval and indexing"
+       },
+       "answer": "D",
+       "why": "For example, mismatched embeddings or a broken re-index."
+      }
+     ]
+    },
+    {
+     "objective_id": "3.6",
+     "title": "Apply retrieval strategies matched to data shape and query pattern",
+     "official_wording": "Apply retrieval strategies matched to data shape and query pattern",
+     "minutes": 5,
+     "key_concepts": [
+      "Stable knowledge vs. live state",
+      "tool calls for systems of record",
+      "similarity is not truth",
+      "monolithic prefix for small stable content",
+      "synthesis across documents"
+     ],
+     "architecture_example": "\"Where's my order?\" returned two stale chunks and a confident wrong answer, while an order-status API sat unused.",
+     "exam_takeaway": "If it was true yesterday and will be true tomorrow, retrieve it. If its value changes on its own, call the system that owns it.",
+     "narration": "Here's the most common reference-architecture mistake: using retrieval where a tool call belongs.\n\nRetrieval is built for stable knowledge: FAQs, manuals, policies, things that stay true between index refreshes. Live state is different. Order status, inventory and account balances are owned by a system of record and change independently. If you index snapshots of live state, the retriever returns whichever stale snapshot looks most similar, and the model answers confidently. No error, normal latency, wrong answer.\n\nA shorter refresh interval won't fix this, and neither will a higher similarity threshold or a better embedding model. Similarity isn't truth. The fix is a tool call to the system that owns the data.\n\nSo classify each kind of data. Stable reference content goes through retrieval, or a cached prefix if it's small and always needed. Live state comes from the system of record. Precise numbers come from deterministic computation.\n\nAnd when a question needs synthesis across many documents, top-k chunks often miss the pattern. Break it into per-document extraction, then synthesise over the structured findings.",
+     "knowledge_check": [
+      {
+       "question": "Answers about order status contradict the database. What's the fix?",
+       "options": {
+        "A": "An hourly refresh",
+        "B": "Call the order-status API",
+        "C": "A higher similarity threshold",
+        "D": "Better embeddings"
+       },
+       "answer": "B",
+       "why": "Live state belongs to the system of record."
+      },
+      {
+       "question": "Where should a small, stable policy needed on every call go?",
+       "options": {
+        "A": "A cached monolithic prefix",
+        "B": "A vector index refreshed daily",
+        "C": "Fine-tuning on the policy",
+        "D": "A tool call on every request"
+       },
+       "answer": "A",
+       "why": "There's no need to pay retrieval overhead for it."
+      },
+      {
+       "question": "Cross-document synthesis keeps missing patterns. What should you do?",
+       "options": {
+        "A": "Raise top-k to fifty and let the model synthesise",
+        "B": "Switch to sparse-only retrieval for exact matches",
+        "C": "Answer the synthesis from the model's own memory",
+        "D": "Extract per document, then synthesise"
+       },
+       "answer": "D",
+       "why": "Retrieval scores chunks independently, so synthesis needs structure."
+      }
+     ]
+    },
+    {
+     "objective_id": "3.7",
+     "title": "Evaluate connection protocols and select the integration mechanism",
+     "official_wording": "Evaluate connection protocols and select the appropriate integration mechanism (MCP, API/CLI, agent-to-agent)",
+     "minutes": 7,
+     "key_concepts": [
+      "API vs. SDK",
+      "MCP for sharing across clients",
+      "MCP vs. tool use",
+      "Agent SDK for embedded loops",
+      "Claude Code for developers",
+      "agent-to-agent (source gap)"
+     ],
+     "architecture_example": "A bank proposed Claude Code on branch laptops with MCP servers. The better design was a custom web app on the API with SSO, deterministic compliance code and server-side audit.",
+     "exam_takeaway": "The entry point follows the user and the work. Use MCP only when two or more clients reuse the same tools.",
+     "narration": "Choosing how Claude connects is about matching the mechanism to the job.\n\nThe direct API is the foundation layer, giving you full control and full responsibility. The SDKs offer the same capability in language-native code, and they're the default for embedding Claude in a product.\n\nMCP is a protocol for sharing tools across clients. Build a server once, and Claude.ai, Claude Code and your internal app can all use it. If only one product will ever use those tools, MCP just adds overhead. MCP and tool use aren't really alternatives, either. MCP servers expose tools that clients call through tool use.\n\nThe Agent SDK runs a managed agent loop, the same one behind Claude Code, inside your own application. Pick it when Claude needs to act across several turns in your product and you don't want to build the loop yourself.\n\nClaude Code itself is for developers doing engineering work. It isn't a backend for operational staff or multi-tenant products.\n\nAgent-to-agent protocols cover delegating to agents you don't own, possibly on other frameworks. Anthropic's documentation doesn't address them directly, so treat this as an inferred principle.",
+     "knowledge_check": [
+      {
+       "question": "Claude.ai, Claude Code and an internal app all need the same Jira tools. Which mechanism?",
+       "options": {
+        "A": "Separate integrations",
+        "B": "Claude Code backend",
+        "C": "A static prompt",
+        "D": "One MCP server"
+       },
+       "answer": "D",
+       "why": "MCP shares one tool surface across clients."
+      },
+      {
+       "question": "An agent embedded in your web app must act over several turns. Which interface?",
+       "options": {
+        "A": "Agent SDK",
+        "B": "Claude Code CLI",
+        "C": "A single SDK call",
+        "D": "MCP as the loop"
+       },
+       "answer": "A",
+       "why": "The Agent SDK provides the managed loop."
+      },
+      {
+       "question": "Branch staff need an operations assistant. Which entry point is wrong?",
+       "options": {
+        "A": "A custom web app on the API behind SSO",
+        "B": "Claude Code on their laptops",
+        "C": "An SDK-based app integrated with SSO",
+        "D": "An internal portal"
+       },
+       "answer": "B",
+       "why": "Claude Code is for developers, not operational staff."
+      }
+     ]
+    },
+    {
+     "objective_id": "3.8",
+     "title": "Evaluate progressive discovery vs. monolithic context strategy",
+     "official_wording": "Evaluate progressive discovery vs. monolithic context strategy",
+     "minutes": 6,
+     "key_concepts": [
+      "Monolithic, progressive, retrieval, compaction",
+      "combining strategies",
+      "tool search with defer_loading",
+      "Skills progressive disclosure",
+      "strategy vs. sizing"
+     ],
+     "architecture_example": "An agent with 12 MCP servers and 350 tools deferred the long tail with tool search and kept its five hottest tools loaded, freeing context before any work began.",
+     "exam_takeaway": "Load what's needed at the start, carry forward what's recent, fetch the rest on demand, and compress what's old.",
+     "narration": "A context strategy decides how information reaches the model on each call. It sits on a spectrum.\n\nMonolithic means loading everything at once. It suits bounded tasks with stable, cacheable prefixes. But in long conversations or agent loops, context piles up turn after turn, cost grows, and eventually you hit the window's edge.\n\nProgressive means carrying forward only what the next step needs. It's the right default for most production work.\n\nTwo more strategies sit in between. Retrieval fetches knowledge just in time. Compaction summarises older material so long sessions can keep going, but it can drop exact identifiers and numbers, so preserve those.\n\nReal systems combine all four. A coding agent loads a small stable prefix, carries recent tool results forward, retrieves files when it needs them, and compacts early exploration.\n\nProgressive discovery applies to tools and Skills as well. With the tool search tool, you mark rarely used tools as deferred, and Claude loads them only when it finds it needs them. You still send every definition, and you keep your three to five most-used tools loaded. Skills work the same way: metadata first, full content on demand.",
+     "knowledge_check": [
+      {
+       "question": "Cost per turn keeps growing in a long agent session. What's the best strategy?",
+       "options": {
+        "A": "Move to a much larger context window",
+        "B": "Clear the whole history every ten turns",
+        "C": "Load the entire repository at session start",
+        "D": "Cached prefix, recent state, retrieval and compaction"
+       },
+       "answer": "D",
+       "why": "Combine strategies to control growth."
+      },
+      {
+       "question": "With tool search, what does defer_loading control?",
+       "options": {
+        "A": "Which tool definitions are sent",
+        "B": "What enters the context window",
+        "C": "Tool permissions",
+        "D": "Tool pricing"
+       },
+       "answer": "B",
+       "why": "Full definitions are still sent with the request."
+      },
+      {
+       "question": "Which tools should stay non-deferred?",
+       "options": {
+        "A": "The most frequently used few",
+        "B": "None",
+        "C": "The tool search tool should be deferred",
+        "D": "Every side-effecting tool"
+       },
+       "answer": "A",
+       "why": "This avoids a search step on most turns."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "domain_id": "D4",
+   "title": "Episode 4 – Evaluation, Testing & Optimization",
+   "intro": "Episode four, Evaluation, Testing and Optimization, is sixteen percent of the exam. Six parts: defining metrics, building eval sets, running real experiments, diagnosing failures, optimising cost and latency, and monitoring performance over time.",
+   "parts": [
+    {
+     "objective_id": "4.1",
+     "title": "Define evaluation metrics",
+     "official_wording": "Define evaluation metrics (accuracy, latency, cost, safety, security)",
+     "minutes": 5,
+     "key_concepts": [
+      "Behaviour to threshold",
+      "five dimensions",
+      "thresholds from the business",
+      "failure modes as categories",
+      "adversarial inputs"
+     ],
+     "architecture_example": "An insurer's framework: exact match on structured fields, p95 under target, cost per claim under the ceiling, no auto-denials, and a code scan for data leaking across claimants.",
+     "exam_takeaway": "If you can't write an eval for a behaviour, you can't verify it. Thresholds come from the business, not from the prototype.",
+     "narration": "\"Summarise claims accurately\" isn't a metric. To make it one, name the specific behaviour, like extracting the claimant, the policy number, the loss amount and the date. Then set a threshold, and that threshold comes from the business requirement, not from whatever your first prototype happened to score.\n\nNext, list the failure modes: a made-up claim number, a missing date, a value taken from the wrong claim. Each failure mode becomes a category in your dataset. And include adversarial inputs, like handwriting, missing fields and strange layouts. A clean-only dataset predicts nothing about production.\n\nThe exam frames metrics in five dimensions: accuracy, latency, cost, safety and security. Most of these can be checked in code. Is the field right? Is p95 under target? Is cost under the ceiling? Was a denial issued? Did any other claimant's identifier appear in this summary? Those are all deterministic checks.\n\nSome safety qualities, like whether a summary is faithful to its source, need interpretation, and that's where a calibrated judge comes in.",
+     "knowledge_check": [
+      {
+       "question": "Where should an eval threshold come from?",
+       "options": {
+        "A": "The score the first prototype achieved",
+        "B": "The business requirement",
+        "C": "A competitor's published accuracy claim",
+        "D": "Whatever production shows after launch"
+       },
+       "answer": "B",
+       "why": "Thresholds are acceptance criteria set before building."
+      },
+      {
+       "question": "Which method fits \"never leak another claimant's data\"?",
+       "options": {
+        "A": "A code-based scan for foreign identifiers",
+        "B": "An LLM judge's privacy score out of ten",
+        "C": "Monthly sampling by the privacy team",
+        "D": "The rate of user complaints about privacy"
+       },
+       "answer": "A",
+       "why": "It's a deterministic property."
+      },
+      {
+       "question": "The dataset contains only clean forms. What do you add?",
+       "options": {
+        "A": "Many more clean forms for statistical power",
+        "B": "A stricter accuracy threshold on clean data",
+        "C": "A more capable judge model for scoring",
+        "D": "Edge cases and adversarial categories"
+       },
+       "answer": "D",
+       "why": "Representative data makes scores meaningful."
+      }
+     ]
+    },
+    {
+     "objective_id": "4.2",
+     "title": "Design evaluation datasets and test frameworks using mixed methodologies",
+     "official_wording": "Design evaluation datasets and test frameworks using mixed methodologies",
+     "minutes": 7,
+     "key_concepts": [
+      "Five-stage eval workflow",
+      "golden dataset",
+      "grading ladder",
+      "judge calibration with a different grader model",
+      "multi-turn evals",
+      "volume over perfection",
+      "keep evals current"
+     ],
+     "architecture_example": "A summarisation eval kept passing after a prompt change because its dataset predated the change, while production truncated multi-clause sentences.",
+     "exam_takeaway": "Use code where you can, a calibrated judge where you must, and humans as the last resort. Refresh the dataset every time behaviour changes.",
+     "narration": "An eval workflow runs in five stages. Define the task and its pass criteria. Build a golden dataset that's representative, with edge cases. Run automated checks. Score interpretive behaviours with a judge. Then read the results by category, not just as one number.\n\nChoosing how to grade follows a ladder. First, code: schema checks, exact matches, length. It's fast, cheap and never drifts. Second, a model as judge, for things like tone or faithfulness. Make it rigorous with a detailed rubric, a small fixed set of verdicts, reasoning alongside each score, and calibration against human-labelled examples. Use a different model from the one being graded, to avoid self-preference. Third, and last, human review, for novel or high-stakes behaviour, and to calibrate the judge.\n\nTwo more rules. Favour volume over perfection: two thousand cheap, automatic cases catch more regressions than forty perfect ones, and they can run on every change. And conversations need multi-turn evals that score whole transcripts.\n\nFinally, the riskiest moment is when an eval exists but is out of date. Every time the prompt or model changes, update the dataset to match.",
+     "knowledge_check": [
+      {
+       "question": "A judge's scores disagree with experts, and it grades its own model's outputs. What's the fix?",
+       "options": {
+        "A": "A finer scale, from 1 to 100",
+        "B": "Average two runs of the same judge",
+        "C": "A rubric, calibration and a different grader model",
+        "D": "A larger model from the same family as the generator"
+       },
+       "answer": "C",
+       "why": "Calibration and avoiding self-preference make judges trustworthy."
+      },
+      {
+       "question": "Users say the chatbot forgets earlier details. Which eval is missing?",
+       "options": {
+        "A": "Multi-turn",
+        "B": "Latency",
+        "C": "Single-turn adversarial",
+        "D": "Cost"
+       },
+       "answer": "A",
+       "why": "Conversation behaviour needs conversation-level evals."
+      },
+      {
+       "question": "Forty perfect cases or two thousand automatic ones?",
+       "options": {
+        "A": "Forty",
+        "B": "Neither",
+        "C": "Wait for production",
+        "D": "Two thousand"
+       },
+       "answer": "D",
+       "why": "Broad, cheap coverage catches more regressions."
+      }
+     ]
+    },
+    {
+     "objective_id": "4.3",
+     "title": "Conduct A/B testing and iterative improvements",
+     "official_wording": "Conduct A/B testing and iterative improvements",
+     "minutes": 6,
+     "key_concepts": [
+      "Falsifiable hypothesis",
+      "random sticky assignment",
+      "pre-specified primary metric",
+      "sample size",
+      "significance vs. practical size",
+      "secondary metrics",
+      "shadow testing"
+     ],
+     "architecture_example": "Fifty sessions per arm showed 68 vs. 62 percent and the team shipped. It settled at 61. The test was underpowered, the input mix differed, and the metric was picked after the fact.",
+     "exam_takeaway": "Write the hypothesis, the primary metric and the sample size before day one. Use shadow testing when exposing users isn't acceptable.",
+     "narration": "Experiments on LLM systems need more discipline than usual, because outputs are noisy.\n\nStart with a hypothesis that's specific and falsifiable. Something like: \"this instruction change will raise task success by at least five percent, without worsening p95 latency.\" Choose the primary metric before you start. If you pick it after seeing the results, you can always find one that moved.\n\nAssign users or sessions randomly, and keep the assignment sticky. If one arm happens to get simpler queries, an apparent win may just reflect the input mix. Calculate your sample size from the effect you need to detect. LLM variance is high, so you usually need hundreds of samples, not fifty.\n\nWhen results come in, ask two questions. Is the effect big enough to be worth maintaining a new version? And did anything else get worse, like cost or latency? Significant isn't the same as worth shipping.\n\nWhen exposing users to an untested change isn't acceptable, as in many regulated settings, use shadow testing. The new version runs on copied live traffic, users still get the current version, and you score the shadow outputs offline.",
+     "knowledge_check": [
+      {
+       "question": "A test assigned traffic by support queue. What's the problem?",
+       "options": {
+        "A": "The sample was too large",
+        "B": "Non-random assignment",
+        "C": "The wrong metric",
+        "D": "No caching"
+       },
+       "answer": "B",
+       "why": "The groups aren't comparable."
+      },
+      {
+       "question": "Policy forbids exposing clinicians to untested outputs. Which approach?",
+       "options": {
+        "A": "Shadow testing",
+        "B": "A live 50/50 split",
+        "C": "A single-ward canary",
+        "D": "Synthetic data only"
+       },
+       "answer": "A",
+       "why": "Shadow testing validates on real traffic without any exposure."
+      },
+      {
+       "question": "Plus three percent success, plus thirty percent cost, and significant. What now?",
+       "options": {
+        "A": "Ship it, since the result is significant",
+        "B": "Discard it, since any cost increase is bad",
+        "C": "Weigh practical size against the cost before deciding",
+        "D": "Re-run until the cost increase isn't significant"
+       },
+       "answer": "C",
+       "why": "Significant isn't the same as worth it."
+      }
+     ]
+    },
+    {
+     "objective_id": "4.4",
+     "title": "Diagnose system issues",
+     "official_wording": "Diagnose system issues (prompt failure, hallucinations, model mismatch)",
+     "minutes": 6,
+     "key_concepts": [
+      "Prompt failure",
+      "hallucination",
+      "model mismatch",
+      "orchestrator-workers failure",
+      "what changed",
+      "symptom to cause",
+      "Discernment"
+     ],
+     "architecture_example": "Extraction dropped on two document types right after an unevaluated move to a cheaper tier. That's model mismatch, fixed with per-type evals and routing.",
+     "exam_takeaway": "Classify the failure before fixing it. Grounding fixes hallucination, specification fixes prompt failure, and evals gate model choice.",
+     "narration": "When something goes wrong, classify it before you fix it, because each class has a different cure.\n\nA prompt failure means the instruction was ambiguous, and the model filled the gap differently each time. Output formats vary run to run. The fix is in the prompt: state the format, the constraints, and what to do when a field is missing.\n\nA hallucination is confident, fluent content that isn't grounded in the source, like citations to papers that don't exist. Stronger wording won't fix it. Grounding will: retrieval, tools, and checking that each cited thing actually exists.\n\nModel mismatch means the tier is wrong for the task, often after a swap without an eval. Look for category-specific drops right after the change.\n\nAnd in multi-agent systems, use a shared trace to tell a recoverable subagent failure from an orchestrator failure.\n\nAlways start by asking what changed: the model version, the prompt, the corpus, or the mix of inputs. A RAG system that turns wrong right after a document refresh, with the model and latency unchanged, points at retrieval and indexing first.",
+     "knowledge_check": [
+      {
+       "question": "The same input gives differently structured outputs, and the prompt never specifies a format. Which class?",
+       "options": {
+        "A": "Hallucination",
+        "B": "Model mismatch",
+        "C": "Prompt failure",
+        "D": "Orchestrator failure"
+       },
+       "answer": "C",
+       "why": "Underspecification invites improvisation."
+      },
+      {
+       "question": "The assistant cites journal articles that don't exist. What's the best fix?",
+       "options": {
+        "A": "Add an instruction to only cite real sources",
+        "B": "Set the temperature to zero for every call",
+        "C": "Switch to a larger model trained on more papers",
+        "D": "Ground citations and verify they exist"
+       },
+       "answer": "D",
+       "why": "Hallucination needs grounding, not wording."
+      },
+      {
+       "question": "Quality slid over weeks with no code change. What do you do first?",
+       "options": {
+        "A": "Check what changed and reproduce against the eval",
+        "B": "Upgrade to the most capable model tier immediately",
+        "C": "Rewrite the whole system prompt from scratch",
+        "D": "Extend log retention so older data can be compared"
+       },
+       "answer": "A",
+       "why": "Attribute the cause before fixing."
+      }
+     ]
+    },
+    {
+     "objective_id": "4.5",
+     "title": "Optimize token usage, latency, and cost-performance trade-offs",
+     "official_wording": "Optimize token usage, latency, and cost-performance trade-offs",
+     "minutes": 6,
+     "key_concepts": [
+      "Per-step tiering",
+      "caching order and economics",
+      "progressive context",
+      "max_tokens",
+      "thinking only when measured",
+      "Batch API",
+      "distribution-based cost models"
+     ],
+     "architecture_example": "Running Opus on every step cost seven times the plan. Tiering the classifier to Haiku and summaries to Sonnet, with Opus only for final composition, cut cost seventy-one percent with no change in satisfaction.",
+     "exam_takeaway": "Cache what's constant, tier each step, trim the context, and batch work that can wait. Model the token distribution, not the average.",
+     "narration": "Optimising cost and latency means matching each lever to its driver.\n\nIf the same long prefix goes out on every call, cache it, with static content first. If the system runs one top-tier model everywhere, tier each step instead, proving each move with an eval. If context grows with every turn, switch to progressive context and compaction. If outputs run long, cap them and tighten the output contract. If thinking is switched on everywhere, keep it only where it measurably helps.\n\nFor bulk work that doesn't need an instant answer, like overnight reports, the Batch API trades waiting for a large discount. Check the current pricing, and confirm compliance coverage before sending regulated data through it.\n\nAbove all, build your cost model from the distribution of token usage, not the average. Most requests may be small, but a tail of long documents can account for most of the spend. One team found their long documents used eighty percent of the tokens, and an average-based estimate came in two to three times too low.",
+     "knowledge_check": [
+      {
+       "question": "Three hundred thousand descriptions needed by morning, with no interactive users. What fits?",
+       "options": {
+        "A": "Synchronous, at maximum concurrency",
+        "B": "Batch API",
+        "C": "Top tier with thinking",
+        "D": "Streaming"
+       },
+       "answer": "B",
+       "why": "Async work earns the batch discount."
+      },
+      {
+       "question": "The bill is far above a forecast built on average tokens. Why?",
+       "options": {
+        "A": "The cache TTL was too short for reuse",
+        "B": "Output tokens were priced as input",
+        "C": "The model tier was assumed, not measured",
+        "D": "The heavy-tailed distribution was ignored"
+       },
+       "answer": "D",
+       "why": "Model the distribution, not the average."
+      },
+      {
+       "question": "Opus runs every step and cost is seven times plan. What's the approach?",
+       "options": {
+        "A": "Per-step evals and tiering",
+        "B": "Switch every step to Haiku",
+        "C": "Add caching and change nothing else",
+        "D": "Turn extended thinking on"
+       },
+       "answer": "A",
+       "why": "Tier each step to the cheapest model that passes."
+      }
+     ]
+    },
+    {
+     "objective_id": "4.6",
+     "title": "Monitor system performance using logging and observability tools",
+     "official_wording": "Monitor system performance using logging and observability tools",
+     "minutes": 5,
+     "key_concepts": [
+      "Trace fields",
+      "dashboards",
+      "threshold alerts vs. drift comparison",
+      "KPI translation layer",
+      "signal-to-owner mapping",
+      "per-request decomposition"
+     ],
+     "architecture_example": "A weekly eval re-run on sampled production traffic triggers an architect review after two consecutive weeks below threshold, even though error rate is flat.",
+     "exam_takeaway": "Monitor quality, not just uptime, and give every signal an owner and an action.",
+     "narration": "Monitoring answers four questions. What is the system doing? How well? When did it change? And why?\n\nYour dashboards should show cost per request, p50 and p95 latency, task success based on downstream acceptance, and errors by type. Make them breakable per request and per segment, because aggregate views can look healthy while a small slice of traffic burns the budget.\n\nThreshold alerts catch sharp problems: a cost spike well above the weekly average, or p95 crossing the SLA. Slow quality drift won't trip those. For drift, re-run evals on sampled production traffic, and compare output distributions over time.\n\nThe people paying for the deployment don't read traces. Build a translation layer at design time that maps technical metrics to business ones, like task success to first-contact resolution, or latency to handle time. Then when the business asks whether it's working, you answer with a live query instead of a reconstruction.\n\nAnd finally, a signal nobody owns changes nothing. Every alert needs a named owner and a defined action.",
+     "knowledge_check": [
+      {
+       "question": "Quality drifts slowly while error rate stays flat. What detects it?",
+       "options": {
+        "A": "A lower error-rate alert threshold",
+        "B": "CPU and memory usage alerts",
+        "C": "Scheduled evals and distribution comparison",
+        "D": "Reading five transcripts every day by hand"
+       },
+       "answer": "C",
+       "why": "Drift needs periodic comparison."
+      },
+      {
+       "question": "The sponsor asks about handle time, and dashboards only show latency and errors. What do you add?",
+       "options": {
+        "A": "A KPI translation layer",
+        "B": "More latency percentiles on the dashboard",
+        "C": "Direct access to the raw request logs",
+        "D": "A weekly email of error counts"
+       },
+       "answer": "A",
+       "why": "Map technical metrics to business KPIs."
+      },
+      {
+       "question": "Aggregates look fine, but cost is far over budget. What's missing?",
+       "options": {
+        "A": "A monthly cost review meeting",
+        "B": "A hard monthly spending cap",
+        "C": "Longer log retention periods",
+        "D": "Per-request decomposition"
+       },
+       "answer": "D",
+       "why": "Aggregates hide the expensive tail."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "domain_id": "D5",
+   "title": "Episode 5 – Governance, Safety & Risk Management",
+   "intro": "Episode five, Governance, Safety and Risk Management, is fourteen percent of the exam. Five parts: building guardrails, naming risks, routing decisions to humans, turning regulations into evidenced controls, and designing for fairness and transparency.",
+   "parts": [
+    {
+     "objective_id": "5.1",
+     "title": "Implement guardrails and safety controls",
+     "official_wording": "Implement guardrails and safety controls",
+     "minutes": 8,
+     "key_concepts": [
+      "Training-time alignment vs. inference-time control",
+      "four layers",
+      "input screening, output screening, tool authorization",
+      "fail closed",
+      "indirect injection",
+      "refusal handling",
+      "Skill supply chain"
+     ],
+     "architecture_example": "A refund agent's only guardrail was an output filter, which checked the text after the refund had already run. Deterministic authorization before the tool would have stopped it.",
+     "exam_takeaway": "Claude can't enforce a rule it was never given. Gate inputs, outputs and actions, and make each control fail closed.",
+     "narration": "Claude arrives with broad safety behaviour built in. Anthropic trains it against a constitution that prioritises being broadly safe, ethical, compliant and genuinely helpful. That reduces broad harm. But training has never seen your partner's data rules or domain policy. If you assume it covers them, the rule goes unenforced everywhere.\n\nSo think in four layers. Trained behaviour, owned by Anthropic. The system prompt, which steers but doesn't enforce. Runtime screening. And authorization. You own the last three.\n\nOn the request path, there are three control points. Input screening, before the model call. Output screening, before the response reaches the user. And tool-call authorization, before any action with side effects. Authorization should be deterministic: an allowlist plus identity and scope. One filter at the end doesn't cover the other two points.\n\nDecide what each control does when it errors. A guardrail that passes traffic when it fails gives the look of protection with none of the function. Fail closed.\n\nScreen retrieved content and tool outputs as well, because that's where indirect injection arrives. And before installing third-party Skills, audit them, run them sandboxed with least privilege, and take them only from trusted sources.",
+     "knowledge_check": [
+      {
+       "question": "A domain policy was assumed to be covered by Claude's training. What's the result?",
+       "options": {
+        "A": "It's enforced by the constitution",
+        "B": "It isn't enforced in any layer",
+        "C": "Output screening covers it",
+        "D": "It works on larger tiers"
+       },
+       "answer": "B",
+       "why": "Domain rules must live in a layer you build."
+      },
+      {
+       "question": "The screening service times out and traffic passes. What should it do instead?",
+       "options": {
+        "A": "Fail open to keep traffic flowing",
+        "B": "Retry the check indefinitely",
+        "C": "Fail closed and log",
+        "D": "Switch off screening at peak hours"
+       },
+       "answer": "C",
+       "why": "A guardrail that fails open isn't protecting anything."
+      },
+      {
+       "question": "Injected instructions arrive inside retrieved documents. What's the control?",
+       "options": {
+        "A": "Screen retrieved content before it enters context",
+        "B": "Strengthen the user-input classifier further",
+        "C": "Add a system-prompt rule to ignore such text",
+        "D": "Lower top-k so fewer documents are retrieved"
+       },
+       "answer": "A",
+       "why": "Indirect injection bypasses user-input screening."
+      }
+     ]
+    },
+    {
+     "objective_id": "5.2",
+     "title": "Identify risks, limitations, and failure modes of LLM systems",
+     "official_wording": "Identify risks, limitations, and failure modes of LLM systems",
+     "minutes": 6,
+     "key_concepts": [
+      "Direct and indirect injection",
+      "token-budget exhaustion",
+      "tool abuse",
+      "data exposure",
+      "non-determinism",
+      "walking the request and data paths",
+      "written risk assessment"
+     ],
+     "architecture_example": "A RAG and tools agent: screen uploaded PDFs for injection, cap input size and budgets, put an allowlist and recipient rule on send_email, and redact PII before logging.",
+     "exam_takeaway": "Walk every entry point, name the risk category, and record each one with a control, an owner and evidence.",
+     "narration": "Most LLM risks fall into five categories. Direct prompt injection: a user tries to override the instructions. Indirect prompt injection: malicious instructions arrive through retrieved content or tool output. Token-budget exhaustion: huge or padded inputs that truncate work or inflate cost. Tool abuse: the model is induced to call a side-effecting tool outside policy. And data exposure: sensitive fields ending up in the context window or the logs.\n\nOn top of these sit the model's own limitations. It can be confidently wrong. Its knowledge can be stale. Its working memory has a hard edge. And it isn't deterministic. A demo that gives the same answer five times proves nothing about the sixth.\n\nFailure modes also depend on the architecture. Agents run away on tool use and context. RAG drifts as the corpus changes. Document pipelines lack exception paths. Multi-agent systems drop units silently.\n\nTo assess a system, walk the request and data paths: user input, retrieved content, tool outputs, model output, and logs. At each point, ask what an attacker could do and what stops them. Then write it down. A written risk assessment, with a control, an owner and evidence for every risk, is what the security reviewer signs.",
+     "knowledge_check": [
+      {
+       "question": "Hidden instructions sit on a web page the agent reads. Which category?",
+       "options": {
+        "A": "Direct prompt injection",
+        "B": "Data residency violation",
+        "C": "Token-budget exhaustion",
+        "D": "Indirect injection"
+       },
+       "answer": "D",
+       "why": "The payload arrives through content the agent retrieves."
+      },
+      {
+       "question": "Users paste giant padded logs, causing truncation and cost spikes. What's the control?",
+       "options": {
+        "A": "Input limits, max_tokens and per-turn budgets",
+        "B": "Redact sensitive values from the logs",
+        "C": "Add retrieval to ground the answers",
+        "D": "Put authorization on the log tools"
+       },
+       "answer": "A",
+       "why": "Bound the budget to prevent exhaustion."
+      },
+      {
+       "question": "What does a security reviewer sign off on?",
+       "options": {
+        "A": "The architecture diagram, annotated with data flows",
+        "B": "A written risk assessment with controls, owners and evidence",
+        "C": "The latest eval scores for quality and safety",
+        "D": "A list of known limitations from public model docs"
+       },
+       "answer": "B",
+       "why": "The assessment is a deliverable."
+      }
+     ]
+    },
+    {
+     "objective_id": "5.3",
+     "title": "Apply human-in-the-loop validation strategies",
+     "official_wording": "Apply human-in-the-loop validation strategies",
+     "minutes": 6,
+     "key_concepts": [
+      "Reversibility, cost and calibrated confidence",
+      "pre-action, post-action, sampled",
+      "reviewer view",
+      "consent fatigue",
+      "plan-level review",
+      "Diligence"
+     ],
+     "architecture_example": "A near-threshold benefits applicant with incomplete documents and a recommended deny goes to pre-action caseworker review, with the inputs and the flag reason shown.",
+     "exam_takeaway": "If it can't be undone and the system isn't sure, a person decides first. Route by stakes, not by volume.",
+     "narration": "Think of human review as a budget. Reviewer attention is limited, so spend it where it matters most.\n\nTwo variables set the stakes: how reversible the decision is, and what a wrong decision would cost. A third, confidence, estimates how likely this particular output is to be wrong. But confidence only helps if it's calibrated against real outcomes, because a model can be confidently wrong.\n\nThe rule: route to a person when confidence is low and the decision is irreversible or expensive. Let confident, reversible, cheap decisions through.\n\nThen choose where the person sits. Pre-action approval means nothing irreversible happens unreviewed, but it adds latency. Post-action audit keeps throughput high, but only suits reversible decisions. Sampled review monitors quality without guarding each individual case.\n\nWhat the reviewer sees matters as much as what they're sent. Show the inputs, the output, and the reason the item was flagged.\n\nAnd beware consent fatigue. If people are asked to approve dozens of times in a row, they stop reading. For agents, move review up to the plan and to exceptions, and let permissions bound everything else.",
+     "knowledge_check": [
+      {
+       "question": "A wrong denial would remove benefits, and confidence is low. Where does review go?",
+       "options": {
+        "A": "Post-action audit",
+        "B": "Five percent sampling",
+        "C": "No review above 0.6",
+        "D": "Pre-action approval"
+       },
+       "answer": "D",
+       "why": "Irreversible, high-cost and uncertain means a human goes first."
+      },
+      {
+       "question": "Reviewers see four hundred items a day with only an approve button. What two fixes?",
+       "options": {
+        "A": "Hire more reviewers and keep routing everything",
+        "B": "Remove human review, since it's just approvals",
+        "C": "Route by stakes, and show inputs and the flag reason",
+        "D": "Give each reviewer a daily approval quota"
+       },
+       "answer": "C",
+       "why": "Fix both the volume and the missing context."
+      },
+      {
+       "question": "What must be true before routing on a confidence score?",
+       "options": {
+        "A": "It's calibrated against outcomes",
+        "B": "It's set above 0.95 for every decision",
+        "C": "The model explains the score in its output",
+        "D": "It's derived from the length of the response"
+       },
+       "answer": "A",
+       "why": "Uncalibrated confidence is unreliable."
+      }
+     ]
+    },
+    {
+     "objective_id": "5.4",
+     "title": "Ensure compliance with regulations",
+     "official_wording": "Ensure compliance with regulations (e.g., GDPR, HIPAA, FedRAMP)",
+     "minutes": 8,
+     "key_concepts": [
+      "Constraints eliminate options first",
+      "BAA per configuration",
+      "region pinning",
+      "FedRAMP routes",
+      "data minimisation",
+      "control register",
+      "evidence artifacts",
+      "training use vs. retention"
+     ],
+     "architecture_example": "A logging change started writing metadata to a second region. No one owned the residency control, so it surfaced only at audit. An owner, a data-flow record and scheduled checks would have caught it.",
+     "exam_takeaway": "A compliant route is a prerequisite, not proof. Each obligation needs a control, an owner and living evidence.",
+     "narration": "Compliance works in two steps.\n\nFirst, constraints remove options before anything else is decided. Attorney-client privilege rules out consumer tools and points to the API behind the firm's own gateway, with single sign-on and full logging. HIPAA requires a business associate agreement covering the specific configuration and features in use, and beta features are generally excluded. A requirement to keep data in the EU points, per the modules, to a cloud route pinned to an EU region. Government workloads need a route authorised at the required FedRAMP level. These specifics change, so always verify the current status.\n\nInside whatever route survives, minimise data. If the language task doesn't need a field, like a social security number, it shouldn't be in the context window, where it can land in application logs. Redact it on the server before the call.\n\nSecond, turn each obligation into a control register: the technical control, an accountable owner, and an evidence artifact a reviewer will accept, like a signed agreement, a configuration screen, or a live log query. A design document isn't evidence.\n\nRevalidate on a schedule, because configurations drift. And don't confuse training use with retention. Data excluded from training may still be retained for other purposes.",
+     "knowledge_check": [
+      {
+       "question": "A healthcare partner has a BAA and wants to use a new beta feature. What do you verify?",
+       "options": {
+        "A": "Nothing more, since a BAA is already signed",
+        "B": "That this configuration and feature are BAA-eligible",
+        "C": "Only that data is encrypted in transit",
+        "D": "Only that the feature is offered in-region"
+       },
+       "answer": "B",
+       "why": "Coverage is per configuration and feature."
+      },
+      {
+       "question": "Social security numbers land in app logs although the task doesn't need them. What's the fix?",
+       "options": {
+        "A": "Encrypt the application logs at rest",
+        "B": "Shorten log retention to seven days",
+        "C": "Tell the model not to repeat identifiers",
+        "D": "Redact on the server before the call"
+       },
+       "answer": "D",
+       "why": "Data minimisation keeps unneeded fields out of context."
+      },
+      {
+       "question": "What does an auditor accept as proof that a control is operating?",
+       "options": {
+        "A": "A design document describing the control",
+        "B": "An evidence artifact such as a configuration or a log query",
+        "C": "The vendor's compliance marketing pages",
+        "D": "An architecture diagram of the compliant route"
+       },
+       "answer": "B",
+       "why": "Proof means showing the control is live."
+      }
+     ]
+    },
+    {
+     "objective_id": "5.5",
+     "title": "Address ethical AI considerations",
+     "official_wording": "Address ethical AI considerations (bias, fairness, transparency)",
+     "minutes": 6,
+     "key_concepts": [
+      "Four fairness injection points",
+      "segment-level metrics",
+      "explanations for users, regulators and the team",
+      "decision logging",
+      "neutral prompts and balanced examples"
+     ],
+     "architecture_example": "A team assumed fairness was the model vendor's job. The skew came from their retrieval corpus, and they had too little logging to prove it.",
+     "exam_takeaway": "Fairness enters at points you control. Instrument them, and log decisions well enough to explain any one of them.",
+     "narration": "It's tempting to treat fairness as the model provider's problem. They trained the model and published bias evaluations, after all. But once you pair that model with your own data and logic, unequal outcomes can come in through four doors you control.\n\nThe retrieval corpus may over- or under-represent some groups. The prompt's framing may assume an answer. Few-shot examples may all show one kind of case. And downstream routing may send some groups down different paths.\n\nSo instrument each of those points, and measure outcomes by segment. An overall metric can look fine while harm concentrates in one subgroup.\n\nTransparency means being able to explain any decision to three different audiences. An affected person needs a reason they can act on. A regulator needs evidence that comparable cases were treated consistently, and the ability to reconstruct a specific decision. Your team needs the full trace to debug it.\n\nAll three depend on decision logging: the inputs, the retrieved context, the output and the routing, kept so one decision can be replayed. Remember that the log is sensitive data itself, so minimise it, limit retention, and control access.",
+     "knowledge_check": [
+      {
+       "question": "The model passed the vendor's bias evals, but outcomes are still unequal. Where do you look?",
+       "options": {
+        "A": "Only the vendor's original training data",
+        "B": "Nowhere, since the vendor's evals settle it",
+        "C": "System latency for different applicant groups",
+        "D": "Corpus, prompt framing, examples and routing"
+       },
+       "answer": "D",
+       "why": "These are the injection points you control."
+      },
+      {
+       "question": "A regulator asks you to reconstruct one adverse decision. What do you need?",
+       "options": {
+        "A": "Decision-level logs",
+        "B": "An aggregate fairness metric",
+        "C": "The system prompt",
+        "D": "Satisfaction scores"
+       },
+       "answer": "A",
+       "why": "Reconstruction needs per-decision records."
+      },
+      {
+       "question": "Every few-shot example shows approvals from one region. What's the fix?",
+       "options": {
+        "A": "Add more examples from the same region",
+        "B": "Phrase neutrally and balance the examples",
+        "C": "Remove every example and go zero-shot",
+        "D": "Switch to a larger, less biased model"
+       },
+       "answer": "B",
+       "why": "Unbalanced examples build bias into the prompt."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "domain_id": "D6",
+   "title": "Episode 6 – Stakeholder Communication & Lifecycle Management",
+   "intro": "Episode six covers stakeholder communication and lifecycle management, fourteen percent of the exam. Five parts: structured discovery, communicating trade-offs, feedback loops and SLAs, documentation that survives a handoff, and moving through the lifecycle. Partner-track demo and sales content is optional and not tested.",
+   "parts": [
+    {
+     "objective_id": "6.1",
+     "title": "Conduct structured discovery and requirement gathering",
+     "official_wording": "Conduct structured discovery and requirement gathering",
+     "minutes": 6,
+     "key_concepts": [
+      "Listen, translate, write down",
+      "preference vs. constraint",
+      "must do, must not do, must cost, must prove",
+      "translation table",
+      "requirement vs. assumption"
+     ],
+     "architecture_example": "\"We want it to feel seamless\" became a p95 latency target, no re-entering upstream data, exceptions routed quietly to a reviewer, and failures that never expose internals.",
+     "exam_takeaway": "A preference tells you to keep asking. Finish all four question buckets before you sketch anything.",
+     "narration": "Discovery isn't a casual conversation. It's a structured elicitation with three steps: listen, translate, and write it down.\n\nTranslation is the core skill. Stakeholders speak in preferences: seamless, fast, simple. Designs are built against constraints. When you hear a preference, ask what would break it. What should the user never notice? What has to stay true when something fails? The answers become constraints you can test, like a latency target, a handoff rule, or a safe failure path.\n\nWork through four buckets. What the system must do, as business outcomes. What it must not do: prohibited actions, and cases that must go to a person. What it must cost: budgets, latency, volume. And what it must prove: the evidence and audit obligations. Stakeholders rarely volunteer the last two, so ask for them directly.\n\nRecord each item as a row in a translation table: what was said, the constraint it implies, the architectural decision it forces, and any assumption still to confirm. Label assumptions clearly.\n\nAnd watch for the classic trap. When an architect starts sketching mid-call, a confident design makes everyone assume the questions have been answered. Phrases like \"it's just a quick review\" often hide a mandatory approval step.",
+     "knowledge_check": [
+      {
+       "question": "A stakeholder says, \"make it seamless\". What's the next move?",
+       "options": {
+        "A": "Write \"seamless\" down as a requirement",
+        "B": "Propose streaming",
+        "C": "Ask what would make it not seamless",
+        "D": "Ask them to define it later"
+       },
+       "answer": "C",
+       "why": "Translate the preference into testable constraints."
+      },
+      {
+       "question": "Which question buckets are stakeholders least likely to volunteer?",
+       "options": {
+        "A": "Must not do, and must prove",
+        "B": "Must do, and must cost",
+        "C": "UI colours and project naming",
+        "D": "Timelines and team staffing"
+       },
+       "answer": "A",
+       "why": "Boundaries and evidence obligations must be asked for."
+      },
+      {
+       "question": "How should an unconfirmed item be recorded?",
+       "options": {
+        "A": "As a confirmed requirement in the spec",
+        "B": "As a fact, since it seems obvious",
+        "C": "Left out until someone raises it again",
+        "D": "As a labelled assumption with an owner"
+       },
+       "answer": "D",
+       "why": "Unsourced assumptions are the most dangerous kind."
+      }
+     ]
+    },
+    {
+     "objective_id": "6.2",
+     "title": "Communicate architectural decisions and trade-offs",
+     "official_wording": "Communicate architectural decisions and trade-offs",
+     "minutes": 6,
+     "key_concepts": [
+      "Gain, give up, reversal cost, compliance posture",
+      "decision package",
+      "translating to business units",
+      "Description for stakeholders",
+      "honest limits"
+     ],
+     "architecture_example": "A CTO approved \"four cents a call\" without hearing that, at production volume, it meant a five-figure monthly bill, or what unwinding the choice would cost. \"I approved a direction, not a number.\"",
+     "exam_takeaway": "Present every trade-off with its gain, what it gives up, and what reversing it would cost, all in business terms.",
+     "narration": "Your job in a decision meeting isn't to deliver a verdict. It's to make an informed decision possible.\n\nEvery option you present needs three elements. What it gains. What it gives up. And what reversing it would cost once the system has been built around it. In regulated settings, add a fourth: what it does to the compliance posture.\n\nThe reversal cost is the element people forget, and it's the one that changes the meeting. It turns \"which is technically better?\" into \"which is the better business choice?\"\n\nTranslate the numbers too. A per-call cost means little until you multiply it by real production volume and show the monthly total.\n\nPresent the decision as a package: the options you considered, the criteria, your recommendation, and the risks that remain. The stakeholder will have to defend this choice to their own leadership, so give them that justification.\n\nLead with the business outcome, not the architecture. And state limits honestly. A security stakeholder trusts a system whose limits are spelled out far more than one whose limits they discover later.",
+     "knowledge_check": [
+      {
+       "question": "Which trade-off element is most often missing?",
+       "options": {
+        "A": "The gain",
+        "B": "The give-up",
+        "C": "The reversal cost",
+        "D": "An architecture diagram"
+       },
+       "answer": "C",
+       "why": "It's what changes the decision."
+      },
+      {
+       "question": "A CFO asks, \"what happens if we choose wrong?\" What do you do?",
+       "options": {
+        "A": "Explain it again with more technical detail",
+        "B": "Defer the decision to the engineering team",
+        "C": "Recommend the cheapest option to end the debate",
+        "D": "Translate into business consequences, including reversal cost"
+       },
+       "answer": "D",
+       "why": "Stakeholders need consequences, not jargon."
+      },
+      {
+       "question": "A sceptical security stakeholder is in the room. Which approach works best?",
+       "options": {
+        "A": "State limits and their controls honestly",
+        "B": "Avoid mentioning limitations at all",
+        "C": "Provide a sixty-page technical appendix",
+        "D": "Promise the limits will be fixed next release"
+       },
+       "answer": "A",
+       "why": "Clearly stated limits build trust."
+      }
+     ]
+    },
+    {
+     "objective_id": "6.3",
+     "title": "Manage stakeholder feedback loops and expectation alignment, including SLAs",
+     "official_wording": "Manage stakeholder feedback loops and expectation alignment (including SLAs)",
+     "minutes": 6,
+     "key_concepts": [
+      "Signals, Triage, Decide, Act, Review",
+      "SLA as measure, breach and consequence",
+      "sourced thresholds",
+      "cost forecast",
+      "scheduled regulated checkpoints",
+      "iterate vs. re-architect"
+     ],
+     "architecture_example": "An eval score drifted for seven weeks with no alert, because no rule tied slow drift to a trigger and an owner. A quarterly review finally caught it.",
+     "exam_takeaway": "Monitoring isn't a feedback loop. Every signal needs a trigger, an owner and an action, and some reviews run on a calendar.",
+     "narration": "Observability tells you what the system is doing. A feedback loop decides what to do about it. It runs in five steps: signals, triage, decide, act, review.\n\nBuild it as a governance table before launch. Each row maps a signal, like eval score, p95 latency, cost per interaction, or data residency, to a review trigger, an owner and an action. Include slow drifts, not just hard failures. A score that sinks a little each week never trips an error alert.\n\nAn SLA names three things: what's measured, what counts as a breach, and what happens when one occurs. And every threshold should trace to something real. Latency to the user-experience expectation from discovery. Availability to how critical the business process is. Quality to your eval acceptance criteria.\n\nCost is the expectation that breaks most often after launch. Production volume can be ten to a hundred times the pilot. Give a forecast, and a spend-control plan, before the first invoice.\n\nIn regulated work, some reviews run on a schedule whether or not anything looks wrong, like periodic output audits or residency checks. Wire them in before launch.",
+     "knowledge_check": [
+      {
+       "question": "Eval scores drifted for weeks and no alert fired. What was missing?",
+       "options": {
+        "A": "More dashboards showing the same score",
+        "B": "A higher error-rate alert threshold",
+        "C": "A governance rule tying drift to a trigger and owner",
+        "D": "A larger eval dataset per category"
+       },
+       "answer": "C",
+       "why": "Signals need triggers and owners."
+      },
+      {
+       "question": "Where should a latency SLA threshold come from?",
+       "options": {
+        "A": "The fastest result seen in load testing",
+        "B": "The user-experience expectation from discovery",
+        "C": "A competitor's published response times",
+        "D": "The model's documented maximum speed"
+       },
+       "answer": "B",
+       "why": "Thresholds trace to real sources."
+      },
+      {
+       "question": "When does a periodic regulated output audit run?",
+       "options": {
+        "A": "On schedule, regardless of scores",
+        "B": "Only when the eval score crosses a threshold",
+        "C": "Only after an incident has been reported",
+        "D": "Once, at the end of the contract term"
+       },
+       "answer": "A",
+       "why": "Some obligations are calendar-based."
+      }
+     ]
+    },
+    {
+     "objective_id": "6.4",
+     "title": "Document architectures and provide implementation guidance",
+     "official_wording": "Document architectures and provide implementation guidance",
+     "minutes": 6,
+     "key_concepts": [
+      "Three readers",
+      "decisions plus rejected alternatives",
+      "evidence for reviewers",
+      "dated decisions and labelled assumptions",
+      "safe-change test",
+      "outcome document",
+      "runbooks",
+      "entry-point-responsibility map"
+     ],
+     "architecture_example": "A successor switched context strategies to fix performance and broke data residency, because the diagram showed what the system was but not why.",
+     "exam_takeaway": "Record why, and why not. The test is whether someone who wasn't in the room can make a safe change.",
+     "narration": "Documentation is what keeps a design working after you've left. It serves three readers.\n\nThe engineer who inherits the system needs the decisions, plus the alternatives you rejected and why. Without those, they can't tell which choices are load-bearing. They may reverse the right decision for an understandable wrong reason.\n\nThe compliance reviewer needs each obligation mapped to its control, its owner, and current evidence. Statements that a control exists aren't enough.\n\nAnd the architect who returns months later, maybe you, needs dated decisions, assumptions clearly labelled as assumptions, and open items with owners.\n\nThe completeness test is practical. Could a competent architect who wasn't in any of the design sessions read this and make a safe change? If not, it isn't done.\n\nTwo more artifacts belong here. For deployments spanning several entry points, an entry-point-responsibility map says which route owns which task and why, so tasks don't quietly drift onto the wrong route. And the outcome document records the business metric before and after, the auditable control, and the measurement owner.",
+     "knowledge_check": [
+      {
+       "question": "A successor broke residency by changing a load-bearing decision. What was missing?",
+       "options": {
+        "A": "A more detailed architecture diagram",
+        "B": "More code comments in the repository",
+        "C": "A list of team members and their roles",
+        "D": "The rationale and rejected alternatives"
+       },
+       "answer": "D",
+       "why": "A diagram shows what, not why."
+      },
+      {
+       "question": "What's the completeness test for documentation?",
+       "options": {
+        "A": "Whether it runs to over fifty pages",
+        "B": "Whether the sponsor has signed it off",
+        "C": "Whether an outsider can make a safe change",
+        "D": "Whether every log line is included in it"
+       },
+       "answer": "C",
+       "why": "This is the safe-change test."
+      },
+      {
+       "question": "Regulated data drifted onto the wrong route over time. Which artifact prevents this?",
+       "options": {
+        "A": "An entry-point-responsibility map",
+        "B": "A larger eval set with regulated cases",
+        "C": "Moving every task onto a single route",
+        "D": "More logging on the direct-API path"
+       },
+       "answer": "A",
+       "why": "It makes route boundaries explicit."
+      }
+     ]
+    },
+    {
+     "objective_id": "6.5",
+     "title": "Support lifecycle phases",
+     "official_wording": "Support lifecycle phases (discovery, design, handoff, monitoring, iteration)",
+     "minutes": 5,
+     "key_concepts": [
+      "Discovery, design, handoff, monitoring, iteration",
+      "POC-to-production gap",
+      "reliability controls by layer",
+      "version pinning",
+      "iterate vs. re-architect"
+     ],
+     "architecture_example": "A 529 overloaded error at peak took down a workflow that had no retries, no circuit breaker and no fallback. The demo had never shown any of these needs.",
+     "exam_takeaway": "A POC proves capability, nothing more. Know which phase you're in, and when monitoring should send you back to design.",
+     "narration": "Every deployment moves through five phases: discovery, design, handoff, monitoring and iteration.\n\nDiscovery produces the translation table. Design produces the pattern, the sizing, the eval suite written before code, the feasibility verdict, the trade-off package and the control register. Handoff produces the decision log, the runbooks and the responsibility map. Monitoring runs the observability stack and the governance table. And iteration runs eval-gated changes and experiments.\n\nThe riskiest transition is from proof of concept to production. A POC runs at low volume, on clean inputs, with patient users. It proves the system can do the task. It tells you nothing about cost at scale, p95 latency under load, reliability, or how it fails on inputs nobody tested.\n\nSo before production, add the reliability controls, each at its own layer. Retries with exponential backoff close to the API call. Circuit breakers at the service boundary. Fallback chains in the orchestration layer. Pin model versions, and keep an update runbook.\n\nAnd know when iteration isn't enough. If the constraints themselves change, like triple the volume or a new residency rule, go back to design.",
+     "knowledge_check": [
+      {
+       "question": "A POC worked perfectly at thirty requests a day. What does it prove?",
+       "options": {
+        "A": "Production readiness",
+        "B": "Capability only",
+        "C": "Cost at scale",
+        "D": "p95 under load"
+       },
+       "answer": "B",
+       "why": "Cost, latency, reliability and failure modes still need design."
+      },
+      {
+       "question": "Where do retries with exponential backoff belong?",
+       "options": {
+        "A": "Near the API call",
+        "B": "Inside the prompt",
+        "C": "Only in orchestration",
+        "D": "At the user interface"
+       },
+       "answer": "A",
+       "why": "Each reliability control works at its own layer."
+      },
+      {
+       "question": "Volume tripled, and a residency rule arrived. What's the lifecycle move?",
+       "options": {
+        "A": "Keep tuning prompts",
+        "B": "Hand off as is",
+        "C": "Drop the SLA",
+        "D": "Re-architect"
+       },
+       "answer": "D",
+       "why": "Changed constraints send you back to design."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "domain_id": "D7",
+   "title": "Episode 7 – Developer Productivity & Operational Enablement",
+   "intro": "Episode seven, Developer Productivity and Operational Enablement, is seven percent of the exam. Three parts: setting up Claude tooling for teams, improving developer workflows without lowering the quality bar, and supporting operations so the team can solve problems on its own.",
+   "parts": [
+    {
+     "objective_id": "7.1",
+     "title": "Configure Claude tools and environments for teams",
+     "official_wording": "Configure Claude tools and environments for teams (e.g., Claude Code)",
+     "minutes": 7,
+     "key_concepts": [
+      "Shared configuration",
+      "champion-then-batch rollout",
+      "four Skill distribution routes",
+      "plugins for governed distribution",
+      "spend posture",
+      "shaping vs. governing layers",
+      "hooks",
+      "permission modes"
+     ],
+     "architecture_example": "A release-notes Skill shipped as a flat bundle with no versioning. One bad edit broke output for forty engineers. A group-assigned plugin with versioned updates would have allowed a rollback.",
+     "exam_takeaway": "Give every developer the same baseline, roll out through champions, govern shared Skills through plugins, and set spend limits before the first bill.",
+     "narration": "Configuring Claude for yourself takes minutes. Configuring it for a team means four deliberate decisions.\n\nFirst, a shared configuration. The team agrees one baseline, with a project CLAUDE.md, an agreed set of tools and MCP servers, and a permission posture, so nobody starts from their own drifting setup.\n\nSecond, the rollout. Don't switch everyone on at once. Enable one champion per department, let them prove a real workflow, then spread adoption batch by batch.\n\nThird, how Skills reach people. Organisation-provisioned Skills reach everyone, but have no native rollback. Plugins assigned to a group give you targeting, install preferences and versioned updates from a repository, the strongest governance. Project Skills live in the repository and version with it. API Skills are called by your own products, with version pinning.\n\nFourth, the spend posture: model defaults, allowlists, effort guidance, and spend and rate caps.\n\nInside Claude Code, separate the layers that shape behaviour, like CLAUDE.md, Skills, subagents and MCP, from the layers that govern it: hooks, permission modes and sandboxing. If something must always happen, use a hook. An instruction is not a guarantee.",
+     "knowledge_check": [
+      {
+       "question": "How should Claude Code be rolled out across four departments?",
+       "options": {
+        "A": "Enable everyone at once by email",
+        "B": "Let each engineer self-configure",
+        "C": "Champions first, then batches",
+        "D": "Wait until a full curriculum exists"
+       },
+       "answer": "C",
+       "why": "Champions absorb friction and seed adoption."
+      },
+      {
+       "question": "Which distribution supports group targeting and rollback?",
+       "options": {
+        "A": "A plugin with versioned updates",
+        "B": "An org-provisioned Skill, re-uploaded",
+        "C": "Skill files emailed to each engineer",
+        "D": "Procedures pasted into every prompt"
+       },
+       "answer": "A",
+       "why": "Plugins give the strongest governance."
+      },
+      {
+       "question": "A linter must always run before commits. Which layer?",
+       "options": {
+        "A": "A CLAUDE.md line",
+        "B": "A Skill",
+        "C": "A subagent",
+        "D": "A hook"
+       },
+       "answer": "D",
+       "why": "Hooks are deterministic gates."
+      }
+     ]
+    },
+    {
+     "objective_id": "7.2",
+     "title": "Improve developer workflows using AI-assisted tooling",
+     "official_wording": "Improve developer workflows using AI-assisted tooling",
+     "minutes": 5,
+     "key_concepts": [
+      "Integrate into existing workflows",
+      "writing, reviewing and debugging stages",
+      "lumpy adoption",
+      "stalling at chat",
+      "Diligence",
+      "verification checklist",
+      "automate checks"
+     ],
+     "architecture_example": "Generated code passed review and tests, then leaked data through an input it never validated. The author couldn't explain the code.",
+     "exam_takeaway": "AI-generated code meets the same bar as hand-written code, and the person merging it must understand it.",
+     "narration": "AI tooling pays off when it lives inside the workflow developers already use: the editor, code review, and the test loop. Not in a separate chat window they visit now and then. Encode team conventions and review standards as Skills and project configuration, so good practice travels with the tooling.\n\nClaude helps at each stage. Writing: boilerplate, tests and first drafts from a clear spec. Reviewing: summarising diffs and flagging likely issues. Debugging: suggesting hypotheses from a symptom and a trace. But each stage still needs human discipline. Flags are input, not a verdict. Hypotheses get checked against evidence.\n\nTwo adoption failures come up again and again. Lumpy adoption, where a few people use the tool heavily and everyone else barely does. And stalling at chat, where the team never moves past asking questions to tool use and repository-aware help.\n\nThe safeguard is diligence, turned into a verification checklist: correctness, security, maintainability, and human understanding. Automate whatever you can with tests and evals. And keep one question non-negotiable: can the person merging this explain what it does and why?",
+     "knowledge_check": [
+      {
+       "question": "Generated code shipped and no one could explain it. What was missing?",
+       "options": {
+        "A": "More AI review tools on each pull request",
+        "B": "A verification checklist that includes human understanding",
+        "C": "A faster CI pipeline to catch issues sooner",
+        "D": "A bigger code-generation model with fewer bugs"
+       },
+       "answer": "B",
+       "why": "Speed mustn't replace understanding."
+      },
+      {
+       "question": "Three of forty developers use Claude, and the rest only chat. Which failures?",
+       "options": {
+        "A": "Over-adoption by a few heavy users",
+        "B": "Model mismatch on the chosen tier",
+        "C": "Lumpy adoption and stalling at chat",
+        "D": "A cost overrun from unmanaged usage"
+       },
+       "answer": "C",
+       "why": "Access isn't adoption."
+      },
+      {
+       "question": "How should reviewers treat a Claude \"no issues found\" flag?",
+       "options": {
+        "A": "As input, with the human making the call",
+        "B": "As authoritative, so reviewers save time",
+        "C": "Disable AI review, since people over-rely on it",
+        "D": "Run it on weekends only, for low-risk changes"
+       },
+       "answer": "A",
+       "why": "AI flags are input, not a verdict."
+      }
+     ]
+    },
+    {
+     "objective_id": "7.3",
+     "title": "Support debugging and operational issue resolution",
+     "official_wording": "Support debugging and operational issue resolution",
+     "minutes": 5,
+     "key_concepts": [
+      "Symptom to architectural cause",
+      "common symptom table",
+      "runbooks",
+      "escalation paths",
+      "transient errors and backoff",
+      "teach rather than firefight"
+     ],
+     "architecture_example": "Answer quality slid for a whole quarter because a growing retrieval corpus outpaced the index. A runbook entry for \"gradual decline, no code change\" would have pointed straight to retrieval drift.",
+     "exam_takeaway": "Connect the symptom to its cause, fix it once, write it down, and teach the team the path.",
+     "narration": "When a live deployment surprises its team, they usually see a symptom, not a cause. The architect's job is to connect the two, and then teach the team how to do it next time.\n\nA few patterns cover most cases. Quality declining slowly with no code change points to a model or prompt change, or to retrieval drift as the corpus grows. Compare against the eval set and check what changed. A latency spike usually means context grew, a tool slowed down, or the cache stopped hitting, so find the slowest span in the trace. Intermittent tool failures point to authorization, rate limits or an unhandled error, so trace one failed call from end to end. And cost rising while usage stays flat means the model tier crept up or caching broke.\n\nFor transient errors, like rate limits, timeouts and overload responses, retry with exponential backoff. Don't retry requests that were simply invalid.\n\nThen make the fix last. Write a runbook entry mapping the symptom to the cause and the first action. Define an escalation path: who handles what, and when an issue leaves the team. The goal is a team that only needs you for problems nobody has seen before.",
+     "knowledge_check": [
+      {
+       "question": "Cost rose sixty percent with flat traffic. What do you check first?",
+       "options": {
+        "A": "Network latency to the API endpoint",
+        "B": "Recent changes to the prompt's tone",
+        "C": "How many developers now use Claude Code",
+        "D": "Per-request model tier and cache hit rate"
+       },
+       "answer": "D",
+       "why": "Tier creep or a caching regression is likely."
+      },
+      {
+       "question": "Tool calls fail mostly at peak. What's the first diagnostic step?",
+       "options": {
+        "A": "Switch to a more capable model tier",
+        "B": "Rewrite the system prompt for tool use",
+        "C": "Trace one failed call end to end",
+        "D": "Increase the context window size"
+       },
+       "answer": "C",
+       "why": "Check authorization, rate limits and error paths."
+      },
+      {
+       "question": "What makes an operational fix durable?",
+       "options": {
+        "A": "The architect watching quality personally",
+        "B": "A runbook entry plus an escalation path",
+        "C": "Blindly re-indexing the corpus each month",
+        "D": "Refreshing the dashboards more often"
+       },
+       "answer": "B",
+       "why": "This builds team self-sufficiency."
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

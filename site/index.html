@@ -29,21 +29,37 @@
     <div><span>Pass mark</span><b>720 / 1000</b></div>
     <div><span>Domains</span><b>7</b></div>
   </div>
-  <table id="domains"><tr><th>Domain</th><th>Weight</th><th>Objectives</th></tr></table>
+  <div class="stats" id="built">
+    <div><span>Practice questions</span><b id="nq">–</b></div>
+    <div><span>Glossary terms</span><b id="ng">–</b></div>
+    <div><span>Learn parts</span><b id="nl">–</b></div>
+    <div><span>Knowledge checks</span><b id="nk">–</b></div>
+  </div>
+  <table id="domains"><tr><th>Domain</th><th>Weight</th><th>Objectives</th><th>Questions</th><th>Learn minutes</th></tr></table>
   <p class="note">Independent study material, not affiliated with Anthropic. Contains no real exam questions. Readiness thresholds are study targets, not the official scaled-score conversion.</p>
 </main>
 <script>
-fetch("content/objectives.json").then(r => r.json()).then(d => {
+const get = f => fetch("content/" + f).then(r => r.json()).catch(() => null);
+Promise.all([get("objectives.json"), get("questions.json"), get("glossary.json"), get("learn.json")])
+.then(([d, q, g, l]) => {
+  if (!d) return;
+  const qs = q ? q.questions : [], parts = l ? l.episodes.flatMap(e => e.parts.map(p => ({...p, d: e.domain_id}))) : [];
+  document.getElementById("nq").textContent = qs.length || "–";
+  document.getElementById("ng").textContent = g ? g.terms.length : "–";
+  document.getElementById("nl").textContent = parts.length || "–";
+  document.getElementById("nk").textContent = parts.reduce((s, p) => s + p.knowledge_check.length, 0) || "–";
   const t = document.getElementById("domains");
   d.domains.forEach(dm => {
-    const n = d.objectives.filter(o => o.domain_id === dm.domain_id).length;
+    const id = dm.domain_id;
+    const row = [id + " – " + dm.name, dm.weight + "%",
+      d.objectives.filter(o => o.domain_id === id).length,
+      qs.filter(x => x.domain_id === id).length,
+      parts.filter(p => p.d === id).reduce((s, p) => s + p.minutes, 0)];
     const tr = document.createElement("tr");
-    [dm.domain_id + " – " + dm.name, dm.weight + "%", n].forEach(v => {
-      const td = document.createElement("td"); td.textContent = v; tr.appendChild(td);
-    });
+    row.forEach(v => { const td = document.createElement("td"); td.textContent = v; tr.appendChild(td); });
     t.appendChild(tr);
   });
-}).catch(() => {});
+});
 </script>
 </body>
 </html>
